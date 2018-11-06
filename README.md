@@ -1,109 +1,77 @@
-# Cockpit Starter Kit
+# cockpit-ceph-installer
+This project aims to provide a simple means to deploy a Ceph cluster by 'teaming up' with the ansible-runner and runner-service projects. The goal is to use the cockpit UI to gather all the settings necessary to drive a ceph-ansible playbook to install your Ceph cluster. It also uses the ceph-check-role ansible module to handle the validation of role against host configuration.
 
-Scaffolding for a [Cockpit](http://www.cockpit-project.org) module.
+## Project Status
+The plugin currently will 
+- create the ansible inventory file (hosts and groups)
+- probe and validate candidate hosts against their intended Ceph role
+- presents available networks for the public and cluster networks required by Ceph
 
-# Getting and building the source
+### What's left
+1. The UI gathers the variables for ceph-ansible's site.yml, so these variables need to be committed to the filesystem
+2. The deploy page needs to be completes to run the site.yml playbook and poll the runner-service for progress updates
 
-Make sure you have `npm` available (usually from your distribution package).
-These commands check out the source and build it into the `dist/` directory:
+## Try it Out
 
+1. Setup up a Fedora 29 VM
+  - As root run the following commands to install pre-requisite packages
+```  
+dnf install wget git cockpit-ws cockpit-bridge cockpit-system cockpit-dashboard ansible python python3-pyOpenSSL python3-jwt python3-flask python3-flask-restful
+pip3 install ansible_runner 
+```  
+  - Enable the cockpit UI
 ```
-git clone https://github.com/cockpit-project/starter-kit.git
-cd starter-kit
-make
+systemctl enable --now cockpit.socket
 ```
+  NB the install of python provides a python2 environment and sets up /usr/bin/python, which ceph-check-role uses
 
-# Installing
+2. setup ssh access 
+  - add multiple entries to /etc/hosts to represent hosts all pointing to 127.0.0.1
+  - as root, create ssh keys (ssh-keygen) and copy to the first 'host', then check you can login without a password to all of these test hosts
 
-`make install` compiles and installs the package in `/usr/share/cockpit/`. The
-convenience targets `srpm` and `rpm` build the source and binary rpms,
-respectively. Both of these make use of the `dist-gzip` target, which is used
-to generate the distribution tarball. In `production` mode, source files are
-automatically minified and compressed. Set `NODE_ENV=production` if you want to
-duplicate this behavior.
+3. runner-service
+  - create a config dir (mkdir /etc/ansible-runner-service)
+  - as root, cd ~
+  - git clone https://github.com/pcuzner/ansible-runner-service.git
+  - cd ansible-runner-service
+  - python3 ansible_runner_service.py
+  - ansible_runner_service will create a file called ```svctoken``` in the current directory. copy this file to ```/etc/ansible-runner-service``` (this is where cockpit expects to pick it up!)
+  - under samples/project we need to place the check roles 'stuff'
+  ```
+    mkdir samples/project/library
+    cd samples/project/library && wget https://raw.githubusercontent.com/pcuzner/ceph-check-role/master/library/ceph_check_role.py
+    cd .. && wget https://raw.githubusercontent.com/pcuzner/ceph-check-role/master/checkrole.yml
+  ```
+    - the playbook from github provides defaults - we need to remove them, so the cockpit plugin can drive the checks. Update
+      the checkrole.yml playbook as follows;
+      - delete the vars definition (4 lines)
+      - update the declarations for mode and deployment;
+            mode: "{{ mode }}"
+            deployment: "{{ deployment }}"
 
-For development, you usually want to run your module straight out of the git
-tree. To do that, link that to the location were `cockpit-bridge` looks for packages:
-
+4. cockpit
+- create cockpit directory in root's home folder
 ```
-mkdir -p ~/.local/share/cockpit
-ln -s `pwd`/dist ~/.local/share/cockpit/starter-kit
+mkdir -p .local/share/cockpit
 ```
+- grab the dist folder from the project
+- add a symlink to the dist folder in your ceph-installer directory
+```
+cd /root/.local/share/cockpit
+ln -s ~/ceph-installer/dist/ ceph-installer
+```
+- point your browser at port 9090 of the machine, and login as root
+  - make sure runner-service has been started!
 
-After changing the code and running `make` again, reload the Cockpit page in
-your browser.
+Gotcha's
+1. if you see "Problem fetching group listnot-found" in the browsers console..
+   - check that runner-service is running!
 
-# Running eslint
 
-Cockpit Starter Kit uses [ESLint](https://eslint.org/) to automatically check
-JavaScript code style in `.jsx` and `.es6` files.
+-----------------------------------------------------------------------------------------------------------------
 
-The linter is executed within every build as a webpack preloader.
+Hack on it
 
-For developer convenience, the ESLint can be started explicitly by:
+To develop you need more than the dist and src - you'll need the cockpit dev environment.
+More steps to come.
 
-    $ npm run eslint
-
-Violations of some rules can be fixed automatically by:
-
-    $ npm run eslint:fix
-
-Rules configuration can be found in the `.eslintrc.json` file.
-
-# Automated Testing
-
-Run `make check` to build an RPM, install it into a standard Cockpit test VM
-(centos-7 by default), and run the test/check-application integration test on
-it. This uses Cockpit's Chrome DevTools Protocol based browser tests, through a
-Python API abstraction. Note that this API is not guaranteed to be stable, so
-if you run into failures and don't want to adjust tests, consider checking out
-Cockpit's test/common from a tag instead of master (see the `test/common`
-target in `Makefile`).
-
-After the test VM is prepared, you can manually run the test without rebuilding
-the VM, possibly with extra options for tracing and halting on test failures
-(for interactive debugging):
-
-    TEST_OS=centos-7 test/check-application -tvs
-
-You can also run the test against a different Cockpit image, for example:
-
-    TEST_OS=fedora-28 make check
-
-# Vagrant
-
-This directory contains a Vagrantfile that installs and starts cockpit on a
-Fedora 26 cloud image. Run `vagrant up` to start it and `vagrant rsync` to
-synchronize the `dist` directory to `/usr/local/share/cockit/starter-kit`. Use
-`vagrant rsync-auto` to automatically sync when contents of the `dist`
-directory change.
-
-# Customizing
-
-After cloning the Starter Kit you should rename the files, package names, and
-labels to your own project's name. Use these commands to find out what to
-change:
-
-    find -iname '*starter*'
-    git grep -i starter
-
-# Automated release
-
-Once your cloned project is ready for a release, you should consider automating
-that.  [Cockpituous release](https://github.com/cockpit-project/cockpituous/tree/master/release)
-aims to fully automate project releases to GitHub, Fedora, Ubuntu, COPR, Docker
-Hub, and other places. The intention is that the only manual step for releasing
-a project is to create a signed tag for the version number; pushing the tag
-then triggers a GitHub webhook that calls a set of release scripts (on
-Cockpit's CI infrastructure).
-
-starter-kit includes an example [cockpitous release script](./cockpituous-release)
-that builds an upstream release tarball and source RPM. Please see the above
-cockpituous documentation for details.
-
-# Further reading
-
- * The [Starter Kit announcement](http://cockpit-project.org/blog/cockpit-starter-kit.html)
-   blog post explains the rationale for this project.
- * [Cockpit Deployment and Developer documentation](http://cockpit-project.org/guide/latest/)
- * [Make your project easily discoverable](http://cockpit-project.org/blog/making-a-cockpit-application.html)

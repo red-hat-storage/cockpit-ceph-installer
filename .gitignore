@@ -3,7 +3,6 @@
 *.tar.gz
 *.rpm
 node_modules/
-dist/
 /*.spec
 /.vagrant
 package-lock.json

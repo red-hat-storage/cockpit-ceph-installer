@@ -1,3 +1,411 @@
-p {
+body {
+    font-family: "Open Sans",Helvetica,Arial,sans-serif;
+    // font-family:Verdana, Geneva, sans-serif;
+    font-size:1.2em; 
+}
+td {
+    padding: 10px;
+}
+tr {
+    display: table;
+}
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.emptyTable {
+    width: 100%;
+    display:inline-block;
+    text-align:center;
+
+}
+.thRoleWidth {
+    min-width: 45px;
+}
+.thStatusWidth, .hostStatusCell {
+    min-width: 90px;
+}
+.thHostname {
+    padding-left: 5px;
+    min-width: 140px
+}
+.textinput {
+    border-style:none;
+    padding-left:5px;
+    padding-right:5px;
+    background-color: #eee;
+    width: 100%;
+}
+.textinput:focus {
+    background-color: white;
+}
+  .textinput:hover:not(:focus) {
+    background-color: #ccc;
+}
+.textinput-nofocus {
+    border: 1px solid white;
+}
+.textinput-error {
+    outline-style: auto;
+    outline-color: red;
+    outline-width: 5px;
+}
+.dropdown {
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 12px;
+    text-align: left;
+    background-color: #fff;
+    border: 1px solid #bbb;
+    border-radius: 1px;
+
+}
+.dropdown:focus {
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    background-clip: padding-box;
+}
+.dropdown:hover {
+    border: 1px solid blue;
+    cursor: pointer;
+}
+.tdTitles {
     font-weight: bold;
+    padding: 10px;
+    display: block;
+    width: 100px;
+}
+
+#installPages {
+    position:relative;
+}
+#navcontainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    margin-top:20px; 
+}
+#info {
+    position:relative;
+    top:30px;
+    width:100%;
+    padding-left: 5px;
+    // border: 1px solid rgb(175, 175, 175);
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    border-radius: 3px;
+}
+.radio {
+    margin-left:20px;
+    width: 150px;
+    margin-top: 0px; 
+}
+.radio-inline {
+    display: inline-block;
+}
+.radio-block {
+    display: block;
+}
+th {
+    background-color: #f9f9f9;
+    font-size: 1.1em;
+}
+tbody {
+    overflow-y: auto;
+    display: block; 
+}
+.roleTable td {
+    border-left: 1px solid lightgrey;   
+    border-right: 1px solid lightgrey;   
+    border-bottom: 1px solid lightgrey;   
+}
+.roleTable th {
+    height: 30px;
+    border: 1px solid lightgrey; 
+}
+.roleTable th {
+    height: 30px;
+}
+.roleTable tr:hover {
+    background-color: #F8F9F9;
+}
+.roleTable tbody {
+    height: 380px;
+}
+.thHostInfo, .tdHostInfo  {
+    width: 250px;
+}
+
+.tdDeleteBtn {
+    min-width: 50px;
+}
+.tdSelector {
+    min-width: 35px; 
+    text-align: center;
+}
+
+.page {
+    width:100%;
+    height:650px;
+    padding: 10px;
+    // border: 1px solid gray;
+    background-color:white;
+    z-index: 1;
+    overflow-x: hidden;
+}
+.behind {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: -1;
+}
+.bottomRight {
+    display: inline-block;
+    position:absolute;
+    right: 20px;
+    bottom: -10px;
+}
+
+.indicator:before {
+    position:absolute;
+    top: -35px;
+    left:-40px;
+    width: 120px;
+    /* border: 1px solid black; */
+    color: rgb(48, 48, 48);
+    font-size: .9em;
+    font-weight: normal;
+    content: attr(label-name);
+}
+.indicator {
+    display: inline-block;
+    position:relative;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid lightgray;
+    border-radius: 50%;
+    background-color:white;
+    font-size: 1em;
+    color: black;
+    font-weight: bold;
+    line-height: 38px;  /* position text in center of circle */
+
+}
+.selectable {
+    cursor: pointer;
+}
+.selected {
+    background-color:#39a5dc;
+    color: white;
+}
+.joiner {
+    display:inline-block;
+    width:100px;
+    height:2px;
+    font-size:1em;
+    border-bottom: 2px solid lightgrey;
+}
+/* W3CSchools example */
+.cbox {
+    display: inline-block;
+    position: relative;
+    padding: 0px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    font-size: 10px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.cbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    margin-left: 3px;
+    background-color: #eee;
+}
+
+/* On mouse-over, add a grey background color */
+.cbox:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.cbox input:checked ~ .checkmark {
+    background-color: #39a5dc;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark when checked */
+.cbox input:checked ~ .checkmark:after {
+    display: block;
+}
+.divCenter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}  
+.leftAligned {
+    text-align: left;
+    padding-left: 5px;
+    padding-right:5px;
+}
+.textCenter {
+    text-align: center;
+    padding-left:5px;
+    padding-right:5px;
+} 
+.hostMask {
+    width: 100%;
+    padding: 10px;
+    height: 60px;
+} 
+.separatorLine {
+    margin-bottom: 0;
+    border-top: 1px solid lightgrey;
+    width: 80%;
+    height:20px;
+}
+.fact {
+    min-width: 50px;
+    text-align: center;
+}
+.capacity {
+    min-width: 80px;
+    text-align: center;
+}
+.critical {
+    background-color: #D50000;
+    color: white;
+    padding-left:3px;
+    padding-right:3px;
+    border-radius: 3px;
+}
+.criticalText {
+    color: #D50000;
+    font-weight: bold;
+}
+.error {
+    background-color: orange;
+    color: black;
+    padding-left:3px;
+    padding-right:3px;
+    border-radius: 3px;
+}
+.errorText {
+    color: #F57C00;
+    font-weight: bold;
+}
+.warning {
+    background-color: blue;
+    color: white;
+    padding-left:3px;
+    padding-right:3px;
+}
+.warningText {
+    color: blue;
+    font-weight: bold;
+}
+.scrollX{
+    overflow-x: auto;
+    width: 100%;
+}
+.msg {
+    display: inline;
+    white-space: wrap;
+}
+.hidden {
+    display: none;
+}
+.visible {
+    display: block;
+}
+.clickable {
+    cursor: pointer;
+}
+
+.hiddenTable td{
+    border: 0px;
+    min-width: 45px;
+    padding-left: 3px;
+    padding-right: 3px; }
+  
+  .hiddenTable tr {
+    border-bottom: 1px solid #EEEEEE;
+  }
+  .hiddenTable tbody {
+    height: inherit;
+  }
+.textInfo {
+    position: relative;
+    display: inline-block;
+}
+
+.textInfo .tooltipContent {
+    visibility: hidden;
+    white-space: nowrap;
+    background-color: black;
+    opacity: 0.7;
+    color: #fff;
+    text-align: center;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    margin-left: 5px;
+    top: -.4em;
+    left: 110%;
+}
+
+.textInfo .tooltipContent::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+}
+
+.textInfo:hover .tooltipContent {
+    visibility: visible;
+}
+.modifier {
+    position: relative;
+    display: inline-block;
+    margin-left:10px;
+}
+.network-container {
+    width: 50%;
+    display:block;
+    float: left;
+}
+.network-msgs {
+    width: 100%;
+    display: flex;
+    position: relative;
 }

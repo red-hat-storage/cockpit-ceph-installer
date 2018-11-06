@@ -20,27 +20,41 @@
 import cockpit from 'cockpit';
 import React from 'react';
 import './app.scss';
+// import ProgressTracker from './components/progresstracker.jsx';
+import InstallationSteps from './components/installationsteps.jsx';
+import { getSVCToken } from './services/utils.js';
+// import InfoBar from './components/infobar.jsx';
 
 const _ = cockpit.gettext;
 
 export class Application extends React.Component {
     constructor() {
         super();
-        this.state = { 'hostname': _("Unknown") };
+        this.state = {
+            'hostname': _("Unknown"),
+            "svctoken": null
+        };
+    }
 
-        cockpit.file('/etc/hostname').read()
-                .done((content) => {
-                    this.setState({ 'hostname': content.trim() });
+    componentDidMount() {
+        getSVCToken()
+                .done((content, tag) => { this.setState({svctoken: content}) })
+                .fail((error) => {
+                    console.log("Can't read the svctoken file");
+                    console.log("Error : " + error);
                 });
     }
 
     render() {
+        console.log("in main render");
+        console.log("svctoken is " + this.state.svctoken);
+
         return (
             <div className="container-fluid">
-                <h2>Starter Kit</h2>
-                <p>
-                    { cockpit.format(_("Running on $0"), this.state.hostname) }
-                </p>
+                <h2>Ceph Installer</h2>
+                {/* <ProgressTracker /> */}
+                <InstallationSteps svctoken={this.state.svctoken} />
+                {/* <InfoBar /> */}
             </div>
         );
     }
