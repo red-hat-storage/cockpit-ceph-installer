@@ -42,12 +42,12 @@ systemctl enable --now cockpit.socket
     cd samples/project/library && wget https://raw.githubusercontent.com/pcuzner/ceph-check-role/master/library/ceph_check_role.py
     cd .. && wget https://raw.githubusercontent.com/pcuzner/ceph-check-role/master/checkrole.yml
   ```
-    - the playbook from github provides defaults - we need to remove them, so the cockpit plugin can drive the checks. Update
-      the checkrole.yml playbook as follows;
-      - delete the vars definition (4 lines)
-      - update the declarations for mode and deployment;
-            mode: "{{ mode }}"
-            deployment: "{{ deployment }}"
+  - the playbook from github provides defaults - we need to remove them, so the cockpit plugin can drive the checks. Update
+    the checkrole.yml playbook as follows;
+    - delete the vars definition (4 lines)
+    - update the declarations for mode and deployment;
+          mode: "{{ mode }}"
+          deployment: "{{ deployment }}"
 
 4. cockpit
 - create cockpit directory in root's home folder
