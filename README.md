@@ -13,7 +13,7 @@ The plugin currently will
 
 ## Curious, take a look...
 
-![demo](https://youtu.be/6_RSUZzF2SA)  
+[![demo](screenshots/screenshot.png)](https://youtu.be/6_RSUZzF2SA) 
 
 ## Take it for a testdrive
 ### 1. Create a test VM
