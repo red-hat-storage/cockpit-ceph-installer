@@ -20,7 +20,7 @@ The plugin currently will
   #### **Fedora 29** *(example uses a cloud qcow2 image)* ####
   1. As root run the following commands to install pre-requisite packages
 ```bash
-dnf install -y wget git cockpit-ws cockpit-bridge cockpit-system cockpit-dashboard ansible python python3-pyOpenSSL python3-jwt python3-flask python3-flask-restful
+dnf install -y wget git cockpit-ws cockpit-bridge cockpit-system cockpit-dashboard ansible python python3-pyOpenSSL python3-jwt python3-flask python3-flask-restful python3-devel
 pip3 install ansible_runner
 ```
 
@@ -66,6 +66,8 @@ NB the install of python provides a python2 environment and sets up /usr/bin/pyt
   git clone https://github.com/pcuzner/ansible-runner-service.git
   cd ansible-runner-service
   python ansible_runner_service.py
+  
+  Note: In Fedora use python3 instead of python
   ```
   3. ansible_runner_service will create a file called ```svctoken``` in the current directory. copy this file to ```/etc/ansible-runner-service``` (this is where cockpit expects to pick it up!)
   4. install the checkrole playbook and module
@@ -87,6 +89,8 @@ NB the install of python provides a python2 environment and sets up /usr/bin/pyt
   - add multiple entries to /etc/hosts to represent hosts all pointing to 127.0.0.1
   - runner-service will create ssh keys in samples/env. Use ```ssh-copy-id -f -i ssh_key.pub root@<host>``` to copy the public key to your test hosts.
 
+Note: Check you have sshd service enabled
+
 ### 5. Deploy the cockpit plugin
 
 1. create cockpit directory in root's home folder
@@ -97,8 +101,9 @@ mkdir -p .local/share/cockpit
 2. grab the dist folder from the project
 3. add a symlink to the dist folder in your ceph-installer directory
 ```
-cd /root/.local/share/cockpit
-ln -s ~/ceph-installer/dist/ ceph-installer
+git clone https://github.com/pcuzner/cockpit-ceph-installer.git
+cd .local/share/cockpit/
+ln -s ~/cockpit-ceph-installer/dist/ ceph-installer
 ```
 4. point your browser at port 9090 of the machine, and login as root
    - make sure runner-service has been started!
