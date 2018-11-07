@@ -9,7 +9,7 @@ The plugin currently will
 
 ### What's left?
 1. The UI gathers the variables for ceph-ansible's site.yml, so these variables need to be committed to the filesystem
-2. The deploy page needs to be completes to run the site.yml playbook and poll the runner-service for progress updates
+2. The "Deploy" page needs to be completed. This is the final piece that starts the ceph-ansible site.yml playbook to perform the installation.
 
 ## Curious, take a look...
 
