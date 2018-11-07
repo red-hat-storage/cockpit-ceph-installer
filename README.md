@@ -13,6 +13,9 @@ The plugin currently will
 
 ## Curious, take a look...
 
+![demo](https://youtu.be/6_RSUZzF2SA)  
+
+## Take it for a testdrive
 ### 1. Create a test VM
   #### **Fedora 29** *(example uses a cloud qcow2 image)* ####
   1. As root run the following commands to install pre-requisite packages
