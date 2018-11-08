@@ -147,11 +147,13 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
     groupChain
             .then(() => {
                 changeHost(hostname, ansibleRole, checked, svctoken)
-                        .done((resp) => {
+                        .then((resp) => {
+                            console.log("changeHost call completed, updating internal host information");
                             // console.log("Updated host entry in inventory");
                             // console.log("BEFORE hosts look like this " + JSON.stringify(hosts));
                             for (let i in hosts) {
                                 let thishost = hosts[i];
+                                console.log("comparing host *" + thishost.hostname + "*, compared to *" + hostname + "*");
                                 if (thishost.hostname == hostname) {
                                     console.log("updating host role in state");
                                     thishost[role] = checked;
