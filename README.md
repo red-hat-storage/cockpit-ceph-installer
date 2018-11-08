@@ -17,7 +17,7 @@ The plugin currently will
 
 ## Take it for a testdrive
 ### 1. Create a test VM
-  #### **Fedora 29** *(example uses a cloud qcow2 image)* ####
+#### **Fedora 29** *(example uses a cloud qcow2 image)* ####
   1. As root run the following commands to install pre-requisite packages
 ```bash
 dnf install -y wget git cockpit-ws cockpit-bridge cockpit-system cockpit-dashboard ansible python python3-pyOpenSSL python3-jwt python3-flask python3-flask-restful
@@ -30,17 +30,11 @@ pip3 install ansible_runner
 subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-optional-rpms --enable=rhel-7-server-ansible-2-rpms --enable=rhel-7-server-ose-3.9-rpms
 ```  
 
-  2. Enable **EPEL** *(required for python-flask-restful)*
-```
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-```
-
-  3. Install pre-requisite packages
+  2. Install pre-requisite packages
 ```
 yum install -y
     ansible  
     pyOpenSSL  
-    python-flask  
     python-jwt  
     git  
     unzip  
@@ -48,8 +42,32 @@ yum install -y
     python2-flask-restful  
     python2-pip (for up to date runner install)  
     python2-docutils  
-pip install ansible_runner  
+pip install ansible_runner
+pip install flask
+pip install flask_restful  
 ```
+#### **RHEL8 beta/base repo**
+1. RPM installs for the following packages
+```
+python3-flask  
+python3-pyOpenSSL  
+python3-jwt
+python3-pip
+cockpit-ws  
+cockpit-system  
+cockpit-dashboard  
+cockpit-bridge  
+gcc  
+redhat-rpm-config  
+python36  
+platform-python-devel
+```
+2. Install ansible and ansible_runner
+```
+pip3.6 install ansible
+pip3.6 install ansible_runner
+```
+3. Use ```alternatives --config python``` to ensure /usr/bin/python is present (needed by the ceph-check-role module)
 
 ### 2. Enable the cockpit interface
 ```

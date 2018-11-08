@@ -1,19 +1,22 @@
 
 
 General
-    The nav bar allows you to step back in the process, but not jump forward. The user must click next to continue within the workflow, since this
+    - The nav bar allows you to step back in the process, but not jump forward. The user must click next to continue within the workflow, since this
     action triggers the 'save' of state
-    TODO: need to rationalise the css classes - reduce any duplication, and misnomers
-    the tool doesn't account for a pre-existing inventory
-    TODO: the plugin doesn't flag an error if the runner-service is not there! 
+    - TODO: need to rationalise the css classes - reduce any duplication, and misnomers
+    - the tool doesn't account for a pre-existing inventory
+    - TODO: the plugin doesn't flag an error if the runner-service is not there! 
+    - cockpit -> flask. On older versions of flask, the cockpit.http calls receive a RST (reset) packet from flask, so calls to the API fail. When this
+    happens the UI stops working due to the js error. flask versions found to work flask >= 1.0.2, flask_restful 0.3.6
 
 hostspage.jsx
-    TODO: validate roles based on the mode (dev or prod) in the host mask & the host row
-    TODO: if the probe playbook fails, there are no indications other than looking at the browser console log
+    - TODO: validate roles based on the mode (dev or prod) in the host mask & the host row
+    - TODO: if the probe playbook fails, there are no indications other than looking at the browser console log
 
 validatepage.jsx
     TODO: for testing checks are currently bypassing with skipChecks=true in the class definition - which just allows the 
         next button to work, without any validity checks
+    TODO: Add some 'business logic' to analyse the cluster as a whole. checkrole focuses only at the per host level.
 
 networkpage.jsx
     NIC bandwidth is reported as unknown, when ansible returns a speed of 0.
