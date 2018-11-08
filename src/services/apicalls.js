@@ -12,13 +12,13 @@ const http = cockpit.http({
 
 export function addGroup(groupName, svcToken) {
     console.log("requesting new group " + groupName);
-    let promise = http.post('api/v1/groups/' + groupName, null, { Authorization: svcToken });
+    let promise = http.post('/api/v1/groups/' + groupName, null, { Authorization: svcToken });
     return promise;
 }
 
 export function deleteGroup(groupName, svcToken) {
     console.log("attemting to remove " + groupName + "from the inventory");
-    let url = "api/v1/groups/" + groupName;
+    let url = "/api/v1/groups/" + groupName;
     return http.request({
         path: url,
         body: {},
@@ -29,7 +29,7 @@ export function deleteGroup(groupName, svcToken) {
 
 export function getGroups(svcToken) {
     console.log("fetching defined groups");
-    let promise = http.get('api/v1/groups', null, { Authorization: svcToken });
+    let promise = http.get('/api/v1/groups', null, { Authorization: svcToken });
     return promise;
 }
 
@@ -50,7 +50,7 @@ export function addHost(hostName, groupNames, svcToken) {
 
 export function deleteHost(hostName, svcToken) {
     console.log("removing " + hostName + " from the inventory");
-    let url = "api/v1/hosts/" + hostName;
+    let url = "/api/v1/hosts/" + hostName;
     return http.request({
         path: url,
         body: {},
@@ -60,7 +60,7 @@ export function deleteHost(hostName, svcToken) {
 }
 
 export function changeHost(hostname, role, checked, svctoken) {
-    console.log("changing host state for " + role);
+    console.log("changeHost: changing host state for " + hostname + " role=" + role);
     if (!checked) {
         if (role == 'mons') {
             console.log("requesting mgr to be removed");
@@ -72,7 +72,7 @@ export function changeHost(hostname, role, checked, svctoken) {
         }
     } else {
         if (role == 'mons') {
-            console.log("requesting mons role removal");
+            console.log("requesting mons role");
             return addRole(hostname, 'mgrs', svctoken).then(_ => {
                 return addRole(hostname, role, svctoken);
             });
@@ -84,13 +84,13 @@ export function changeHost(hostname, role, checked, svctoken) {
 
 export function addRole(hostName, roleName, svcToken) {
     console.log("Adding role " + roleName + " to " + hostName);
-    let url = "api/v1/hosts/" + hostName + "/groups/" + roleName;
+    let url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
     return http.post(url, null, { Authorization: svcToken });
 }
 
 export function removeRole(hostName, roleName, svcToken) {
     console.log("Removing role " + roleName + " from " + hostName);
-    let url = "api/v1/hosts/" + hostName + "/groups/" + roleName;
+    let url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
     return http.request({
         path: url,
         body: {},
@@ -101,24 +101,24 @@ export function removeRole(hostName, roleName, svcToken) {
 
 export function runPlaybook(playbookName, data, svcToken) {
     console.log("starting playbook " + playbookName);
-    let url = "api/v1/playbooks/" + playbookName;
+    let url = "/api/v1/playbooks/" + playbookName;
     return http.post(url, data, { Authorization: svcToken });
 }
 
 export function getPlaybookState(playUUID, svcToken) {
     console.log("checking playbook with UUID " + playUUID);
-    let url = "api/v1/playbooks/" + playUUID;
+    let url = "/api/v1/playbooks/" + playUUID;
     return http.get(url, null, { Authorization: svcToken });
 }
 
 export function getTaskEvents(playUUID, taskName, svcToken) {
     console.log("looking for job events");
-    let url = "api/v1/jobs/" + playUUID + "/events?task=" + taskName;
+    let url = "/api/v1/jobs/" + playUUID + "/events?task=" + taskName;
     return http.get(url, null, { Authorization: svcToken });
 }
 
 export function getJobEvent(playUUID, eventUUID, svcToken) {
     console.log("fetching event ID " + eventUUID);
-    let url = "api/v1/jobs/" + playUUID + "/events/" + eventUUID;
+    let url = "/api/v1/jobs/" + playUUID + "/events/" + eventUUID;
     return http.get(url, null, {Authorization: svcToken});
 }
