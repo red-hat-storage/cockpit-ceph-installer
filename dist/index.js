@@ -22398,10 +22398,10 @@ function (_React$Component) {
       if (localState[idx].status == 'OK') {
         // OK state means we've added the host to the inventory, so we need
         // to delete from the inventory AND the UI state
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["deleteHost"])(hostname, _this.props.svctoken).done(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["deleteHost"])(hostname, _this.props.svctoken).then(function (resp) {
           _this.deleteHostEntry(idx);
-        }).fail(function (error, data) {
-          console.error("Error " + error + " deleting " + hostname + ": " + JSON.stringify(data));
+        }).catch(function (error) {
+          console.error("Error " + error + " deleting " + hostname);
         });
       } else {
         // status was NOTOK, so the host is not in the inventory
@@ -24456,14 +24456,14 @@ var http = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.http({
 });
 function addGroup(groupName, svcToken) {
   console.log("requesting new group " + groupName);
-  var promise = http.post('api/v1/groups/' + groupName, null, {
+  var promise = http.post('/api/v1/groups/' + groupName, null, {
     Authorization: svcToken
   });
   return promise;
 }
 function deleteGroup(groupName, svcToken) {
   console.log("attemting to remove " + groupName + "from the inventory");
-  var url = "api/v1/groups/" + groupName;
+  var url = "/api/v1/groups/" + groupName;
   return http.request({
     path: url,
     body: {},
@@ -24475,7 +24475,7 @@ function deleteGroup(groupName, svcToken) {
 }
 function getGroups(svcToken) {
   console.log("fetching defined groups");
-  var promise = http.get('api/v1/groups', null, {
+  var promise = http.get('/api/v1/groups', null, {
     Authorization: svcToken
   });
   return promise;
@@ -24497,7 +24497,7 @@ function addHost(hostName, groupNames, svcToken) {
 }
 function deleteHost(hostName, svcToken) {
   console.log("removing " + hostName + " from the inventory");
-  var url = "api/v1/hosts/" + hostName;
+  var url = "/api/v1/hosts/" + hostName;
   return http.request({
     path: url,
     body: {},
@@ -24508,7 +24508,7 @@ function deleteHost(hostName, svcToken) {
   });
 }
 function changeHost(hostname, role, checked, svctoken) {
-  console.log("changing host state for " + role);
+  console.log("changeHost: changing host state for " + hostname + " role=" + role);
 
   if (!checked) {
     if (role == 'mons') {
@@ -24521,7 +24521,7 @@ function changeHost(hostname, role, checked, svctoken) {
     }
   } else {
     if (role == 'mons') {
-      console.log("requesting mons role removal");
+      console.log("requesting mons role");
       return addRole(hostname, 'mgrs', svctoken).then(function (_) {
         return addRole(hostname, role, svctoken);
       });
@@ -24532,14 +24532,14 @@ function changeHost(hostname, role, checked, svctoken) {
 }
 function addRole(hostName, roleName, svcToken) {
   console.log("Adding role " + roleName + " to " + hostName);
-  var url = "api/v1/hosts/" + hostName + "/groups/" + roleName;
+  var url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
   return http.post(url, null, {
     Authorization: svcToken
   });
 }
 function removeRole(hostName, roleName, svcToken) {
   console.log("Removing role " + roleName + " from " + hostName);
-  var url = "api/v1/hosts/" + hostName + "/groups/" + roleName;
+  var url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
   return http.request({
     path: url,
     body: {},
@@ -24551,28 +24551,28 @@ function removeRole(hostName, roleName, svcToken) {
 }
 function runPlaybook(playbookName, data, svcToken) {
   console.log("starting playbook " + playbookName);
-  var url = "api/v1/playbooks/" + playbookName;
+  var url = "/api/v1/playbooks/" + playbookName;
   return http.post(url, data, {
     Authorization: svcToken
   });
 }
 function getPlaybookState(playUUID, svcToken) {
   console.log("checking playbook with UUID " + playUUID);
-  var url = "api/v1/playbooks/" + playUUID;
+  var url = "/api/v1/playbooks/" + playUUID;
   return http.get(url, null, {
     Authorization: svcToken
   });
 }
 function getTaskEvents(playUUID, taskName, svcToken) {
   console.log("looking for job events");
-  var url = "api/v1/jobs/" + playUUID + "/events?task=" + taskName;
+  var url = "/api/v1/jobs/" + playUUID + "/events?task=" + taskName;
   return http.get(url, null, {
     Authorization: svcToken
   });
 }
 function getJobEvent(playUUID, eventUUID, svcToken) {
   console.log("fetching event ID " + eventUUID);
-  var url = "api/v1/jobs/" + playUUID + "/events/" + eventUUID;
+  var url = "/api/v1/jobs/" + playUUID + "/events/" + eventUUID;
   return http.get(url, null, {
     Authorization: svcToken
   });
@@ -24770,11 +24770,13 @@ function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
   }
 
   groupChain.then(function () {
-    Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["changeHost"])(hostname, ansibleRole, checked, svctoken).done(function (resp) {
-      // console.log("Updated host entry in inventory");
+    Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["changeHost"])(hostname, ansibleRole, checked, svctoken).then(function (resp) {
+      console.log("changeHost call completed, updating internal host information"); // console.log("Updated host entry in inventory");
       // console.log("BEFORE hosts look like this " + JSON.stringify(hosts));
+
       for (var i in hosts) {
         var thishost = hosts[i];
+        console.log("comparing host *" + thishost.hostname + "*, compared to *" + hostname + "*");
 
         if (thishost.hostname == hostname) {
           console.log("updating host role in state");
