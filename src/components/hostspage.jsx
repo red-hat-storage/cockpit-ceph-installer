@@ -275,11 +275,11 @@ export class HostsPage extends React.Component {
             // OK state means we've added the host to the inventory, so we need
             // to delete from the inventory AND the UI state
             deleteHost(hostname, this.props.svctoken)
-                    .done((resp) => {
+                    .then((resp) => {
                         this.deleteHostEntry(idx);
                     })
-                    .fail((error, data) => {
-                        console.error("Error " + error + " deleting " + hostname + ": " + JSON.stringify(data));
+                    .catch((error) => {
+                        console.error("Error " + error + " deleting " + hostname);
                     });
         } else {
             // status was NOTOK, so the host is not in the inventory
