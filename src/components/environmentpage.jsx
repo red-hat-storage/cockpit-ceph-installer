@@ -13,6 +13,7 @@ export class EnvironmentPage extends React.Component {
         this.state = {
             className: this.props.className,
             osdType: "Bluestore",
+            networkType: "ipv4",
             sourceType: "Red Hat",
             clusterType: "Production",
             osdMode: "Standard",
@@ -39,6 +40,13 @@ export class EnvironmentPage extends React.Component {
             name: "osdType",
             horizontal: true
         };
+        this.network_type = {
+            description: "Network connectivity",
+            options: ['ipv4', 'ipv6'],
+            default: 'ipv4',
+            name: 'networkType',
+            horizontal: true
+        };
         this.source = {
             description: "Select the software source type",
             options: ["Red Hat", "OS Distribution", "Community"],
@@ -56,8 +64,8 @@ export class EnvironmentPage extends React.Component {
         this.install_type = {
             description: "Choose an installation type. Ceph can be installed either as regular packages (RPMs) or as container images. " +
                          "Container deployments support collocation of more Ceph services",
-            options: ["RPM", "Container"],
-            default: "RPM",
+            options: ["Container", "RPM"],
+            default: "Container",
             name: "installType",
             horizontal: true
         };
@@ -111,6 +119,8 @@ export class EnvironmentPage extends React.Component {
                     <Selector labelName="Target Version" value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
                     <Selector labelName="Cluster Type" options={this.clusterTypes} callback={this.clusterTypeChange} />
                 </div>
+                <p>&nbsp;</p>
+                <RadioSet config={this.network_type} callback={this.updateState} />
                 <p>&nbsp;</p>
                 <RadioSet config={this.osd_type} callback={this.updateState} />
                 <p>&nbsp;</p>

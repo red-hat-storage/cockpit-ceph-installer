@@ -21957,6 +21957,7 @@ function (_React$Component) {
     _this.state = {
       className: _this.props.className,
       osdType: "Bluestore",
+      networkType: "ipv4",
       sourceType: "Red Hat",
       clusterType: "Production",
       osdMode: "Standard",
@@ -21980,6 +21981,13 @@ function (_React$Component) {
       name: "osdType",
       horizontal: true
     };
+    _this.network_type = {
+      description: "Network connectivity",
+      options: ['ipv4', 'ipv6'],
+      default: 'ipv4',
+      name: 'networkType',
+      horizontal: true
+    };
     _this.source = {
       description: "Select the software source type",
       options: ["Red Hat", "OS Distribution", "Community"],
@@ -21996,8 +22004,8 @@ function (_React$Component) {
     };
     _this.install_type = {
       description: "Choose an installation type. Ceph can be installed either as regular packages (RPMs) or as container images. " + "Container deployments support collocation of more Ceph services",
-      options: ["RPM", "Container"],
-      default: "RPM",
+      options: ["Container", "RPM"],
+      default: "Container",
       name: "installType",
       horizontal: true
     };
@@ -22045,6 +22053,9 @@ function (_React$Component) {
         options: this.clusterTypes,
         callback: this.clusterTypeChange
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
+        config: this.network_type,
+        callback: this.updateState
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
         config: this.osd_type,
         callback: this.updateState
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
