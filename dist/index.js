@@ -23193,6 +23193,7 @@ function (_React$Component) {
         hosts: this.state.hosts,
         clusterType: this.state.clusterType,
         installType: this.state.installType,
+        flashUsage: this.state.flashUsage,
         svctoken: this.props.svctoken
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_networkpage_jsx__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: this.page['network'],
@@ -23785,9 +23786,18 @@ function (_React$Component) {
         clusterType = 'dev';
       }
 
+      var flashusage;
+
+      if (_this.props.flashUsage.toUpperCase().startsWith("JOURNAL")) {
+        flashusage = 'journal';
+      } else {
+        flashusage = 'data';
+      }
+
       var playbookVars = {
         inventory: rolesByHost,
         mode: clusterType,
+        flashusage: flashusage,
         deployment: _this.props.installType.toLowerCase()
       };
       console.log("playbook vars are:" + JSON.stringify(playbookVars));

@@ -124,9 +124,17 @@ export class ValidatePage extends React.Component {
             clusterType = 'dev';
         }
 
+        let flashusage;
+        if (this.props.flashUsage.toUpperCase().startsWith("JOURNAL")) {
+            flashusage = 'journal';
+        } else {
+            flashusage = 'data';
+        }
+
         let playbookVars = {
             inventory: rolesByHost,
             mode: clusterType,
+            flashusage: flashusage,
             deployment: this.props.installType.toLowerCase()
         };
 

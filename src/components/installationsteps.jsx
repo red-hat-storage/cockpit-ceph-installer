@@ -150,6 +150,7 @@ export class InstallationSteps extends React.Component {
                         hosts={this.state.hosts}
                         clusterType={this.state.clusterType}
                         installType={this.state.installType}
+                        flashUsage={this.state.flashUsage}
                         svctoken={this.props.svctoken} />
                     <NetworkPage
                         className={this.page['network']}
