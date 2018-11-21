@@ -21961,7 +21961,7 @@ function (_React$Component) {
       sourceType: "Red Hat",
       clusterType: "Production",
       osdMode: "Standard",
-      installType: "RPM",
+      installType: "Container",
       flashUsage: "Journals/Logs",
       targetVersion: "RHCS 3.1"
     };
@@ -23694,8 +23694,11 @@ function (_React$Component) {
       obj['cpuType'] = facts.cpu_type;
       obj['subnets'] = facts.network.subnets;
       obj['subnet_details'] = facts.network.subnet_details;
-      obj['hdd'] = Object.keys(facts.hdd).length;
-      obj['ssd'] = Object.keys(facts.ssd).length;
+      obj['hdd_devices'] = Object.keys(facts.hdd);
+      obj['hdd'] = obj.hdd_devices.length;
+      obj['ssd_devices'] = Object.keys(facts.ssd);
+      obj['ssd'] = obj.ssd_devices.length;
+      obj['capacity'] = facts.capacity;
       obj['cpu'] = facts.cpu_core_count;
       obj['ram'] = Math.round(facts.ram_mb / 1024);
       console.log(JSON.stringify(eventData.res.data.status));
@@ -24070,7 +24073,7 @@ function (_React$Component) {
         className: "textCenter fact"
       }, "SSD"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
         className: "textCenter capacity"
-      }, "Capacity"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+      }, "Raw Capacity", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "(HDD/SSD)"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
         className: "leftAligned thHostInfo"
       }, "Ready"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, rows)))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
         action: this.checkHostsReady,
