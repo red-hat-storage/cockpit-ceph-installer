@@ -17,7 +17,8 @@ export class ValidatePage extends React.Component {
             refresh: 0,
             hosts: [],
             probedCount: 0,
-            pendingProbe: true
+            pendingProbe: true,
+            probeStatusMsg: ''
         };
 
         this.eventLookup = {}; // lookup for probe results
@@ -74,6 +75,10 @@ export class ValidatePage extends React.Component {
         let eventIDs = Object.keys(eventData);
         let eventCount = eventIDs.length;
         let hostCount = this.state.hosts.length;
+
+        let processed = Object.keys(this.eventLookup).length;
+        this.setState({probeStatusMsg: processed + "/" + hostCount + " probes complete"});
+
         console.log("Progress " + eventCount + "/" + hostCount);
         eventIDs.forEach((eventID, idx, ary) => {
             if (this.eventLookup.hasOwnProperty(eventID)) {
@@ -96,7 +101,8 @@ export class ValidatePage extends React.Component {
         console.log("probe scan has completed");
         this.setState({
             probeEnabled: true,
-            ready: true
+            ready: true,
+            probeStatusMsg: ''
         });
         this.eventLookup = {};
     }
@@ -107,7 +113,8 @@ export class ValidatePage extends React.Component {
             probeEnabled: false,
             pendingProbe: false,
             ready: false,
-            probedCount: 0
+            probedCount: 0,
+            probeStatusMsg: "0/" + this.state.hosts.length + " probes complete"
         });
 
         console.log("remove the status info for all the hosts");
@@ -307,7 +314,11 @@ export class ValidatePage extends React.Component {
         }
 
         if (!this.state.probeEnabled) {
-            spinner = (<div className="modifier spinner spinner-lg" >&nbsp;</div>);
+            spinner = (
+                <div className="modifier">
+                    <div className="modifier spinner spinner-lg" >&nbsp;</div>
+                    <ProbeStatus msg={this.state.probeStatusMsg} />
+                </div>);
         } else {
             spinner = (<div style={{display: "inline-block", width: "40px"}} />);
         }
@@ -319,13 +330,10 @@ export class ValidatePage extends React.Component {
                 The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
                  probe the hosts to validate that their hardware configuration is compatible with
                  their intended Ceph role. Once the probe is complete you must select the hosts to
-                 use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)
-                <div className="divCenter" style={{width: "100%", height: "60px", marginTop: "5px"}}>
-                    <div>
-                        <button className="btn btn-primary btn-lg" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
-                        { spinner }
-                    </div>
-                </div>
+                 use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br />
+                <div className="spacer" />
+                <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
+                { spinner }
                 <div className="divCenter">
                     <div className="separatorLine" />
                 </div>
@@ -504,6 +512,17 @@ class HostSelector extends React.Component {
                 name={this.props.name}
                 checked={this.props.selected}
                 onChange={this.props.callback} />
+        );
+    }
+}
+
+class ProbeStatus extends React.Component {
+    render () {
+        console.log("rendering probestatus message");
+        return (
+            <div className="modifier" >
+                <small>{ this.props.msg }</small>
+            </div>
         );
     }
 }
