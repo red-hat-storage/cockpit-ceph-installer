@@ -24,7 +24,6 @@ export class HostsPage extends React.Component {
 
     // TODO: need to consider the hosts as a json object key=hostname to cut down on
     // screen updates?
-    // TODO: create all groups in the inventory up front?
 
     nextAction = (event) => {
         if (this.state.hosts.length > 0) {
@@ -51,10 +50,6 @@ export class HostsPage extends React.Component {
         } else {
             console.log("You haven't got any hosts - can't continue");
         }
-    }
-
-    addHost = () => {
-        console.log("lets add a host entry to the array");
     }
 
     addHostsToTable = (stateObject) => {
