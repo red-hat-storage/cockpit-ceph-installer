@@ -111,6 +111,12 @@ export class ValidatePage extends React.Component {
         });
 
         console.log("remove the status info for all the hosts");
+        let hostsCopy = this.state.hosts.slice(0);
+        hostsCopy.forEach((host, idx, hostsCopy) => {
+            host.msgs = [];
+            host.ready = '';
+        });
+        this.setState({hosts: hostsCopy});
 
         // build a JSON representation of the hosts
         // pass it to the api request
