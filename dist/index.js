@@ -23732,6 +23732,12 @@ function (_React$Component) {
       var eventIDs = Object.keys(eventData);
       var eventCount = eventIDs.length;
       var hostCount = _this.state.hosts.length;
+      var processed = Object.keys(_this.eventLookup).length;
+
+      _this.setState({
+        probeStatusMsg: processed + "/" + hostCount + " probes complete"
+      });
+
       console.log("Progress " + eventCount + "/" + hostCount);
       eventIDs.forEach(function (eventID, idx, ary) {
         if (_this.eventLookup.hasOwnProperty(eventID)) {
@@ -23754,7 +23760,8 @@ function (_React$Component) {
 
       _this.setState({
         probeEnabled: true,
-        ready: true
+        ready: true,
+        probeStatusMsg: ''
       });
 
       _this.eventLookup = {};
@@ -23767,11 +23774,24 @@ function (_React$Component) {
         probeEnabled: false,
         pendingProbe: false,
         ready: false,
-        probedCount: 0
+        probedCount: 0,
+        probeStatusMsg: "0/" + _this.state.hosts.length + " probes complete"
       });
 
-      console.log("remove the status info for all the hosts"); // build a JSON representation of the hosts
+      console.log("remove the status info for all the hosts");
+
+      var hostsCopy = _this.state.hosts.slice(0);
+
+      hostsCopy.forEach(function (host, idx, hostsCopy) {
+        host.msgs = [];
+        host.ready = '';
+      });
+
+      _this.setState({
+        hosts: hostsCopy
+      }); // build a JSON representation of the hosts
       // pass it to the api request
+
 
       var rolesByHost = {};
 
@@ -23958,7 +23978,8 @@ function (_React$Component) {
       refresh: 0,
       hosts: [],
       probedCount: 0,
-      pendingProbe: true
+      pendingProbe: true,
+      probeStatusMsg: ''
     };
     _this.eventLookup = {}; // lookup for probe results
 
@@ -24010,8 +24031,12 @@ function (_React$Component) {
 
       if (!this.state.probeEnabled) {
         spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "modifier"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier spinner spinner-lg"
-        }, "\xA0");
+        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ProbeStatus, {
+          msg: this.state.probeStatusMsg
+        }));
       } else {
         spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           style: {
@@ -24024,18 +24049,13 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "validate",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "divCenter",
-        style: {
-          width: "100%",
-          height: "60px",
-          marginTop: "5px"
-        }
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-        className: "btn btn-primary btn-lg",
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "spacer"
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        className: "btn btn-primary btn-lg btn-offset",
         disabled: !this.state.probeEnabled,
         onClick: this.probeHosts
-      }, "Probe"), spinner)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, "Probe"), spinner, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "divCenter"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "separatorLine"
@@ -24316,6 +24336,30 @@ function (_React$Component5) {
   }]);
 
   return HostSelector;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+var ProbeStatus =
+/*#__PURE__*/
+function (_React$Component6) {
+  _inherits(ProbeStatus, _React$Component6);
+
+  function ProbeStatus() {
+    _classCallCheck(this, ProbeStatus);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(ProbeStatus).apply(this, arguments));
+  }
+
+  _createClass(ProbeStatus, [{
+    key: "render",
+    value: function render() {
+      console.log("rendering probestatus message");
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "modifier"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("small", null, this.props.msg));
+    }
+  }]);
+
+  return ProbeStatus;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 /* harmony default export */ __webpack_exports__["default"] = (ValidatePage);
