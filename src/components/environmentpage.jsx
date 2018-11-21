@@ -17,7 +17,7 @@ export class EnvironmentPage extends React.Component {
             sourceType: "Red Hat",
             clusterType: "Production",
             osdMode: "Standard",
-            installType: "RPM",
+            installType: "Container",
             flashUsage: "Journals/Logs",
             targetVersion: "RHCS 3.1"
         };
