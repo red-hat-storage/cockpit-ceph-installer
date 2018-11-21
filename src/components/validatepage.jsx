@@ -36,8 +36,11 @@ export class ValidatePage extends React.Component {
         obj['cpuType'] = facts.cpu_type;
         obj['subnets'] = facts.network.subnets;
         obj['subnet_details'] = facts.network.subnet_details;
-        obj['hdd'] = Object.keys(facts.hdd).length;
-        obj['ssd'] = Object.keys(facts.ssd).length;
+        obj['hdd_devices'] = Object.keys(facts.hdd);
+        obj['hdd'] = obj.hdd_devices.length;
+        obj['ssd_devices'] = Object.keys(facts.ssd);
+        obj['ssd'] = obj.ssd_devices.length;
+        obj['capacity'] = facts.capacity;
         obj['cpu'] = facts.cpu_core_count;
         obj['ram'] = Math.round(facts.ram_mb / 1024);
 
@@ -342,7 +345,7 @@ export class ValidatePage extends React.Component {
                                     <th className="textCenter fact">NIC</th>
                                     <th className="textCenter fact">HDD</th>
                                     <th className="textCenter fact">SSD</th>
-                                    <th className="textCenter capacity">Capacity</th>
+                                    <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
                                     <th className="leftAligned thHostInfo">Ready</th>
                                 </tr>
                             </thead>
