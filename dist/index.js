@@ -22168,10 +22168,6 @@ function (_React$Component) {
       }
     });
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "addHost", function () {
-      console.log("lets add a host entry to the array");
-    });
-
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "addHostsToTable", function (stateObject) {
       console.log("received mask information " + JSON.stringify(stateObject)); // check selected groups are in the inventory
 
@@ -22306,6 +22302,22 @@ function (_React$Component) {
 
       var localState = _this.state.hosts.splice(0);
 
+      console.log("current hosts are: " + JSON.stringify(_this.state.hosts));
+
+      if (checked) {
+        var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["getHost"])(localState, hostname);
+        console.log("host is: " + JSON.stringify(hostObject));
+        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])(hostObject);
+
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
+          console.log("current hosts are: " + JSON.stringify(localState));
+
+          _this.updateState(localState);
+
+          return;
+        }
+      }
+
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, _this.props.svctoken);
     });
 
@@ -22439,7 +22451,6 @@ function (_React$Component) {
     return _this;
   } // TODO: need to consider the hosts as a json object key=hostname to cut down on
   // screen updates?
-  // TODO: create all groups in the inventory up front?
 
 
   _createClass(HostsPage, [{
@@ -22518,6 +22529,7 @@ function (_React$Component) {
         className: "divCenter"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(HostMask, {
         callback: this.addHostsToTable,
+        clusterType: this.props.clusterType,
         installType: this.props.installType
       }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "divCenter"
@@ -22568,7 +22580,7 @@ function (_React$Component2) {
     _this3 = _possibleConstructorReturn(this, _getPrototypeOf(HostDataRow).call(this, props));
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this3)), "hostRoleChange", function (role, checked) {
-      console.log("changing the role state of " + role + " " + checked + " within a table row");
+      console.log("Requested to changing the role state of " + role + " " + checked + " within a table row");
       console.log("for host " + _this3.state.host.hostname);
 
       _this3.props.roleChange(_this3.state.host.hostname, role, checked);
@@ -22779,7 +22791,23 @@ function (_React$Component4) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this5)), "updateRole", function (roleName, checkedState) {
-      console.log("Updating " + roleName + "mask to " + checkedState);
+      console.log("Request to update " + roleName + " mask to " + checkedState);
+
+      if (checkedState) {
+        console.log("need to check collocation rules");
+        var roles = ['mon', 'mds', 'osd', 'rgw', 'iscsi'];
+        var currentRoles = [];
+        roles.forEach(function (role) {
+          if (_this5.state[role]) {
+            currentRoles.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["convertRole"])(role));
+          }
+        });
+        console.log("current roles from mask are " + currentRoles);
+
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["collocationOK"])(currentRoles, roleName, _this5.props.installType, _this5.props.clusterType)) {
+          return;
+        }
+      }
 
       _this5.setState(_defineProperty({}, roleName, checkedState));
     });
@@ -23186,6 +23214,7 @@ function (_React$Component) {
         action: this.nextHandler,
         hosts: this.state.hosts,
         installType: this.state.installType,
+        clusterType: this.state.clusterType,
         svctoken: this.props.svctoken
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_validatepage_jsx__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: this.page['validate'],
@@ -23853,6 +23882,20 @@ function (_React$Component) {
       var svctoken = _this.props.svctoken;
 
       var localState = _this.state.hosts.splice(0);
+
+      if (checked) {
+        var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["getHost"])(localState, hostname);
+        console.log("host is: " + JSON.stringify(hostObject));
+        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["buildRoles"])(hostObject);
+
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
+          console.log("current hosts are: " + JSON.stringify(localState));
+
+          _this.updateState(localState);
+
+          return;
+        }
+      }
 
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, svctoken);
     });
@@ -24652,7 +24695,7 @@ function getJobEvent(playUUID, eventUUID, svcToken) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary */
+/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -24674,6 +24717,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "arrayIntersect", function() { return arrayIntersect; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readableBits", function() { return readableBits; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "netSummary", function() { return netSummary; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collocationOK", function() { return collocationOK; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _apicalls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./apicalls.js */ "./src/services/apicalls.js");
@@ -25043,6 +25087,40 @@ function netSummary(lookupTable, subnet, hosts) {
 
     return subnetSummary;
   }
+}
+function collocationOK(currentRoles, newRole, installType, clusterType) {
+  var validCollocation = ['osds', 'rgws'];
+  console.log("checking for collocation violations");
+  console.log("current roles " + currentRoles);
+  console.log("new role is " + newRole);
+  newRole = convertRole(newRole);
+
+  if (installType.toLowerCase() == 'container') {
+    return true;
+  } // installation is rpm based, so check if this is dev mode
+
+
+  if (clusterType.includes('POC')) {
+    return true;
+  } // At this point the cluster is for production use and based on rpm (old school!)
+
+
+  if (currentRoles.length >= 2) {
+    console.error("request for " + newRole + " would result in collocation violation");
+    return false;
+  }
+
+  currentRoles.push(newRole);
+  console.log("candidate roles are : " + currentRoles);
+
+  if (currentRoles.length == validCollocation.length) {
+    if (JSON.stringify(currentRoles.sort()) != JSON.stringify(validCollocation)) {
+      console.error("request for " + newRole + " would result in collocation violation");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /***/ }),
