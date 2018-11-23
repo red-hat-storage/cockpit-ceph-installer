@@ -8,9 +8,11 @@ export class NetworkPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            publicNetwork: [],
-            clusterNetwork: []
+            publicNetwork: '',
+            clusterNetwork: ''
         };
+        this.internalNetworks = [];
+        this.externalNetworks = [];
         this.subnetLookup = {};
     }
 
@@ -68,20 +70,28 @@ export class NetworkPage extends React.Component {
         }
 
         console.log("setting subnet array state variables");
+        this.internalNetworks = commonOSDSubnets;
+        this.externalNetworks = commonSubnets;
+
         this.setState({
-            clusterNetwork: commonOSDSubnets,
-            publicNetwork: commonSubnets
+            clusterNetwork: commonOSDSubnets[0],
+            publicNetwork: commonSubnets[0]
         });
     }
 
-    updateState = () => {
+    updateParent = () => {
         console.log("pass network state back to the parent - installationsteps state");
-        // this.props.action(this.state);
+        this.props.action(this.state);
+    }
+
+    updateHandler = (name, value) => {
+        console.log("subnet change for " + name + " with " + value);
+        this.setState({[name]: value});
     }
 
     render() {
+        console.log("rendering network page");
         return (
-
             <div id="network" className={this.props.className}>
                 <h1>Network Configuration</h1>
                 <p>The network topology plays a significant role in determining the performance of Ceph services. The ideal
@@ -92,18 +102,20 @@ export class NetworkPage extends React.Component {
                 <NetworkOptions
                     title="Cluster Network"
                     description="Subnets common to all OSD hosts"
-                    subnets={this.state.clusterNetwork}
+                    subnets={this.internalNetworks}
                     name="clusterNetwork"
                     lookup={this.subnetLookup}
-                    hosts={this.props.hosts} />
+                    hosts={this.props.hosts}
+                    updateHandler={this.updateHandler} />
                 <NetworkOptions
                     title="Public Network"
                     description="Subnets common to all hosts within the cluster"
-                    subnets={this.state.publicNetwork}
+                    subnets={this.externalNetworks}
                     name="publicNetwork"
                     lookup={this.subnetLookup}
-                    hosts={this.props.hosts} />
-                <NextButton action={this.updateState} />
+                    hosts={this.props.hosts}
+                    updateHandler={this.updateHandler} />
+                <NextButton action={this.updateParent} />
             </div>
         );
     }
@@ -117,7 +129,6 @@ export class NetworkOptions extends React.Component {
             subnets: [],
             msg: []
         };
-        // this.radioConfig = {};
     }
 
     updateState = (event) => {
@@ -128,6 +139,7 @@ export class NetworkOptions extends React.Component {
             selected: event.target.value,
             msg: netSummary(this.props.lookup, event.target.value, this.props.hosts)
         });
+        this.props.updateHandler(this.props.name, event.target.value);
     }
 
     componentWillReceiveProps(props) {
