@@ -2,7 +2,7 @@ import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
-import { toggleHostRole, buildRoles, checkPlaybook, countNICs, msgCount, sortByKey } from '../services/utils.js';
+import { toggleHostRole, buildRoles, checkPlaybook, countNICs, msgCount, sortByKey, collocationOK, getHost } from '../services/utils.js';
 import { runPlaybook, getJobEvent, deleteHost } from '../services/apicalls.js';
 
 import '../app.scss';
@@ -186,6 +186,16 @@ export class ValidatePage extends React.Component {
 
         var svctoken = this.props.svctoken;
         var localState = this.state.hosts.splice(0);
+        if (checked) {
+            let hostObject = getHost(localState, hostname);
+            console.log("host is: " + JSON.stringify(hostObject));
+            let currentRoles = buildRoles(hostObject);
+            if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
+                console.log("current hosts are: " + JSON.stringify(localState));
+                this.updateState(localState);
+                return;
+            }
+        }
 
         toggleHostRole(localState, this.updateState, hostname, role, checked, svctoken);
     }

@@ -5,7 +5,7 @@ import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
-import { buildRoles, removeItem, convertRole, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount } from '../services/utils.js';
+import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost } from '../services/utils.js';
 /* eslint-enable */
 import '../app.scss';
 
@@ -211,6 +211,18 @@ export class HostsPage extends React.Component {
     updateHost = (hostname, role, checked) => {
         console.log("updating the role state for " + hostname + " role " + role + " state of " + checked);
         var localState = this.state.hosts.splice(0);
+        console.log("current hosts are: " + JSON.stringify(this.state.hosts));
+
+        if (checked) {
+            let hostObject = getHost(localState, hostname);
+            console.log("host is: " + JSON.stringify(hostObject));
+            let currentRoles = buildRoles(hostObject);
+            if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
+                console.log("current hosts are: " + JSON.stringify(localState));
+                this.updateState(localState);
+                return;
+            }
+        }
 
         toggleHostRole(localState, this.updateState, hostname, role, checked, this.props.svctoken);
     }
@@ -306,7 +318,11 @@ export class HostsPage extends React.Component {
         var rows;
         if (this.state.hosts.length > 0) {
             rows = this.state.hosts.map(host => {
-                return <HostDataRow key={host.hostname} hostData={host} roleChange={this.updateHost} deleteRow={this.deleteHost} />;
+                return <HostDataRow
+                            key={host.hostname}
+                            hostData={host}
+                            roleChange={this.updateHost}
+                            deleteRow={this.deleteHost} />;
             });
         } else {
             rows = emptyRow();
@@ -321,7 +337,7 @@ export class HostsPage extends React.Component {
                  resolve the issue and remove/re-add the host.
                 <div className="divCenter">
                     <div>
-                        <HostMask callback={this.addHostsToTable} installType={this.props.installType} />
+                        <HostMask callback={this.addHostsToTable} clusterType={this.props.clusterType} installType={this.props.installType} />
                     </div>
                 </div>
                 <div className="divCenter">
@@ -364,7 +380,7 @@ class HostDataRow extends React.Component {
     }
 
     hostRoleChange = (role, checked) => {
-        console.log("changing the role state of " + role + " " + checked + " within a table row");
+        console.log("Requested to changing the role state of " + role + " " + checked + " within a table row");
         console.log("for host " + this.state.host.hostname);
         this.props.roleChange(this.state.host.hostname, role, checked);
     }
@@ -525,7 +541,23 @@ class HostMask extends React.Component {
     }
 
     updateRole = (roleName, checkedState) => {
-        console.log("Updating " + roleName + "mask to " + checkedState);
+        console.log("Request to update " + roleName + " mask to " + checkedState);
+        if (checkedState) {
+            console.log("need to check collocation rules");
+            let roles = ['mon', 'mds', 'osd', 'rgw', 'iscsi'];
+            let currentRoles = [];
+
+            roles.forEach(role => {
+                if (this.state[role]) {
+                    currentRoles.push(convertRole(role));
+                }
+            });
+            console.log("current roles from mask are " + currentRoles);
+            if (!collocationOK(currentRoles, roleName, this.props.installType, this.props.clusterType)) {
+                return;
+            }
+        }
+
         this.setState({[roleName]: checkedState});
     }
 
