@@ -23300,14 +23300,24 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(NetworkPage).call(this, props));
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateState", function () {
-      console.log("pass network state back to the parent - installationsteps state"); // this.props.action(this.state);
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateParent", function () {
+      console.log("pass network state back to the parent - installationsteps state");
+
+      _this.props.action(_this.state);
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateHandler", function (name, value) {
+      console.log("subnet change for " + name + " with " + value);
+
+      _this.setState(_defineProperty({}, name, value));
     });
 
     _this.state = {
-      publicNetwork: [],
-      clusterNetwork: []
+      publicNetwork: '',
+      clusterNetwork: ''
     };
+    _this.internalNetworks = [];
+    _this.externalNetworks = [];
     _this.subnetLookup = {};
     return _this;
   }
@@ -23396,33 +23406,38 @@ function (_React$Component) {
       }
 
       console.log("setting subnet array state variables");
+      this.internalNetworks = commonOSDSubnets;
+      this.externalNetworks = commonSubnets;
       this.setState({
-        clusterNetwork: commonOSDSubnets,
-        publicNetwork: commonSubnets
+        clusterNetwork: commonOSDSubnets[0],
+        publicNetwork: commonSubnets[0]
       });
     }
   }, {
     key: "render",
     value: function render() {
+      console.log("rendering network page");
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "network",
         className: this.props.className
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Network Configuration"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "The network topology plays a significant role in determining the performance of Ceph services. The ideal network configuration uses a front-end (public) and backend (cluster) network topology. This approach separates network load like object replication from client load. The probe performed against your hosts has revealed the following networking options for the cluster and public networks."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
         title: "Cluster Network",
         description: "Subnets common to all OSD hosts",
-        subnets: this.state.clusterNetwork,
+        subnets: this.internalNetworks,
         name: "clusterNetwork",
         lookup: this.subnetLookup,
-        hosts: this.props.hosts
+        hosts: this.props.hosts,
+        updateHandler: this.updateHandler
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
         title: "Public Network",
         description: "Subnets common to all hosts within the cluster",
-        subnets: this.state.publicNetwork,
+        subnets: this.externalNetworks,
         name: "publicNetwork",
         lookup: this.subnetLookup,
-        hosts: this.props.hosts
+        hosts: this.props.hosts,
+        updateHandler: this.updateHandler
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
-        action: this.updateState
+        action: this.updateParent
       }));
     }
   }]);
@@ -23448,14 +23463,15 @@ function (_React$Component2) {
       console.log("lookup the subnet to determine hosts by bandwidth");
 
       _this2.setState((_this2$setState = {}, _defineProperty(_this2$setState, event.target.getAttribute('name'), event.target.value), _defineProperty(_this2$setState, "selected", event.target.value), _defineProperty(_this2$setState, "msg", Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["netSummary"])(_this2.props.lookup, event.target.value, _this2.props.hosts)), _this2$setState));
+
+      _this2.props.updateHandler(_this2.props.name, event.target.value);
     });
 
     _this2.state = {
       selected: null,
       subnets: [],
       msg: []
-    }; // this.radioConfig = {};
-
+    };
     return _this2;
   }
 
