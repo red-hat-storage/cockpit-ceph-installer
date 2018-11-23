@@ -12,6 +12,10 @@ General
 hostspage.jsx
     - TODO: validate roles based on the mode (dev or prod) in the host mask & the host row
     - TODO: if the probe playbook fails, there are no indications other than looking at the browser console log
+    - Once collocation rules are applied, and the inventory created, the user could go back to the environment page and
+      select a different cluster type, which would not match with the new collocation rules. If the user selects a different cluster or install
+      type, the inventory should probably be wiped and they should start again from scratch
+      
 
 validatepage.jsx
     TODO: for testing checks are currently bypassing with skipChecks=true in the class definition - which just allows the 
@@ -20,4 +24,4 @@ validatepage.jsx
 
 networkpage.jsx
     NIC bandwidth is reported as unknown, when ansible returns a speed of 0.
-        this happens on some interfaces; docker bridge, libvirt bridge
+        this happens on some interfaces; docker bridge, libvirt bridge or when the target machine is a VM
