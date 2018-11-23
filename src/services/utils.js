@@ -319,3 +319,34 @@ export function netSummary(lookupTable, subnet, hosts) {
         return subnetSummary;
     }
 }
+
+export function collocationOK(currentRoles, newRole, installType, clusterType) {
+    let validCollocation = ['osds', 'rgws'];
+    console.log("checking for collocation violations");
+    console.log("current roles " + currentRoles);
+    console.log("new role is " + newRole);
+    newRole = convertRole(newRole);
+    if (installType.toLowerCase() == 'container') {
+        return true;
+    }
+    // installation is rpm based, so check if this is dev mode
+    if (clusterType.includes('POC')) {
+        return true;
+    }
+    // At this point the cluster is for production use and based on rpm (old school!)
+    if (currentRoles.length >= 2) {
+        console.error("request for " + newRole + " would result in collocation violation");
+        return false;
+    }
+
+    currentRoles.push(newRole);
+    console.log("candidate roles are : " + currentRoles);
+    if (currentRoles.length == validCollocation.length) {
+        if (JSON.stringify(currentRoles.sort()) != JSON.stringify(validCollocation)) {
+            console.error("request for " + newRole + " would result in collocation violation");
+            return false;
+        }
+    }
+
+    return true;
+}
