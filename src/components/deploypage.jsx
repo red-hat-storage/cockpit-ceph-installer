@@ -12,7 +12,7 @@ export class DeployPage extends React.Component {
         return (
 
             <div id="deploy" className={this.props.className}>
-                <h1>Deploy the Cluster</h1>
+                <h3>Deploy the Cluster</h3>
                 <NextButton action={this.props.action} />
                 {/* <button className="btnRight btn btn-primary btn-lg" onClick={this.props.action}>Next</button> */}
             </div>

@@ -336,7 +336,7 @@ export class ValidatePage extends React.Component {
         return (
 
             <div id="validate" className={this.props.className} >
-                <h1>Validate Host Selection</h1>
+                <h3>Validate Host Selection</h3>
                 The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
                  probe the hosts to validate that their hardware configuration is compatible with
                  their intended Ceph role. Once the probe is complete you must select the hosts to

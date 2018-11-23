@@ -14,7 +14,7 @@ export class WelcomePage extends React.Component {
         return (
 
             <div id="welcome" className={this.props.className}>
-                <h1>Welcome</h1>
+                <h3>Welcome</h3>
                 This installation process provides a guided workflow to help you install
                 your Ceph cluster. <br />
                 The main components of the installation workflow are represented above. Once a

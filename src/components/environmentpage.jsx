@@ -112,7 +112,7 @@ export class EnvironmentPage extends React.Component {
 
         return (
             <div id="environment" className={this.props.className}>
-                <h1>Environment</h1>
+                <h3>Environment</h3>
                 <p>Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.</p>
                 <div >
                     <Selector labelName="Installation Source" options={Object.keys(this.installSource)} callback={this.installChange} />

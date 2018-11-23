@@ -93,7 +93,7 @@ export class NetworkPage extends React.Component {
         console.log("rendering network page");
         return (
             <div id="network" className={this.props.className}>
-                <h1>Network Configuration</h1>
+                <h3>Network Configuration</h3>
                 <p>The network topology plays a significant role in determining the performance of Ceph services. The ideal
                      network configuration uses a front-end (public) and backend (cluster) network topology. This approach
                      separates network load like object replication from client load. The probe performed against your hosts
