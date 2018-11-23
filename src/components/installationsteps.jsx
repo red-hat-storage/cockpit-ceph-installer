@@ -143,6 +143,7 @@ export class InstallationSteps extends React.Component {
                         action={this.nextHandler}
                         hosts={this.state.hosts}
                         installType={this.state.installType}
+                        clusterType={this.state.clusterType}
                         svctoken={this.props.svctoken} />
                     <ValidatePage
                         className={this.page['validate']}
