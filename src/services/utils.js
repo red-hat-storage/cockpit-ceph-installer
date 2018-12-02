@@ -13,15 +13,19 @@ export function getSVCToken () {
     return promise;
 }
 
-export function buildRoles(hostState) {
-    // return a list of roles from a stateobject (e.g. hostmask component in hostspage.jsx)
-    console.log("building role list from " + JSON.stringify(hostState));
+export function buildRoles(hosts) {
+    // return a list of roles from an array of host state objects
+    console.log("building role list from " + hosts.length + " hosts");
     var roleList = [];
-    validRoles.forEach(function(roleName, index, array) {
-        if (hostState[roleName] && !roleList.includes(roleName)) {
-            roleList.push(convertRole(roleName));
-        }
-    });
+    for (let host of hosts) {
+        validRoles.forEach(function(roleName, index, array) {
+            let ansibleGroup = convertRole(roleName);
+            if (host[roleName] && !roleList.includes(ansibleGroup)) {
+                roleList.push(convertRole(roleName));
+            }
+        });
+    }
+
     console.log("role list is " + roleList);
     return roleList;
 }
