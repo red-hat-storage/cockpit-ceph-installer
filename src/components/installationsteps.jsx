@@ -26,7 +26,9 @@ export class InstallationSteps extends React.Component {
             installType: "RPM",
             flashUsage: "Journals/Logs",
             publicNetwork: '',
-            clusterNetwork: ''
+            clusterNetwork: '',
+            networkType: 'ipv4',
+            deployStarted: false
         };
         this.page = {
             welcome: "page",
@@ -55,6 +57,11 @@ export class InstallationSteps extends React.Component {
         console.log("go deploy the cluster");
         console.log("Current state is " + JSON.stringify(this.state));
         // console.log("Current config is " + JSON.stringify(this.config));
+    }
+
+    deployHandler = () => {
+        // invoked when the user clicks on deploy
+        this.setState({deployStarted: true});
     }
 
     nextHandler (param) {
@@ -98,19 +105,23 @@ export class InstallationSteps extends React.Component {
     }
 
     jumpToPageHandler (param) {
-        if (this.visited.includes(param)) {
-            console.log("jump to already visited page " + param + " requested");
-            let current = this.state.pageNum;
-            if (param < current) {
-                this.setState({
-                    pageNum: param,
-                    lastPage: current
-                });
+        if (!this.state.deployStarted) {
+            if (this.visited.includes(param)) {
+                console.log("jump to already visited page " + param + " requested");
+                let current = this.state.pageNum;
+                if (param < current) {
+                    this.setState({
+                        pageNum: param,
+                        lastPage: current
+                    });
+                } else {
+                    console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
+                }
             } else {
-                console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
+                console.log("jump to page " + param + " denied - not been there yet!");
             }
         } else {
-            console.log("jump to page " + param + " denied - not been there yet!");
+            console.log("attempt to navigate back is blocked while a deployment is running");
         }
     }
 
@@ -160,7 +171,9 @@ export class InstallationSteps extends React.Component {
                     <DeployPage
                         className={this.page['deploy']}
                         action={this.nextHandler}
-                        hosts={this.state.hosts} />
+                        settings={this.state}
+                        deployHandler={this.deployHandler}
+                        svctoken={this.props.svctoken} />
                 </div>
                 <InfoBar
                      info={this.infoText[this.state.pageNum] || ''} />
