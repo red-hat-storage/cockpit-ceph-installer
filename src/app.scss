@@ -418,3 +418,16 @@ tbody {
 .btn-offset {
     margin-left:-30px;
 }
+table.skinny-table {
+    margin-top:10px;
+    height: 32px;
+  }
+  
+  table.skinny-table td {
+    min-width:65px;
+    padding: 0px;
+  
+  }
+.deploy-summary {
+    height:32px;
+}
