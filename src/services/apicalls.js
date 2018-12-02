@@ -122,3 +122,15 @@ export function getJobEvent(playUUID, eventUUID, svcToken) {
     let url = "/api/v1/jobs/" + playUUID + "/events/" + eventUUID;
     return http.get(url, null, {Authorization: svcToken});
 }
+
+export function storeGroupVars(groupName, vars, svcToken) {
+    console.log("Storing group vars for group " + groupName);
+    let url = "/api/v1/groupvars/" + groupName;
+    return http.post(url, vars, { Authorization: svcToken });
+}
+
+export function storeHostVars(hostName, groupName, vars, svcToken) {
+    console.log("storing host vars for host " + hostName);
+    let url = "/api/v1/hostvars/" + hostName + "/groups/" + groupName;
+    return http.post(url, vars, { Authorization: svcToken });
+}
