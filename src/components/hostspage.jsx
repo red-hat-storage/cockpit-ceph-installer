@@ -56,7 +56,7 @@ export class HostsPage extends React.Component {
         console.log("received mask information " + JSON.stringify(stateObject));
 
         // check selected groups are in the inventory
-        var roleList = buildRoles(stateObject);
+        var roleList = buildRoles([stateObject]);
 
         // if the user asks for a mon, they get a mgr collocated too
         if (roleList.includes('mons')) {
@@ -216,7 +216,7 @@ export class HostsPage extends React.Component {
         if (checked) {
             let hostObject = getHost(localState, hostname);
             console.log("host is: " + JSON.stringify(hostObject));
-            let currentRoles = buildRoles(hostObject);
+            let currentRoles = buildRoles([hostObject]);
             if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
                 console.log("current hosts are: " + JSON.stringify(localState));
                 this.updateState(localState);
