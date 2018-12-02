@@ -89,9 +89,12 @@ export class ValidatePage extends React.Component {
                 getJobEvent(playUUID, eventID, this.props.svctoken)
                         .then((resp) => {
                             let event = JSON.parse(resp);
-                            let hostData = event.data.event_data;
-                            // console.log("event data returned is " + JSON.stringify(hostData));
-                            this.processEventData(hostData);
+                            // ignore verbose type events
+                            if (event.data.event != "verbose") {
+                                let hostData = event.data.event_data;
+                                // console.log("event data returned is " + JSON.stringify(hostData));
+                                this.processEventData(hostData);
+                            }
                         });
             }
         });
@@ -129,7 +132,7 @@ export class ValidatePage extends React.Component {
         // pass it to the api request
         var rolesByHost = {};
         this.state.hosts.forEach((host, idx, hosts) => {
-            rolesByHost[host.hostname] = buildRoles(host).join(',');
+            rolesByHost[host.hostname] = buildRoles([host]).join(',');
         });
         console.log("roles :" + JSON.stringify(rolesByHost));
         // call the playbook
@@ -189,7 +192,7 @@ export class ValidatePage extends React.Component {
         if (checked) {
             let hostObject = getHost(localState, hostname);
             console.log("host is: " + JSON.stringify(hostObject));
-            let currentRoles = buildRoles(hostObject);
+            let currentRoles = buildRoles([hostObject]);
             if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
                 console.log("current hosts are: " + JSON.stringify(localState));
                 this.updateState(localState);
