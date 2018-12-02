@@ -21500,11 +21500,19 @@ function (_React$Component) {
         btnState = this.props.disabled;
       }
 
+      var btnText;
+
+      if (this.props.btnText != undefined) {
+        btnText = this.props.btnText;
+      } else {
+        btnText = 'Next';
+      }
+
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
         className: "bottomRight btn btn-primary btn-lg",
         disabled: btnState,
         onClick: this.props.action
-      }, "Next");
+      }, btnText);
     }
   }]);
 
@@ -21804,21 +21812,20 @@ function (_React$Component) {
 
 /***/ }),
 
-/***/ "./src/components/deploypage.jsx":
-/*!***************************************!*\
-  !*** ./src/components/deploypage.jsx ***!
-  \***************************************/
-/*! exports provided: DeployPage, default */
+/***/ "./src/components/common/timer.jsx":
+/*!*****************************************!*\
+  !*** ./src/components/common/timer.jsx ***!
+  \*****************************************/
+/*! exports provided: ElapsedTime */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DeployPage", function() { return DeployPage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ElapsedTime", function() { return ElapsedTime; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/nextbutton.jsx */ "./src/components/common/nextbutton.jsx");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21829,13 +21836,108 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+var ElapsedTime =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(ElapsedTime, _React$Component);
+
+  function ElapsedTime(props) {
+    var _this;
+
+    _classCallCheck(this, ElapsedTime);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ElapsedTime).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateTimer", function () {
+      var currentTime = _this.state.timer;
+
+      _this.setState({
+        timer: currentTime + 1
+      });
+    });
+
+    _this.state = {
+      timer: 0
+    };
+    return _this;
+  }
+
+  _createClass(ElapsedTime, [{
+    key: "componentDidMount",
+    value: function componentDidMount(props) {
+      this.loadInterval = setInterval(this.updateTimer, 1000);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var date = new Date(null);
+      date.setSeconds(this.state.timer);
+      var timeStr = date.toISOString().substr(11, 8);
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, timeStr);
+    }
+  }]);
+
+  return ElapsedTime;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+/***/ }),
+
+/***/ "./src/components/deploypage.jsx":
+/*!***************************************!*\
+  !*** ./src/components/deploypage.jsx ***!
+  \***************************************/
+/*! exports provided: DeployPage, RuntimeSummary, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DeployPage", function() { return DeployPage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RuntimeSummary", function() { return RuntimeSummary; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/nextbutton.jsx */ "./src/components/common/nextbutton.jsx");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../services/ansibleMap.js */ "./src/services/ansibleMap.js");
+/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
+/* harmony import */ var _common_timer_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./common/timer.jsx */ "./src/components/common/timer.jsx");
+/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+ // , osdsVars, , monsVars, mgrsVars
 
 
 
@@ -21851,23 +21953,245 @@ function (_React$Component) {
     _classCallCheck(this, DeployPage);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(DeployPage).call(this, props));
-    _this.state = {};
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deployBtnHandler", function () {
+      // user clicked deploy
+      console.log("User clicked the deploy button - here's a dump of current state");
+      console.log(JSON.stringify(_this.state.settings));
+
+      _this.setState({
+        deployActive: true,
+        deployBtnText: 'Running',
+        deployEnabled: false,
+        finished: false
+      });
+
+      _this.props.deployHandler(); // turns of the navigation bar
+
+
+      console.log("Creating the hostvars and groupvars variables");
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_6__["buildRoles"])(_this.state.settings.hosts);
+      console.log("Generating variables for roles " + roleList);
+      var vars = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["allVars"])(_this.state.settings);
+      console.log("creating all.yml as " + JSON.stringify(vars));
+      var chain = Promise.resolve();
+      var mons, mgrs, osds;
+      chain = chain.then(function () {
+        return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('all', vars, _this.props.svctoken);
+      });
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = roleList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var roleGroup = _step.value;
+
+          switch (roleGroup) {
+            case "mons":
+              console.log("adding mons + mgrs");
+              mons = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["monsVars"])(_this.state.settings);
+              console.log("mon vars " + JSON.stringify(mons));
+              chain = chain.then(function () {
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('mons', mons, _this.props.svctoken);
+              });
+              mgrs = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["mgrsVars"])(_this.state.settings);
+              console.log("mgr vars " + JSON.stringify(mgrs));
+              chain = chain.then(function () {
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('mgrs', mgrs, _this.props.svctoken);
+              });
+              break;
+
+            case "osds":
+              console.log("adding osds");
+              osds = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["osdsVars"])(_this.state.settings);
+              console.log("osd vars " + JSON.stringify(osds));
+              chain = chain.then(function () {
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('osds', osds, _this.props.svctoken);
+              });
+              break;
+
+            case "mdss":
+              console.log("adding mds yml - TODO");
+              break;
+
+            case "rgws":
+              console.log("ading rgws - TODO");
+              break;
+
+            case "iscsigws":
+              console.log("adding iscsi - TODO");
+              break;
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      console.log("all group vars have been added");
+
+      if (roleList.includes("osds")) {
+        console.log("generating hostvars for the osd hosts");
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          var _loop = function _loop() {
+            var host = _step2.value;
+
+            if (host.osd) {
+              var osd_metadata = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["hostVars"])(host, _this.state.settings.flashUsage);
+              chain = chain.then(function () {
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeHostVars"])(host.hostname, 'osds', osd_metadata, _this.props.svctoken);
+              });
+            }
+          };
+
+          for (var _iterator2 = _this.state.settings.hosts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            _loop();
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      }
+
+      chain = chain.then(function () {
+        console.log("hostvars and groupvars in place");
+      });
+      chain.catch(function (err) {
+        console.error("problem creating group vars files: " + err);
+      });
+    });
+
+    _this.state = {
+      deployEnabled: true,
+      deployBtnText: 'Deploy',
+      statusMsg: '',
+      deployActive: false,
+      settings: {}
+    };
     return _this;
   }
 
   _createClass(DeployPage, [{
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(props) {
+      var settings = this.state.settings.settings;
+
+      if (JSON.stringify(props.settings) != JSON.stringify(settings)) {
+        this.setState({
+          settings: props.settings
+        });
+      }
+    }
+  }, {
     key: "render",
     value: function render() {
+      var spinner;
+
+      if (this.state.deployActive) {
+        spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "modifier deploy-summary"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "modifier spinner spinner-lg"
+        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RuntimeSummary, null));
+      } else {
+        spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "modifier deploy-summary"
+        });
+      }
+
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "deploy",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Deploy the Cluster"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Deploy the Cluster"), "You are now ready to start the deployment process. ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "All the options you've chosen will be saved to disk, and the deployment engine (Ansible) invoked to configure your hosts. Deployment progress will be shown below.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "spacer"
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        className: "btn btn-primary btn-lg btn-offset",
+        disabled: !this.state.deployEnabled,
+        onClick: this.deployBtnHandler
+      }, this.state.deployBtnText), spinner, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "divCenter"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "separatorLine"
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
+        btnText: "Finish",
+        disabled: !this.state.finished,
         action: this.props.action
       }));
     }
   }]);
 
   return DeployPage;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+var RuntimeSummary =
+/*#__PURE__*/
+function (_React$Component2) {
+  _inherits(RuntimeSummary, _React$Component2);
+
+  function RuntimeSummary(props) {
+    var _this2;
+
+    _classCallCheck(this, RuntimeSummary);
+
+    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(RuntimeSummary).call(this, props));
+    _this2.state = {
+      now: ''
+    };
+    return _this2;
+  }
+
+  _createClass(RuntimeSummary, [{
+    key: "componentDidMount",
+    value: function componentDidMount(props) {
+      var now = new Date();
+      this.setState({
+        now: now.toLocaleString().substr(11)
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "modifier deploy-summary"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
+        className: "skinny-table"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        style: {
+          textAlign: "right"
+        }
+      }, "Start time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, this.state.now)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        style: {
+          textAlign: "right"
+        }
+      }, "Run time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_timer_jsx__WEBPACK_IMPORTED_MODULE_5__["ElapsedTime"], null))))));
+    }
+  }]);
+
+  return RuntimeSummary;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 /* harmony default export */ __webpack_exports__["default"] = (DeployPage);
 
@@ -22039,7 +22363,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "environment",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Environment"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_selector_jsx__WEBPACK_IMPORTED_MODULE_3__["Selector"], {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Environment"), "Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_selector_jsx__WEBPACK_IMPORTED_MODULE_3__["Selector"], {
         labelName: "Installation Source",
         options: Object.keys(this.installSource),
         callback: this.installChange
@@ -22171,7 +22495,7 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "addHostsToTable", function (stateObject) {
       console.log("received mask information " + JSON.stringify(stateObject)); // check selected groups are in the inventory
 
-      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])(stateObject); // if the user asks for a mon, they get a mgr collocated too
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])([stateObject]); // if the user asks for a mon, they get a mgr collocated too
 
       if (roleList.includes('mons')) {
         console.log("adding mgrs to role list since we have a mon");
@@ -22307,7 +22631,7 @@ function (_React$Component) {
       if (checked) {
         var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["getHost"])(localState, hostname);
         console.log("host is: " + JSON.stringify(hostObject));
-        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])(hostObject);
+        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])([hostObject]);
 
         if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
           console.log("current hosts are: " + JSON.stringify(localState));
@@ -22525,7 +22849,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "hosts",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Host Definition"), "Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to resolve the issue and remove/re-add the host.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Host Definition"), "Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to resolve the issue and remove/re-add the host.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "divCenter"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(HostMask, {
         callback: this.addHostsToTable,
@@ -23043,8 +23367,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _infobar_jsx__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./infobar.jsx */ "./src/components/infobar.jsx");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -23060,6 +23382,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
@@ -23082,6 +23406,14 @@ function (_React$Component) {
     _classCallCheck(this, InstallationSteps);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(InstallationSteps).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deployHandler", function () {
+      // invoked when the user clicks on deploy
+      _this.setState({
+        deployStarted: true
+      });
+    });
+
     _this.nextHandler = _this.nextHandler.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.jumpToPageHandler = _this.jumpToPageHandler.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.state = {
@@ -23096,7 +23428,9 @@ function (_React$Component) {
       installType: "RPM",
       flashUsage: "Journals/Logs",
       publicNetwork: '',
-      clusterNetwork: ''
+      clusterNetwork: '',
+      networkType: 'ipv4',
+      deployStarted: false
     };
     _this.page = {
       welcome: "page",
@@ -23170,20 +23504,24 @@ function (_React$Component) {
   }, {
     key: "jumpToPageHandler",
     value: function jumpToPageHandler(param) {
-      if (this.visited.includes(param)) {
-        console.log("jump to already visited page " + param + " requested");
-        var current = this.state.pageNum;
+      if (!this.state.deployStarted) {
+        if (this.visited.includes(param)) {
+          console.log("jump to already visited page " + param + " requested");
+          var current = this.state.pageNum;
 
-        if (param < current) {
-          this.setState({
-            pageNum: param,
-            lastPage: current
-          });
+          if (param < current) {
+            this.setState({
+              pageNum: param,
+              lastPage: current
+            });
+          } else {
+            console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
+          }
         } else {
-          console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
+          console.log("jump to page " + param + " denied - not been there yet!");
         }
       } else {
-        console.log("jump to page " + param + " denied - not been there yet!");
+        console.log("attempt to navigate back is blocked while a deployment is running");
       }
     }
   }, {
@@ -23231,7 +23569,9 @@ function (_React$Component) {
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_deploypage_jsx__WEBPACK_IMPORTED_MODULE_7__["default"], {
         className: this.page['deploy'],
         action: this.nextHandler,
-        hosts: this.state.hosts
+        settings: this.state,
+        deployHandler: this.deployHandler,
+        svctoken: this.props.svctoken
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_infobar_jsx__WEBPACK_IMPORTED_MODULE_9__["default"], {
         info: this.infoText[this.state.pageNum] || ''
       }));
@@ -23420,7 +23760,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "network",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Network Configuration"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "The network topology plays a significant role in determining the performance of Ceph services. The ideal network configuration uses a front-end (public) and backend (cluster) network topology. This approach separates network load like object replication from client load. The probe performed against your hosts has revealed the following networking options for the cluster and public networks."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Network Configuration"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "The network topology plays a significant role in determining the performance of Ceph services. The ideal network configuration uses a front-end (public) and backend (cluster) network topology. This approach separates network load like object replication from client load. The probe performed against your hosts has revealed the following networking options for the cluster and public networks."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
         title: "Cluster Network",
         description: "Subnets common to all OSD hosts",
         subnets: this.internalNetworks,
@@ -23791,10 +24131,14 @@ function (_React$Component) {
           _this.eventLookup[eventID] = "";
           console.log("processing " + eventID);
           Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getJobEvent"])(playUUID, eventID, _this.props.svctoken).then(function (resp) {
-            var event = JSON.parse(resp);
-            var hostData = event.data.event_data; // console.log("event data returned is " + JSON.stringify(hostData));
+            var event = JSON.parse(resp); // ignore verbose type events
 
-            _this.processEventData(hostData);
+            if (event.data.event != "verbose") {
+              var hostData = event.data.event_data;
+              console.log("event data returned is " + JSON.stringify(hostData));
+
+              _this.processEventData(hostData);
+            }
           });
         }
       });
@@ -23841,7 +24185,7 @@ function (_React$Component) {
       var rolesByHost = {};
 
       _this.state.hosts.forEach(function (host, idx, hosts) {
-        rolesByHost[host.hostname] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["buildRoles"])(host).join(',');
+        rolesByHost[host.hostname] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["buildRoles"])([host]).join(',');
       });
 
       console.log("roles :" + JSON.stringify(rolesByHost)); // call the playbook
@@ -23902,7 +24246,7 @@ function (_React$Component) {
       if (checked) {
         var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["getHost"])(localState, hostname);
         console.log("host is: " + JSON.stringify(hostObject));
-        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["buildRoles"])(hostObject);
+        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["buildRoles"])([hostObject]);
 
         if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
           console.log("current hosts are: " + JSON.stringify(localState));
@@ -24108,7 +24452,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "validate",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "spacer"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
         className: "btn btn-primary btn-lg btn-offset",
@@ -24484,7 +24828,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "welcome",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Welcome"), "This installation process provides a guided workflow to help you install your Ceph cluster. ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The main components of the installation workflow are represented above. Once a step is complete, you automatically move on to the next step but can return to a prior steps by simply clicking the relevant step number above.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null), "The information below describes the installation steps;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Welcome"), "This installation process provides a guided workflow to help you install your Ceph cluster. ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The main components of the installation workflow are represented above. Once a step is complete, you automatically move on to the next step but can return to a prior steps by simply clicking the relevant step number above.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null), "The information below describes the installation steps;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
       }, "Environment"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "The target environment defines the high level scope of the installation. Within this option you delcare items such as;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "installation source"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "OSD type ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g 'legacy' filestore or bluestore)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "data security features ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g. encryption)"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
@@ -24547,11 +24891,193 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /***/ }),
 
+/***/ "./src/services/ansibleMap.js":
+/*!************************************!*\
+  !*** ./src/services/ansibleMap.js ***!
+  \************************************/
+/*! exports provided: hostVars, osdsVars, allVars, monsVars, mgrsVars */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hostVars", function() { return hostVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "osdsVars", function() { return osdsVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "allVars", function() { return allVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "monsVars", function() { return monsVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mgrsVars", function() { return mgrsVars; });
+function hostVars(hostMetadata, flashUsage) {
+  // gets run once per host to generate the hostvars variables
+  console.log("hostvars called with " + JSON.stringify(hostMetadata));
+  console.log("and " + flashUsage);
+  var forYML = {};
+
+  if (flashUsage.startsWith('OSD')) {
+    if (hostMetadata.ssd_devices.length > 0) {
+      forYML.devices = hostMetadata.ssd_devices.map(function (d) {
+        return "/dev/" + d;
+      });
+      return forYML;
+    } else {// flash as osd selected but no ssd devices listed. We'll fall through
+      // to the hdd handling logic
+    }
+  }
+
+  if (hostMetadata.hdd_devices.length > 0) {
+    forYML.devices = hostMetadata.hdd_devices.map(function (d) {
+      return "/dev/" + d;
+    });
+
+    if (hostMetadata.ssd_devices.length > 0) {
+      forYML.dedicated_devices = [];
+      var fastDevice = hostMetadata.ssd_devices.shift();
+      var shareLimit = fastDevice.startsWith('nvm') ? 10 : 5;
+      var shareCount = 0;
+
+      for (var i = 0; i < hostMetadata.hdd_devices.length; i++) {
+        forYML.dedicated_devices.push("/dev/" + fastDevice);
+        shareCount++;
+
+        if (shareCount == shareLimit) {
+          fastDevice = hostMetadata.ssd_devices.shift();
+          shareLimit = fastDevice.startsWith('nvm') ? 10 : 5;
+          shareCount = 0;
+        }
+      }
+    }
+  }
+
+  return forYML;
+}
+function osdsVars(vars) {
+  // gets run once for osds.yml
+  var forYML = {
+    osd_auto_discovery: false
+  };
+
+  if (vars.osdMode != 'Standard') {
+    forYML.dmcrypt = true;
+  }
+
+  if (vars.osdType == 'Bluestore') {
+    forYML.osd_objectstore = 'bluestore';
+  } else {
+    forYML.osd_objectstore = 'filestore';
+  }
+
+  var hosts = vars.hosts; // assume Homogeneous configurations
+  // look through the hosts for osd roles, and check for presence of ssd and hdd
+
+  var mixed = false;
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = hosts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var host = _step.value;
+
+      if (host.osd) {
+        if (host.hdd_devices && host.ssd_devices) {
+          mixed = true;
+          break;
+        }
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  if (mixed && vars.flashUsage.startsWith("Journal")) {
+    forYML.osd_scenario = 'non-collocated';
+  } else {
+    forYML.osd_scenario = "collocated";
+  }
+
+  return forYML;
+}
+function allVars(vars) {
+  var forYML = {};
+
+  switch (vars.sourceType) {
+    case "Community":
+      forYML.ceph_repository = "community";
+      forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
+
+      break;
+
+    case "Red Hat":
+      forYML.ceph_repository = "rhcs";
+      forYML.rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3.2
+
+      break;
+  }
+
+  if (vars.installType == "Container") {
+    forYML.containerized_deployment = true;
+  }
+
+  forYML.ceph_origin = 'repository';
+  forYML.public_network = vars.publicNetwork;
+  forYML.cluster_network = vars.clusterNetwork;
+  forYML.monitor_address_block = vars.clusterNetwork;
+  forYML.ip_version = vars.networkType;
+  return forYML;
+}
+function monsVars(vars) {
+  var forYML = {};
+  forYML.secure_cluster = false;
+  forYML.secure_cluster_flags = ["nopgchange", "nodelete", "nosizechange"];
+  return forYML;
+}
+function mgrsVars(vars) {
+  var forYML = {};
+  var community_dashboard_versions = ["13", "14"];
+  var rhcs_dashboard_versions = ["3.2", "4.0"];
+
+  switch (vars.sourceType) {
+    case "Community":
+      if (community_dashboard_versions.includes(vars.targetVersion.split(' ')[0])) {
+        forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
+      } else {
+        forYML.ceph_mgr_modules = ["status", "prometheus"];
+      }
+
+      break;
+
+    case "Red Hat":
+      if (rhcs_dashboard_versions.includes(vars.targetVersion.split(' ')[1])) {
+        forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
+      } else {
+        forYML.ceph_mgr_modules = ["status", "prometheus"];
+      }
+
+      break;
+
+    default:
+      forYML.ceph_mgr_modules = ["status", "prometheus"];
+  }
+
+  return forYML;
+}
+
+/***/ }),
+
 /***/ "./src/services/apicalls.js":
 /*!**********************************!*\
   !*** ./src/services/apicalls.js ***!
   \**********************************/
-/*! exports provided: addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getJobEvent */
+/*! exports provided: addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getJobEvent, storeGroupVars, storeHostVars */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -24568,6 +25094,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getPlaybookState", function() { return getPlaybookState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTaskEvents", function() { return getTaskEvents; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getJobEvent", function() { return getJobEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeGroupVars", function() { return storeGroupVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeHostVars", function() { return storeHostVars; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 
@@ -24704,6 +25232,20 @@ function getJobEvent(playUUID, eventUUID, svcToken) {
     Authorization: svcToken
   });
 }
+function storeGroupVars(groupName, vars, svcToken) {
+  console.log("Storing group vars for group " + groupName);
+  var url = "/api/v1/groupvars/" + groupName;
+  return http.post(url, vars, {
+    Authorization: svcToken
+  });
+}
+function storeHostVars(hostName, groupName, vars, svcToken) {
+  console.log("storing host vars for host " + hostName);
+  var url = "/api/v1/hostvars/" + hostName + "/groups/" + groupName;
+  return http.post(url, vars, {
+    Authorization: svcToken
+  });
+}
 
 /***/ }),
 
@@ -24749,15 +25291,44 @@ function getSVCToken() {
   }).read();
   return promise;
 }
-function buildRoles(hostState) {
-  // return a list of roles from a stateobject (e.g. hostmask component in hostspage.jsx)
-  console.log("building role list from " + JSON.stringify(hostState));
+function buildRoles(hosts) {
+  // return a list of roles from an array of host state objects
+  console.log("building role list from " + hosts.length + " hosts");
   var roleList = [];
-  validRoles.forEach(function (roleName, index, array) {
-    if (hostState[roleName] && !roleList.includes(roleName)) {
-      roleList.push(convertRole(roleName));
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    var _loop = function _loop() {
+      var host = _step.value;
+      validRoles.forEach(function (roleName, index, array) {
+        var ansibleGroup = convertRole(roleName);
+
+        if (host[roleName] && !roleList.includes(ansibleGroup)) {
+          roleList.push(convertRole(roleName));
+        }
+      });
+    };
+
+    for (var _iterator = hosts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      _loop();
     }
-  });
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
   console.log("role list is " + roleList);
   return roleList;
 }
@@ -24979,13 +25550,13 @@ function countNICs(facts) {
 function msgCount(msgs) {
   // summarize the messages by type, returning an object
   var summary = {};
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
 
   try {
-    for (var _iterator = msgs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var m = _step.value;
+    for (var _iterator2 = msgs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var m = _step2.value;
       var msgType = m.split(':')[0]; // console.log(msgType);
 
       if (summary.hasOwnProperty(msgType)) {
@@ -24995,16 +25566,16 @@ function msgCount(msgs) {
       }
     }
   } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
       }
     } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
+      if (_didIteratorError2) {
+        throw _iteratorError2;
       }
     }
   }
