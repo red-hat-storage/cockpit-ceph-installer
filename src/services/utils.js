@@ -354,3 +354,13 @@ export function collocationOK(currentRoles, newRole, installType, clusterType) {
 
     return true;
 }
+
+export function copyToClipboard(text) {
+    console.log("copying to clipboard");
+    var textField = document.createElement('textarea');
+    textField.innerText = text;
+    document.body.appendChild(textField);
+    textField.select();
+    document.execCommand('copy');
+    textField.remove();
+}

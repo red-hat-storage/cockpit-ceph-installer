@@ -4,7 +4,7 @@ import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
-import { buildRoles } from '../services/utils.js';
+import { buildRoles, copyToClipboard } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     constructor(props) {
@@ -256,14 +256,9 @@ export class FailureDetail extends React.Component {
         };
     }
 
-    copyToClipboard = () => {
+    clipboardCopy = () => {
         console.log("copying error for " + this.props.hostname + " to the clipboard");
-        var textField = document.createElement('textarea');
-        textField.innerText = this.props.errorText;
-        document.body.appendChild(textField);
-        textField.select();
-        document.execCommand('copy');
-        textField.remove();
+        copyToClipboard(this.props.errorText);
     }
 
     render() {
@@ -272,7 +267,7 @@ export class FailureDetail extends React.Component {
                 <td className="fhost">{this.props.hostname}</td>
                 <td className="fdetail">{this.props.errorText}</td>
                 <td className="fbtn">
-                    <button className="pficon-export" onClick={this.copyToClipboard} />
+                    <button className="pficon-export" onClick={this.clipboardCopy} />
                 </td>
             </tr>
         );
