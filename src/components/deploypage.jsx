@@ -2,7 +2,6 @@ import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
 import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars } from '../services/ansibleMap.js';
-// , osdsVars, , monsVars, mgrsVars
 import { storeGroupVars, storeHostVars } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { buildRoles } from '../services/utils.js';
@@ -90,11 +89,21 @@ export class DeployPage extends React.Component {
 
         chain = chain.then(() => {
             console.log("hostvars and groupvars in place");
+            this.startPlaybook();
         });
 
         chain.catch(err => {
             console.error("problem creating group vars files: " + err);
         });
+    }
+
+    startPlaybook = () => {
+        console.log("Start playbook and set up timer");
+        setInterval(this.getPlaybookState, 2000);
+    }
+
+    getPlaybookState = () => {
+        console.log("fetch state from the playbook run");
     }
 
     render() {
@@ -124,7 +133,9 @@ export class DeployPage extends React.Component {
                 <div className="divCenter">
                     <div className="separatorLine" />
                 </div>
-
+                <ExecutionProgress />
+                <FailureSummary />
+                {/* <div style={{border: "1px solid red", width: "100%"}}>hello</div> */}
                 <NextButton btnText="Finish" disabled={!this.state.finished} action={this.props.action} />
 
             </div>
@@ -151,16 +162,119 @@ export class RuntimeSummary extends React.Component {
                 <table className="skinny-table">
                     <tbody>
                         <tr>
-                            <td style={{textAlign: "right"}}>Start time:&nbsp;</td>
+                            <td className="aligned-right">Start time:&nbsp;</td>
                             <td>{this.state.now}</td>
                         </tr>
                         <tr>
-                            <td style={{textAlign: "right"}}>Run time:&nbsp;</td>
+                            <td className="aligned-right">Run time:&nbsp;</td>
                             <td><ElapsedTime /></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        );
+    }
+}
+
+export class ExecutionProgress extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+        };
+    }
+
+    render() {
+        // tried using rowSpan, but it doesn't render correctly, so switched to
+        // multiple side-by-side divs
+        return (
+            <div>
+                <div style={{float: "left"}}>
+                    <table className="playbook-table">
+                        <tbody>
+                            <tr>
+                                <td className="task-title">Completed Tasks</td>
+                                <td className="task-data aligned-right">59</td>
+                            </tr>
+                            <tr>
+                                <td className="task-title">Skipped</td>
+                                <td className="task-data aligned-right">0</td>
+                            </tr>
+                            <tr>
+                                <td className="task-title">Task Failures</td>
+                                <td className="task-data aligned-right">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div className="task-title aligned-right float-left" >
+                Current Task:
+                </div>
+                <div className="float-left" >
+                Doing something magical<br />on multiple lines<br />
+                </div>
+            </div>
+        );
+    }
+}
+
+export class FailureSummary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+        };
+    }
+
+    render() {
+        var failureRows = (
+            <FailureDetail
+                hostname="ceph-1"
+                errorText="Something went wrong!"
+            />
+        );
+
+        return (
+            <div id="failures">
+                <table className="failure-table">
+                    <tbody>
+                        <tr>
+                            <th className="fhost">Hostname</th>
+                            <th className="fdetail">Task Name / Failure Reason</th>
+                            <th className="fbtn">&nbsp;</th>
+                        </tr>
+                        { failureRows }
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+}
+
+export class FailureDetail extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+        };
+    }
+
+    copyToClipboard = () => {
+        console.log("copying error for " + this.props.hostname + " to the clipboard");
+        var textField = document.createElement('textarea');
+        textField.innerText = this.props.errorText;
+        document.body.appendChild(textField);
+        textField.select();
+        document.execCommand('copy');
+        textField.remove();
+    }
+
+    render() {
+        return (
+            <tr>
+                <td className="fhost">{this.props.hostname}</td>
+                <td className="fdetail">{this.props.errorText}</td>
+                <td className="fbtn">
+                    <button className="pficon-export" onClick={this.copyToClipboard} />
+                </td>
+            </tr>
         );
     }
 }
