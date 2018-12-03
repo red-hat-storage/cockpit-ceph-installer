@@ -431,3 +431,60 @@ table.skinny-table {
 .deploy-summary {
     height:32px;
 }
+.task-title {
+    min-width: 120px;
+}
+.task-data {
+    min-width: 40px;
+}
+.aligned-right {
+    text-align: right;
+}
+.aligned-top {
+    vertical-align: top;
+}
+table.playbook-table td {
+    padding: 0px 5px 0px 5px;
+}
+.update-me {
+    display: table-cell;
+}
+.float-left {
+    float: left;
+    padding: 0px 5px 0px 5px;
+}
+#failures {
+    margin-top: 20px;
+    width: 95%;
+    height: 330px;
+    display: inline-flex; 
+}
+  
+.failure-table {
+    width: 100%;
+}
+.fhost {
+    min-width: 140px;
+}
+.fdetail {
+    width: 80%;
+}
+#failures tr td {
+    padding: 10px 5px 10px 5px;
+    border: 1px solid lightgrey; 
+}
+    
+#failures th {
+    border: 1px solid lightgrey;
+    padding: 0px 5px 0px 5px;
+    border-bottom: 0px; 
+}
+    
+#failures tr:hover {
+    background-color: #F8F9F9; 
+}
+    
+.fbtn {
+    min-width: 50px;
+    text-align: center; 
+}
