@@ -343,7 +343,7 @@ export class ValidatePage extends React.Component {
                 The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
                  probe the hosts to validate that their hardware configuration is compatible with
                  their intended Ceph role. Once the probe is complete you must select the hosts to
-                 use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br />
+                 use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
                 <div className="spacer" />
                 <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
                 { spinner }
