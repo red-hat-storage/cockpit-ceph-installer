@@ -21871,6 +21871,7 @@ function (_React$Component) {
     _this.state = {
       timer: 0
     };
+    _this.loadInterval = 0;
     return _this;
   }
 
@@ -21878,6 +21879,12 @@ function (_React$Component) {
     key: "componentDidMount",
     value: function componentDidMount(props) {
       this.loadInterval = setInterval(this.updateTimer, 1000);
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount(props) {
+      console.log("Unmounting the ElapsedTime component, cancelling the timer");
+      clearInterval(this.loadInterval);
     }
   }, {
     key: "render",
@@ -21898,22 +21905,24 @@ function (_React$Component) {
 /*!***************************************!*\
   !*** ./src/components/deploypage.jsx ***!
   \***************************************/
-/*! exports provided: DeployPage, RuntimeSummary, default */
+/*! exports provided: DeployPage, RuntimeSummary, ExecutionProgress, FailureSummary, FailureDetail, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DeployPage", function() { return DeployPage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RuntimeSummary", function() { return RuntimeSummary; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ExecutionProgress", function() { return ExecutionProgress; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FailureSummary", function() { return FailureSummary; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FailureDetail", function() { return FailureDetail; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/nextbutton.jsx */ "./src/components/common/nextbutton.jsx");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../services/ansibleMap.js */ "./src/services/ansibleMap.js");
-/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
-/* harmony import */ var _common_timer_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./common/timer.jsx */ "./src/components/common/timer.jsx");
-/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../services/ansibleMap.js */ "./src/services/ansibleMap.js");
+/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
+/* harmony import */ var _common_timer_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/timer.jsx */ "./src/components/common/timer.jsx");
+/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21934,10 +21943,9 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+ // import { NextButton } from './common/nextbutton.jsx';
 
 
-
- // , osdsVars, , monsVars, mgrsVars
 
 
 
@@ -21963,21 +21971,30 @@ function (_React$Component) {
         deployActive: true,
         deployBtnText: 'Running',
         deployEnabled: false,
-        finished: false
+        status: {
+          status: "",
+          msg: "",
+          data: {
+            ok: 0,
+            failed: 0,
+            skipped: 0
+          } // finished: false
+
+        }
       });
 
       _this.props.deployHandler(); // turns of the navigation bar
 
 
       console.log("Creating the hostvars and groupvars variables");
-      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_6__["buildRoles"])(_this.state.settings.hosts);
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])(_this.state.settings.hosts);
       console.log("Generating variables for roles " + roleList);
-      var vars = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["allVars"])(_this.state.settings);
+      var vars = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["allVars"])(_this.state.settings);
       console.log("creating all.yml as " + JSON.stringify(vars));
       var chain = Promise.resolve();
       var mons, mgrs, osds;
       chain = chain.then(function () {
-        return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('all', vars, _this.props.svctoken);
+        return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["storeGroupVars"])('all', vars, _this.props.svctoken);
       });
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -21990,24 +22007,24 @@ function (_React$Component) {
           switch (roleGroup) {
             case "mons":
               console.log("adding mons + mgrs");
-              mons = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["monsVars"])(_this.state.settings);
+              mons = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["monsVars"])(_this.state.settings);
               console.log("mon vars " + JSON.stringify(mons));
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('mons', mons, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["storeGroupVars"])('mons', mons, _this.props.svctoken);
               });
-              mgrs = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["mgrsVars"])(_this.state.settings);
+              mgrs = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["mgrsVars"])(_this.state.settings);
               console.log("mgr vars " + JSON.stringify(mgrs));
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('mgrs', mgrs, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["storeGroupVars"])('mgrs', mgrs, _this.props.svctoken);
               });
               break;
 
             case "osds":
               console.log("adding osds");
-              osds = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["osdsVars"])(_this.state.settings);
+              osds = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["osdsVars"])(_this.state.settings);
               console.log("osd vars " + JSON.stringify(osds));
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeGroupVars"])('osds', osds, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["storeGroupVars"])('osds', osds, _this.props.svctoken);
               });
               break;
 
@@ -22052,9 +22069,9 @@ function (_React$Component) {
             var host = _step2.value;
 
             if (host.osd) {
-              var osd_metadata = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_3__["hostVars"])(host, _this.state.settings.flashUsage);
+              var osd_metadata = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["hostVars"])(host, _this.state.settings.flashUsage);
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_4__["storeHostVars"])(host.hostname, 'osds', osd_metadata, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["storeHostVars"])(host.hostname, 'osds', osd_metadata, _this.props.svctoken);
               });
             }
           };
@@ -22080,10 +22097,59 @@ function (_React$Component) {
 
       chain = chain.then(function () {
         console.log("hostvars and groupvars in place");
+
+        _this.startPlaybook();
       });
       chain.catch(function (err) {
         console.error("problem creating group vars files: " + err);
       });
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "startPlaybook", function () {
+      console.log("Start playbook and set up timer to refresh every 2secs");
+      _this.intervalHandler = setInterval(_this.getPlaybookState, 2000);
+
+      if (_this.mockdata.length > 0) {
+        _this.setState({
+          mocked: true
+        });
+
+        _this.activeMockData = _this.mockdata.slice(0);
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "getPlaybookState", function () {
+      console.log("fetch state from the playbook run");
+
+      if (_this.state.mocked) {
+        if (_this.activeMockData.length > 0) {
+          var mockData = _this.activeMockData.shift();
+
+          console.log(JSON.stringify(mockData));
+
+          _this.setState({
+            status: mockData
+          });
+        } else {
+          console.log("All mocked data used up");
+          clearInterval(_this.intervalHandler);
+          var playStatus = _this.state.status.status;
+          console.log("Last status is " + playStatus);
+          var buttonText;
+
+          if (playStatus == 'failed') {
+            buttonText = 'Retry';
+          } else {
+            buttonText = playStatus.charAt(0).toUpperCase() + playStatus.slice(1);
+          }
+
+          _this.setState({
+            deployActive: false,
+            deployBtnText: buttonText,
+            deployEnabled: true
+          });
+        }
+      }
     });
 
     _this.state = {
@@ -22091,8 +22157,88 @@ function (_React$Component) {
       deployBtnText: 'Deploy',
       statusMsg: '',
       deployActive: false,
-      settings: {}
+      settings: {},
+      status: {
+        status: "",
+        msg: "",
+        data: {
+          ok: 0,
+          failed: 0,
+          skipped: 0
+        }
+      },
+      mocked: false
     };
+    _this.intervalHandler = 0;
+    _this.activeMockData = [];
+    _this.mockdata = [{
+      status: "running",
+      msg: "ok",
+      data: {
+        task: "doing osd stuff 1",
+        last_task_num: 10,
+        ok: 5,
+        skipped: 2,
+        failed: 0,
+        failures: {}
+      }
+    }, {
+      status: "running",
+      msg: "ok",
+      data: {
+        task: "doing osd stuff 2",
+        last_task_num: 20,
+        ok: 15,
+        skipped: 10,
+        failed: 0,
+        failures: {}
+      }
+    }, {
+      status: "running",
+      msg: "ok",
+      data: {
+        task: "doing osd stuff 3",
+        last_task_num: 30,
+        ok: 20,
+        skipped: 20,
+        failed: 1,
+        failures: {
+          'ceph-1': {
+            msg: "bad things happened"
+          }
+        }
+      }
+    }, {
+      status: "running",
+      msg: "ok",
+      data: {
+        task: "doing osd stuff 4",
+        last_task_num: 45,
+        ok: 25,
+        skipped: 30,
+        failed: 1,
+        failures: {
+          'ceph-1': {
+            msg: "bad things happened"
+          }
+        }
+      }
+    }, {
+      status: "failed",
+      msg: "ok",
+      data: {
+        task: "doing osd stuff 5",
+        last_task_num: 80,
+        ok: 30,
+        skipped: 45,
+        failed: 1,
+        failures: {
+          'ceph-1': {
+            msg: "bad things happened"
+          }
+        }
+      }
+    }];
     return _this;
   }
 
@@ -22110,6 +22256,7 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      console.log("in deploypage render method");
       var spinner;
 
       if (this.state.deployActive) {
@@ -22124,23 +22271,43 @@ function (_React$Component) {
         });
       }
 
+      var deployBtnClass;
+
+      switch (this.state.deployBtnText) {
+        case "Failed":
+        case "Retry":
+          deployBtnClass = "btn btn-danger btn-lg btn-offset";
+          break;
+
+        case "Complete":
+          deployBtnClass = "btn btn-success btn-lg btn-offset";
+          break;
+
+        default:
+          deployBtnClass = "btn btn-primary btn-lg btn-offset";
+          break;
+      }
+
+      console.log("btn class string is " + deployBtnClass);
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "deploy",
         className: this.props.className
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Deploy the Cluster"), "You are now ready to start the deployment process. ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "All the options you've chosen will be saved to disk, and the deployment engine (Ansible) invoked to configure your hosts. Deployment progress will be shown below.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "spacer"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-        className: "btn btn-primary btn-lg btn-offset",
+        className: deployBtnClass,
         disabled: !this.state.deployEnabled,
         onClick: this.deployBtnHandler
       }, this.state.deployBtnText), spinner, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "divCenter"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "separatorLine"
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
-        btnText: "Finish",
-        disabled: !this.state.finished,
-        action: this.props.action
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ExecutionProgress, {
+        active: this.state.deployActive,
+        status: this.state.status
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(FailureSummary, {
+        status: this.state.status,
+        failures: this.state.status.data.failed
       }));
     }
   }]);
@@ -22173,6 +22340,11 @@ function (_React$Component2) {
       });
     }
   }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount(props) {
+      console.log("Unmounting the RuntimeSummary component");
+    }
+  }, {
     key: "render",
     value: function render() {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -22180,18 +22352,162 @@ function (_React$Component2) {
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
         className: "skinny-table"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-        style: {
-          textAlign: "right"
-        }
+        className: "aligned-right"
       }, "Start time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, this.state.now)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-        style: {
-          textAlign: "right"
-        }
-      }, "Run time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_timer_jsx__WEBPACK_IMPORTED_MODULE_5__["ElapsedTime"], null))))));
+        className: "aligned-right"
+      }, "Run time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_timer_jsx__WEBPACK_IMPORTED_MODULE_4__["ElapsedTime"], null))))));
     }
   }]);
 
   return RuntimeSummary;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+var ExecutionProgress =
+/*#__PURE__*/
+function (_React$Component3) {
+  _inherits(ExecutionProgress, _React$Component3);
+
+  function ExecutionProgress(props) {
+    var _this3;
+
+    _classCallCheck(this, ExecutionProgress);
+
+    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(ExecutionProgress).call(this, props));
+    _this3.state = {};
+    return _this3;
+  }
+
+  _createClass(ExecutionProgress, [{
+    key: "render",
+    value: function render() {
+      var progress;
+      var status;
+      progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
+
+      if (this.props.status.status != '') {
+        status = this.props.status;
+        progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          style: {
+            float: "left"
+          }
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
+          className: "playbook-table"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          className: "task-title"
+        }, "Completed Tasks"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          className: "task-data aligned-right"
+        }, status.data.ok)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          className: "task-title"
+        }, "Skipped"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          className: "task-data aligned-right"
+        }, status.data.skipped)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          className: "task-title"
+        }, "Task Failures"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          className: "task-data aligned-right"
+        }, status.data.failed))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "task-title aligned-right float-left"
+        }, "Current Task:"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "float-left"
+        }, status.data.task));
+      } // tried using rowSpan, but it doesn't render correctly, so switched to
+      // multiple side-by-side divs
+
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, progress);
+    }
+  }]);
+
+  return ExecutionProgress;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+var FailureSummary =
+/*#__PURE__*/
+function (_React$Component4) {
+  _inherits(FailureSummary, _React$Component4);
+
+  function FailureSummary(props) {
+    var _this4;
+
+    _classCallCheck(this, FailureSummary);
+
+    _this4 = _possibleConstructorReturn(this, _getPrototypeOf(FailureSummary).call(this, props));
+    _this4.state = {};
+    return _this4;
+  }
+
+  _createClass(FailureSummary, [{
+    key: "render",
+    value: function render() {
+      var _this5 = this;
+
+      var failureRows;
+      var failureSection;
+      failureSection = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
+
+      if (this.props.failures > 0) {
+        var failedHosts = Object.keys(this.props.status.data.failures);
+        failureRows = failedHosts.map(function (host, id, ary) {
+          return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(FailureDetail, {
+            key: id,
+            hostname: host,
+            errorText: _this5.props.status.data.failures[host]['msg']
+          });
+        });
+        failureSection = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
+          className: "failure-table"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+          className: "fhost"
+        }, "Hostname"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+          className: "fdetail"
+        }, "Task Name / Failure Reason"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+          className: "fbtn"
+        }, "\xA0")), failureRows));
+      }
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        id: "failures"
+      }, failureSection);
+    }
+  }]);
+
+  return FailureSummary;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+var FailureDetail =
+/*#__PURE__*/
+function (_React$Component5) {
+  _inherits(FailureDetail, _React$Component5);
+
+  function FailureDetail(props) {
+    var _this6;
+
+    _classCallCheck(this, FailureDetail);
+
+    _this6 = _possibleConstructorReturn(this, _getPrototypeOf(FailureDetail).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this6)), "clipboardCopy", function () {
+      console.log("copying error for " + _this6.props.hostname + " to the clipboard");
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["copyToClipboard"])(_this6.props.errorText);
+    });
+
+    _this6.state = {};
+    return _this6;
+  }
+
+  _createClass(FailureDetail, [{
+    key: "render",
+    value: function render() {
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        className: "fhost"
+      }, this.props.hostname), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        className: "fdetail"
+      }, this.props.errorText), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        className: "fbtn"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        className: "pficon-export",
+        onClick: this.clipboardCopy
+      })));
+    }
+  }]);
+
+  return FailureDetail;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 /* harmony default export */ __webpack_exports__["default"] = (DeployPage);
 
@@ -23521,7 +23837,7 @@ function (_React$Component) {
           console.log("jump to page " + param + " denied - not been there yet!");
         }
       } else {
-        console.log("attempt to navigate back is blocked while a deployment is running");
+        console.log("attempt to navigate back is blocked while a deployment has started/is running");
       }
     }
   }, {
@@ -24134,8 +24450,7 @@ function (_React$Component) {
             var event = JSON.parse(resp); // ignore verbose type events
 
             if (event.data.event != "verbose") {
-              var hostData = event.data.event_data;
-              console.log("event data returned is " + JSON.stringify(hostData));
+              var hostData = event.data.event_data; // console.log("event data returned is " + JSON.stringify(hostData));
 
               _this.processEventData(hostData);
             }
@@ -24452,7 +24767,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "validate",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "spacer"
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
         className: "btn btn-primary btn-lg btn-offset",
@@ -25253,7 +25568,7 @@ function storeHostVars(hostName, groupName, vars, svcToken) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK */
+/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25276,6 +25591,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readableBits", function() { return readableBits; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "netSummary", function() { return netSummary; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collocationOK", function() { return collocationOK; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyToClipboard", function() { return copyToClipboard; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _apicalls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./apicalls.js */ "./src/services/apicalls.js");
@@ -25708,6 +26024,15 @@ function collocationOK(currentRoles, newRole, installType, clusterType) {
   }
 
   return true;
+}
+function copyToClipboard(text) {
+  console.log("copying to clipboard");
+  var textField = document.createElement('textarea');
+  textField.innerText = text;
+  document.body.appendChild(textField);
+  textField.select();
+  document.execCommand('copy');
+  textField.remove();
 }
 
 /***/ }),
