@@ -121,7 +121,7 @@ export class InstallationSteps extends React.Component {
                 console.log("jump to page " + param + " denied - not been there yet!");
             }
         } else {
-            console.log("attempt to navigate back is blocked while a deployment is running");
+            console.log("attempt to navigate back is blocked while a deployment has started/is running");
         }
     }
 
