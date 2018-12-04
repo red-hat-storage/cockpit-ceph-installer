@@ -7,6 +7,7 @@ export class ElapsedTime extends React.Component {
         this.state = {
             timer: 0
         };
+        this.loadInterval = 0;
     }
 
     updateTimer = () => {
@@ -16,6 +17,11 @@ export class ElapsedTime extends React.Component {
 
     componentDidMount(props) {
         this.loadInterval = setInterval(this.updateTimer, 1000);
+    }
+
+    componentWillUnmount(props) {
+        console.log("Unmounting the ElapsedTime component, cancelling the timer");
+        clearInterval(this.loadInterval);
     }
 
     render() {
