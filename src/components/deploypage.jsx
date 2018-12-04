@@ -2,7 +2,7 @@ import React from 'react';
 // import { NextButton } from './common/nextbutton.jsx';
 import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars } from '../services/ansibleMap.js';
-import { storeGroupVars, storeHostVars } from '../services/apicalls.js';
+import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { buildRoles, copyToClipboard } from '../services/utils.js';
 
@@ -24,9 +24,9 @@ export class DeployPage extends React.Component {
                     skipped: 0,
                 }
             },
-            mocked: false
+            mocked: true
         };
-
+        this.playbookUUID = '';
         this.intervalHandler = 0;
         this.activeMockData = [];
         this.mockdata = [
@@ -40,21 +40,21 @@ export class DeployPage extends React.Component {
             }},
             {status: "running", msg: "ok", data: {
                 task: "doing osd stuff 3", last_task_num: 30,
-                ok: 20, skipped: 20, failed: 1, failures: {
-                    'ceph-1': {msg: "bad things happened"}
-                }
+                ok: 20, skipped: 20, failed: 0, failures: {}
+                //     'ceph-1': {msg: "bad things happened"}
+                // }
             }},
             {status: "running", msg: "ok", data: {
                 task: "doing osd stuff 4", last_task_num: 45,
-                ok: 25, skipped: 30, failed: 1, failures: {
-                    'ceph-1': {msg: "bad things happened"}
-                }
+                ok: 25, skipped: 30, failed: 0, failures: {}
+                //     'ceph-1': {msg: "bad things happened"}
+                // }
             }},
-            {status: "failed", msg: "ok", data: {
+            {status: "successful", msg: "ok", data: {
                 task: "doing osd stuff 5", last_task_num: 80,
-                ok: 30, skipped: 45, failed: 1, failures: {
-                    'ceph-1': {msg: "bad things happened"}
-                }
+                ok: 30, skipped: 45, failed: 0, failures: {}
+                //     'ceph-1': {msg: "bad things happened"}
+                // }
             }},
         ];
     }
@@ -68,7 +68,12 @@ export class DeployPage extends React.Component {
 
     deployBtnHandler = () => {
         // user clicked deploy
-        console.log("User clicked the deploy button - here's a dump of current state");
+        console.log("User clicked the deploy button");
+        if (this.state.deployBtnText == 'Complete') {
+            return;
+        }
+
+        console.log("current app state is;");
         console.log(JSON.stringify(this.state.settings));
 
         this.setState({
@@ -149,10 +154,32 @@ export class DeployPage extends React.Component {
 
     startPlaybook = () => {
         console.log("Start playbook and set up timer to refresh every 2secs");
-        this.intervalHandler = setInterval(this.getPlaybookState, 2000);
-        if (this.mockdata.length > 0) {
-            this.setState({mocked: true});
+
+        if (this.state.mocked) {
             this.activeMockData = this.mockdata.slice(0);
+            this.intervalHandler = setInterval(this.getPlaybookState, 2000);
+        } else {
+            // Start the playbook
+            let playbookName;
+            let varOverrides = {};
+            if (this.state.settings.installType.toUpperCase() == 'CONTAINER') {
+                playbookName = 'site-container.yml';
+            } else {
+                playbookName = 'site.yml';
+            }
+            console.log("Attempting to start playbook " + playbookName);
+            runPlaybook(playbookName, varOverrides, this.props.svctoken)
+                    .then((resp) => {
+                        let response = JSON.parse(resp);
+                        if (response.status == "STARTED") {
+                            this.playbookUUID = response.data.play_uuid;
+                            console.log("playbook has started with UUID " + this.playbookUUID);
+                            this.intervalHandler = setInterval(this.getPlaybookState, 2000);
+                        }
+                    })
+                    .catch(e => {
+                        console.log("Problem starting the playbook - unable to continue: " + e + ", " + e.message);
+                    });
         }
     }
 
@@ -167,14 +194,10 @@ export class DeployPage extends React.Component {
                 console.log("All mocked data used up");
                 clearInterval(this.intervalHandler);
 
-                let playStatus = this.state.status.status;
+                let playStatus = this.state.status.status.toUpperCase();
                 console.log("Last status is " + playStatus);
                 let buttonText;
-                if (playStatus == 'failed') {
-                    buttonText = 'Retry';
-                } else {
-                    buttonText = playStatus.charAt(0).toUpperCase() + playStatus.slice(1);
-                }
+                buttonText = (playStatus == "SUCCESSFUL") ? "Complete" : "Retry";
 
                 this.setState({
                     deployActive: false,
@@ -182,6 +205,36 @@ export class DeployPage extends React.Component {
                     deployEnabled: true
                 });
             }
+        } else {
+            // this is a real run
+            getPlaybookState(this.playbookUUID, this.props.svctoken)
+                    .then((resp) => {
+                        // process the response
+                        let response = JSON.parse(resp);
+                        this.setState({status: response});
+
+                        let status = response.status.toUpperCase();
+                        let buttonText;
+
+                        switch (status) {
+                        case "FAILED":
+                        case "CANCELED":
+                        case "SUCCESSFUL":
+                            buttonText = (status == "SUCCESSFUL") ? "Complete" : "Retry";
+                            clearInterval(this.intervalHandler);
+                            this.setState({
+                                deployActive: false,
+                                deployBtnText: buttonText,
+                                deployEnabled: true
+                            });
+                            break;
+                        default:
+                            // play is still active - UI chnages handled by prior setState
+                        }
+                    })
+                    .catch(e => {
+                        console.log("Problem fetching playbook execution state from runner-service");
+                    });
         }
     }
 
