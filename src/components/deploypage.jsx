@@ -1,5 +1,5 @@
 import React from 'react';
-import { NextButton } from './common/nextbutton.jsx';
+// import { NextButton } from './common/nextbutton.jsx';
 import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars } from '../services/apicalls.js';
@@ -14,8 +14,49 @@ export class DeployPage extends React.Component {
             deployBtnText: 'Deploy',
             statusMsg: '',
             deployActive: false,
-            settings: {}
+            settings: {},
+            status: {
+                status: "",
+                msg: "",
+                data: {
+                    ok: 0,
+                    failed: 0,
+                    skipped: 0,
+                }
+            },
+            mocked: false
         };
+
+        this.intervalHandler = 0;
+        this.activeMockData = [];
+        this.mockdata = [
+            {status: "running", msg: "ok", data: {
+                task: "doing osd stuff 1", last_task_num: 10,
+                ok: 5, skipped: 2, failed: 0, failures: {}
+            }},
+            {status: "running", msg: "ok", data: {
+                task: "doing osd stuff 2", last_task_num: 20,
+                ok: 15, skipped: 10, failed: 0, failures: {}
+            }},
+            {status: "running", msg: "ok", data: {
+                task: "doing osd stuff 3", last_task_num: 30,
+                ok: 20, skipped: 20, failed: 1, failures: {
+                    'ceph-1': {msg: "bad things happened"}
+                }
+            }},
+            {status: "running", msg: "ok", data: {
+                task: "doing osd stuff 4", last_task_num: 45,
+                ok: 25, skipped: 30, failed: 1, failures: {
+                    'ceph-1': {msg: "bad things happened"}
+                }
+            }},
+            {status: "failed", msg: "ok", data: {
+                task: "doing osd stuff 5", last_task_num: 80,
+                ok: 30, skipped: 45, failed: 1, failures: {
+                    'ceph-1': {msg: "bad things happened"}
+                }
+            }},
+        ];
     }
 
     componentWillReceiveProps(props) {
@@ -34,7 +75,16 @@ export class DeployPage extends React.Component {
             deployActive: true,
             deployBtnText: 'Running',
             deployEnabled: false,
-            finished: false
+            status: {
+                status: "",
+                msg: "",
+                data: {
+                    ok: 0,
+                    failed: 0,
+                    skipped: 0,
+                }
+            }
+            // finished: false
         });
 
         this.props.deployHandler(); // turns of the navigation bar
@@ -98,15 +148,45 @@ export class DeployPage extends React.Component {
     }
 
     startPlaybook = () => {
-        console.log("Start playbook and set up timer");
-        setInterval(this.getPlaybookState, 2000);
+        console.log("Start playbook and set up timer to refresh every 2secs");
+        this.intervalHandler = setInterval(this.getPlaybookState, 2000);
+        if (this.mockdata.length > 0) {
+            this.setState({mocked: true});
+            this.activeMockData = this.mockdata.slice(0);
+        }
     }
 
     getPlaybookState = () => {
         console.log("fetch state from the playbook run");
+        if (this.state.mocked) {
+            if (this.activeMockData.length > 0) {
+                let mockData = this.activeMockData.shift();
+                console.log(JSON.stringify(mockData));
+                this.setState({status: mockData});
+            } else {
+                console.log("All mocked data used up");
+                clearInterval(this.intervalHandler);
+
+                let playStatus = this.state.status.status;
+                console.log("Last status is " + playStatus);
+                let buttonText;
+                if (playStatus == 'failed') {
+                    buttonText = 'Retry';
+                } else {
+                    buttonText = playStatus.charAt(0).toUpperCase() + playStatus.slice(1);
+                }
+
+                this.setState({
+                    deployActive: false,
+                    deployBtnText: buttonText,
+                    deployEnabled: true
+                });
+            }
+        }
     }
 
     render() {
+        console.log("in deploypage render method");
         var spinner;
 
         if (this.state.deployActive) {
@@ -119,6 +199,21 @@ export class DeployPage extends React.Component {
             spinner = (<div className="modifier deploy-summary" />);
         }
 
+        var deployBtnClass;
+        switch (this.state.deployBtnText) {
+        case "Failed":
+        case "Retry":
+            deployBtnClass = "btn btn-danger btn-lg btn-offset";
+            break;
+        case "Complete":
+            deployBtnClass = "btn btn-success btn-lg btn-offset";
+            break;
+        default:
+            deployBtnClass = "btn btn-primary btn-lg btn-offset";
+            break;
+        }
+        console.log("btn class string is " + deployBtnClass);
+
         return (
 
             <div id="deploy" className={this.props.className}>
@@ -128,15 +223,14 @@ export class DeployPage extends React.Component {
                 All the options you've chosen will be saved to disk, and the deployment engine (Ansible) invoked
                  to configure your hosts. Deployment progress will be shown below.<br />
                 <div className="spacer" />
-                <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.deployEnabled} onClick={this.deployBtnHandler}>{this.state.deployBtnText}</button>
+                <button className={deployBtnClass} disabled={!this.state.deployEnabled} onClick={this.deployBtnHandler}>{this.state.deployBtnText}</button>
                 { spinner }
                 <div className="divCenter">
                     <div className="separatorLine" />
                 </div>
-                <ExecutionProgress />
-                <FailureSummary />
-                {/* <div style={{border: "1px solid red", width: "100%"}}>hello</div> */}
-                <NextButton btnText="Finish" disabled={!this.state.finished} action={this.props.action} />
+                <ExecutionProgress active={this.state.deployActive} status={this.state.status} />
+                <FailureSummary status={this.state.status} failures={this.state.status.data.failed} />
+                {/* <NextButton btnText="Finish" disabled={!this.state.finished} action={this.props.action} /> */}
 
             </div>
         );
@@ -154,6 +248,10 @@ export class RuntimeSummary extends React.Component {
     componentDidMount(props) {
         let now = new Date();
         this.setState({now: now.toLocaleString().substr(11)});
+    }
+
+    componentWillUnmount(props) {
+        console.log("Unmounting the RuntimeSummary component");
     }
 
     render() {
@@ -184,34 +282,46 @@ export class ExecutionProgress extends React.Component {
     }
 
     render() {
+        var progress;
+        var status;
+        progress = (<div />);
+
+        if (this.props.status.status != '') {
+            status = this.props.status;
+            progress = (
+                <div>
+                    <div style={{float: "left"}}>
+                        <table className="playbook-table">
+                            <tbody>
+                                <tr>
+                                    <td className="task-title">Completed Tasks</td>
+                                    <td className="task-data aligned-right">{ status.data.ok }</td>
+                                </tr>
+                                <tr>
+                                    <td className="task-title">Skipped</td>
+                                    <td className="task-data aligned-right">{ status.data.skipped }</td>
+                                </tr>
+                                <tr>
+                                    <td className="task-title">Task Failures</td>
+                                    <td className="task-data aligned-right">{ status.data.failed }</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="task-title aligned-right float-left" >
+                    Current Task:
+                    </div>
+                    <div className="float-left" >
+                        { status.data.task }
+                    </div>
+                </div>
+            );
+        }
         // tried using rowSpan, but it doesn't render correctly, so switched to
         // multiple side-by-side divs
         return (
             <div>
-                <div style={{float: "left"}}>
-                    <table className="playbook-table">
-                        <tbody>
-                            <tr>
-                                <td className="task-title">Completed Tasks</td>
-                                <td className="task-data aligned-right">59</td>
-                            </tr>
-                            <tr>
-                                <td className="task-title">Skipped</td>
-                                <td className="task-data aligned-right">0</td>
-                            </tr>
-                            <tr>
-                                <td className="task-title">Task Failures</td>
-                                <td className="task-data aligned-right">0</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div className="task-title aligned-right float-left" >
-                Current Task:
-                </div>
-                <div className="float-left" >
-                Doing something magical<br />on multiple lines<br />
-                </div>
+                { progress }
             </div>
         );
     }
@@ -225,15 +335,23 @@ export class FailureSummary extends React.Component {
     }
 
     render() {
-        var failureRows = (
-            <FailureDetail
-                hostname="ceph-1"
-                errorText="Something went wrong!"
-            />
+        var failureRows;
+        var failureSection;
+
+        failureSection = (
+            <div />
         );
 
-        return (
-            <div id="failures">
+        if (this.props.failures > 0) {
+            let failedHosts = Object.keys(this.props.status.data.failures);
+            failureRows = failedHosts.map((host, id, ary) => {
+                return <FailureDetail
+                            key={id}
+                            hostname={host}
+                            errorText={this.props.status.data.failures[host]['msg']} />;
+            });
+
+            failureSection = (
                 <table className="failure-table">
                     <tbody>
                         <tr>
@@ -244,6 +362,12 @@ export class FailureSummary extends React.Component {
                         { failureRows }
                     </tbody>
                 </table>
+            );
+        }
+
+        return (
+            <div id="failures">
+                { failureSection }
             </div>
         );
     }
