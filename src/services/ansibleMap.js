@@ -97,6 +97,7 @@ export function allVars (vars) {
     forYML.cluster_network = vars.clusterNetwork;
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
+    forYML.disk_list = {rc: 0}; // workaround for osd_run_sh template error?
 
     return forYML;
 }
@@ -136,4 +137,25 @@ export function mgrsVars (vars) {
     }
 
     return forYML;
+}
+
+export function cephAnsibleSequence(roles) {
+    // the goal here it to align to the execution sequence of the ceph-ansible playbook
+    // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
+
+    // FIXME: iscsi is not included at the moment
+    let rolesIn = [];
+    for (let r of roles) {
+        rolesIn.push(r.slice(0, -1)); // drop the last char
+    }
+    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw']; // ceph-ansible sequence
+    let sequence = [];
+    for (let role of allRoles) {
+        if (rolesIn.includes(role)) {
+            sequence.push(role);
+            if (role == 'mon') { sequence.push('mgr') }
+        }
+    }
+
+    return sequence;
 }
