@@ -1,8 +1,8 @@
 import React from 'react';
 // import { NextButton } from './common/nextbutton.jsx';
 import '../app.scss';
-import { allVars, osdsVars, monsVars, mgrsVars, hostVars } from '../services/ansibleMap.js';
-import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState } from '../services/apicalls.js';
+import { allVars, osdsVars, monsVars, mgrsVars, hostVars, cephAnsibleSequence } from '../services/ansibleMap.js';
+import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { buildRoles, copyToClipboard } from '../services/utils.js';
 
@@ -15,47 +15,92 @@ export class DeployPage extends React.Component {
             statusMsg: '',
             deployActive: false,
             settings: {},
+            roleState: {},
             status: {
-                status: "",
+                status: '',
                 msg: "",
                 data: {
                     ok: 0,
                     failed: 0,
                     skipped: 0,
+                    role: '',
+                    task: ''
                 }
-            },
-            mocked: true
+            }
         };
+        this.roleSequence = [];
+        this.roleActive = null;
+        this.roleSeen = [];
+        this.mocked = true;
         this.playbookUUID = '';
         this.intervalHandler = 0;
         this.activeMockData = [];
-        this.mockdata = [
-            {status: "running", msg: "ok", data: {
-                task: "doing osd stuff 1", last_task_num: 10,
+        this.mockEvents = [
+            {msg: "running", data: {
+                role: "ceph-common",
+                task: "doing pre-req stuff", last_task_num: 10,
                 ok: 5, skipped: 2, failed: 0, failures: {}
             }},
-            {status: "running", msg: "ok", data: {
-                task: "doing osd stuff 2", last_task_num: 20,
+            {msg: "running", data: {
+                role: "ceph-mon",
+                task: "fetching keys", last_task_num: 20,
                 ok: 15, skipped: 10, failed: 0, failures: {}
             }},
-            {status: "running", msg: "ok", data: {
-                task: "doing osd stuff 3", last_task_num: 30,
+            {msg: "running", data: {
+                role: "ceph-common",
+                task: "doing pre-req stuff", last_task_num: 23,
+                ok: 17, skipped: 11, failed: 0, failures: {}
+            }},
+            {msg: "running", data: {
+                role: "ceph-mgr",
+                task: "fetching image", last_task_num: 30,
                 ok: 20, skipped: 20, failed: 0, failures: {}
                 //     'ceph-1': {msg: "bad things happened"}
                 // }
             }},
-            {status: "running", msg: "ok", data: {
-                task: "doing osd stuff 4", last_task_num: 45,
+            {msg: "running", data: {
+                role: "ceph-validate",
+                task: "doing pre-req stuff", last_task_num: 33,
+                ok: 22, skipped: 21, failed: 0, failures: {}
+            }},
+            {msg: "running", data: {
+                role: "ceph-osd",
+                task: "formatting devices", last_task_num: 45,
                 ok: 25, skipped: 30, failed: 0, failures: {}
                 //     'ceph-1': {msg: "bad things happened"}
                 // }
             }},
-            {status: "successful", msg: "ok", data: {
-                task: "doing osd stuff 5", last_task_num: 80,
+            {msg: "running", data: {
+                role: "ceph-osd",
+                task: "updating systemd", last_task_num: 80,
                 ok: 30, skipped: 45, failed: 0, failures: {}
                 //     'ceph-1': {msg: "bad things happened"}
                 // }
             }},
+            {msg: "successful", data: {
+                role: "",
+                task: "checking mon state", last_task_num: 99,
+                ok: 35, skipped: 55, failed: 0, failures: {}
+                //     'ceph-1': {msg: "bad things happened"}
+                // }
+            }}
+        ];
+        this.mockCephOutput = [
+            "  cluster:",
+            "    id:     1b04e377-6d86-447e-929d-c4e5880fcf02",
+            "    health: HEALTH_OK",
+            " ",
+            "  services:",
+            "    mon: 3 daemons, quorum ceph-1,ceph-2,ceph-3",
+            "    mgr: ceph-1(active), standbys: ceph-2, ceph-3",
+            "    osd: 0 osds: 0 up, 0 in",
+            " ",
+            "  data:",
+            "    pools:   0 pools, 0 pgs",
+            "    objects: 0  objects, 0 B",
+            "    usage:   0 B used, 0 B / 0 B avail",
+            "    pgs:     ",
+            " "
         ];
     }
 
@@ -63,13 +108,140 @@ export class DeployPage extends React.Component {
         const { settings } = this.state.settings;
         if (JSON.stringify(props.settings) != JSON.stringify(settings)) {
             this.setState({settings: props.settings});
+            let allRoles = buildRoles(props.settings.hosts);
+            if (allRoles.length > 0) {
+                let tmpRoleState = {};
+                for (let role of allRoles) {
+                    tmpRoleState[role] = 'pending';
+                    if (role == 'mons') { tmpRoleState['mgrs'] = 'pending' }
+                }
+                this.setState({roleState: tmpRoleState});
+                this.roleSequence = cephAnsibleSequence(allRoles);
+            }
+        }
+    }
+
+    setRoleState = (eventData) => {
+        let currentState = this.state.roleState;
+        let changesMade = false;
+        let eventRoleName;
+        let shortName = eventData.data.role.replace("ceph-", '');
+
+        if (this.roleSequence.includes(shortName)) {
+            eventRoleName = shortName + "s";
+        } else {
+            eventRoleName = shortName;
+        }
+        switch (eventData.msg) {
+        case "running":
+            if (this.roleActive == null) {
+                // first time through
+                currentState['mons'] = 'active';
+                this.roleActive = 'mons';
+                changesMade = true;
+                break;
+            } else {
+                if (eventRoleName != "") {
+                    // console.log("current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
+
+                    // if the event role is not in the list AND we have seen the role-active name
+                    // - set the current role to complete and move pending to the next
+                    if (!this.roleSequence.includes(shortName) && this.roleSeen.includes(this.roleActive.slice(0, -1))) {
+                        currentState[this.roleActive] = 'complete';
+                        // FIXME: this won't work for iscsi
+                        let a = this.roleActive.slice(0, -1); // remove the 's'
+                        let nextRole = this.roleSequence[this.roleSequence.indexOf(a) + 1];
+                        currentState[nextRole + 's'] = 'active';
+                        this.roleActive = nextRole + 's';
+                        changesMade = true;
+                        break;
+                    }
+
+                    // if the shortname is in the sequence, but not in last seen
+                    // - add it to last seen
+                    if (!this.roleSeen.includes(shortName) && this.roleSequence.includes(shortName)) {
+                        this.roleSeen.push(shortName);
+                    }
+                }
+            }
+            break;
+        case "failed":
+            currentState[this.roleActive] = 'failed'; // mark current breadcrumb as complete
+            changesMade = true;
+            break;
+        case "successful":
+            currentState[this.roleActive] = 'complete'; // mark current breadcrumb as complete
+            changesMade = true;
+            break;
+        }
+
+        if (changesMade) {
+            this.setState({roleState: currentState});
+        }
+        console.log("roles seen " + this.roleSeen);
+    }
+
+    formattedOutput = (output) => {
+        var cmdOutput = output.map(textLine => {
+            return (<div className="code">{textLine}</div>);
+        });
+        return (
+            <div>
+                <h2>Ceph Cluster Status</h2>
+                <p>&nbsp;</p>
+                { cmdOutput }
+            </div>
+        );
+    }
+
+    fetchCephState = () => {
+        console.log("querying events for " + this.playbookUUID);
+        if (this.mocked) {
+            // just return the mocked data output
+            console.log("using mocked data");
+            console.log("calling the main app modal");
+            let content = this.formattedOutput(this.mockCephOutput);
+            this.props.modalHandler(content);
+        } else {
+            console.log("fetching event data from the playbook run");
+            getEvents(this.playbookUUID, this.props.svctoken)
+                    .then((resp) => {
+                        let response = JSON.parse(resp);
+                        let foundEvent = '';
+                        let evtIDs = Object.keys(response.data.events).reverse();
+                        for (let evt of evtIDs) {
+                            let thisEvent = response.data.events[evt];
+                            if (thisEvent['event'] == 'runner_on_ok' && thisEvent['task'].startsWith('show ceph status for')) {
+                                foundEvent = evt;
+                                break;
+                            }
+                        }
+                        if (foundEvent != '') {
+                            getJobEvent(this.playbookUUID, foundEvent, this.props.svctoken)
+                                    .then((resp) => {
+                                        let response = JSON.parse(resp);
+                                        let output = response.data.event_data.res.msg;
+                                        let content = this.formattedOutput(output);
+                                        this.props.modalHandler(content);
+                                    })
+                                    .catch(e => {
+                                        console.error("Error fetching job event: " + e.message);
+                                    });
+                        } else {
+                            console.log("playbook didn't have a show ceph status task");
+                        }
+                    })
+                    .catch(e => {
+                        console.error("Unable to fetch events for play " + this.playbookUUID);
+                    });
         }
     }
 
     deployBtnHandler = () => {
-        // user clicked deploy
-        console.log("User clicked the deploy button");
+        // user clicked deploy/Complete or retry button (multi-personality syndrome)
+        console.log("User clicked the Deploy/Complete/Retry button");
         if (this.state.deployBtnText == 'Complete') {
+            this.fetchCephState();
             return;
         }
 
@@ -79,17 +251,7 @@ export class DeployPage extends React.Component {
         this.setState({
             deployActive: true,
             deployBtnText: 'Running',
-            deployEnabled: false,
-            status: {
-                status: "",
-                msg: "",
-                data: {
-                    ok: 0,
-                    failed: 0,
-                    skipped: 0,
-                }
-            }
-            // finished: false
+            deployEnabled: false
         });
 
         this.props.deployHandler(); // turns of the navigation bar
@@ -155,8 +317,8 @@ export class DeployPage extends React.Component {
     startPlaybook = () => {
         console.log("Start playbook and set up timer to refresh every 2secs");
 
-        if (this.state.mocked) {
-            this.activeMockData = this.mockdata.slice(0);
+        if (this.mocked) {
+            this.activeMockData = this.mockEvents.slice(0);
             this.intervalHandler = setInterval(this.getPlaybookState, 2000);
         } else {
             // Start the playbook
@@ -185,16 +347,18 @@ export class DeployPage extends React.Component {
 
     getPlaybookState = () => {
         console.log("fetch state from the playbook run");
-        if (this.state.mocked) {
+        if (this.mocked) {
             if (this.activeMockData.length > 0) {
                 let mockData = this.activeMockData.shift();
                 console.log(JSON.stringify(mockData));
                 this.setState({status: mockData});
+                this.setRoleState(mockData);
+                // TODO: look at the data to determine progress state for the breadcrumb
             } else {
                 console.log("All mocked data used up");
                 clearInterval(this.intervalHandler);
 
-                let playStatus = this.state.status.status.toUpperCase();
+                let playStatus = this.state.status.msg.toUpperCase();
                 console.log("Last status is " + playStatus);
                 let buttonText;
                 buttonText = (playStatus == "SUCCESSFUL") ? "Complete" : "Retry";
@@ -213,14 +377,14 @@ export class DeployPage extends React.Component {
                         let response = JSON.parse(resp);
                         this.setState({status: response});
 
-                        let status = response.status.toUpperCase();
+                        let msg = response.msg.toUpperCase();
                         let buttonText;
 
-                        switch (status) {
+                        switch (msg) {
                         case "FAILED":
                         case "CANCELED":
                         case "SUCCESSFUL":
-                            buttonText = (status == "SUCCESSFUL") ? "Complete" : "Retry";
+                            buttonText = (msg == "SUCCESSFUL") ? "Complete" : "Retry";
                             clearInterval(this.intervalHandler);
                             this.setState({
                                 deployActive: false,
@@ -229,7 +393,7 @@ export class DeployPage extends React.Component {
                             });
                             break;
                         default:
-                            // play is still active - UI chnages handled by prior setState
+                            // TODO: play is still active - let's look at the role/task to provide a progress update
                         }
                     })
                     .catch(e => {
@@ -241,15 +405,23 @@ export class DeployPage extends React.Component {
     render() {
         console.log("in deploypage render method");
         var spinner;
+        // var breadcrumbs;
 
         if (this.state.deployActive) {
             spinner = (
                 <div className="modifier deploy-summary">
                     <div className="modifier spinner spinner-lg">&nbsp;</div>
                     <RuntimeSummary />
-                </div>);
+                </div>
+            );
+            // breadcrumbs = (
+            //     <div className="div-center">
+            //         <BreadCrumbStatus roleState={this.state.roleState} />
+            //     </div>
+            // );
         } else {
             spinner = (<div className="modifier deploy-summary" />);
+            // breadcrumbs = (<div />);
         }
 
         var deployBtnClass;
@@ -280,6 +452,10 @@ export class DeployPage extends React.Component {
                 { spinner }
                 <div className="divCenter">
                     <div className="separatorLine" />
+                </div>
+                {/* { breadcrumbs } */}
+                <div className="div-center">
+                    <BreadCrumbStatus runStatus={this.state.status.status} roleState={this.state.roleState} />
                 </div>
                 <ExecutionProgress active={this.state.deployActive} status={this.state.status} />
                 <FailureSummary status={this.state.status} failures={this.state.status.data.failed} />
@@ -337,10 +513,18 @@ export class ExecutionProgress extends React.Component {
     render() {
         var progress;
         var status;
+        var taskInfo;
         progress = (<div />);
 
         if (this.props.status.status != '') {
             status = this.props.status;
+            console.log("rendering playbook run details");
+            console.log(JSON.stringify(status));
+            if (status.data.role != '') {
+                taskInfo = status.data.role + " : " + status.data.task;
+            } else {
+                taskInfo = status.data.task;
+            }
             progress = (
                 <div>
                     <div style={{float: "left"}}>
@@ -365,7 +549,7 @@ export class ExecutionProgress extends React.Component {
                     Current Task:
                     </div>
                     <div className="float-left" >
-                        { status.data.task }
+                        { taskInfo }
                     </div>
                 </div>
             );
@@ -398,10 +582,11 @@ export class FailureSummary extends React.Component {
         if (this.props.failures > 0) {
             let failedHosts = Object.keys(this.props.status.data.failures);
             failureRows = failedHosts.map((host, id, ary) => {
+                let hostError = this.props.status.data.failures[host]['event_data'];
                 return <FailureDetail
                             key={id}
                             hostname={host}
-                            errorText={this.props.status.data.failures[host]['msg']} />;
+                            errorEvent={hostError} />;
             });
 
             failureSection = (
@@ -435,18 +620,74 @@ export class FailureDetail extends React.Component {
 
     clipboardCopy = () => {
         console.log("copying error for " + this.props.hostname + " to the clipboard");
-        copyToClipboard(this.props.errorText);
+        let errorText;
+        errorText = this.props.hostname + " failed in role '";
+        errorText += this.props.errorEvent['role'] + "', task '";
+        errorText += this.props.errorEvent['task'] + "'. Error msg - ";
+        errorText += this.props.errorEvent['res']['msg'];
+        copyToClipboard(errorText);
     }
 
     render() {
         return (
             <tr>
                 <td className="fhost">{this.props.hostname}</td>
-                <td className="fdetail">{this.props.errorText}</td>
+                <td className="fdetail">
+                    [{this.props.errorEvent['role']}] {this.props.errorEvent['task']}<br />
+                    {this.props.errorEvent['res']['msg']}
+                </td>
                 <td className="fbtn">
                     <button className="pficon-export" onClick={this.clipboardCopy} />
                 </td>
             </tr>
+        );
+    }
+}
+
+export class BreadCrumbStatus extends React.Component {
+    render () {
+        var breadcrumbs;
+        if (this.props.runStatus != '') {
+            var roles = Object.keys(this.props.roleState);
+            breadcrumbs = roles.map(role => {
+                return <Breadcrumb
+                            key={role}
+                            label={role}
+                            state={this.props.roleState[role]} />;
+            });
+        } else {
+            breadcrumbs = (<div />);
+        }
+        return (
+            <div className="display-inline-block">
+                { breadcrumbs }
+            </div>
+        );
+    }
+}
+
+export class Breadcrumb extends React.Component {
+    render() {
+        console.log("rendering a breadcrumb");
+        var status;
+        switch (this.props.state) {
+        case "pending":
+            status = "grey";
+            break;
+        case "active":
+            status = "blue";
+            break;
+        case "complete":
+            status = "green";
+            break;
+        case "failed":
+            status = "red";
+            break;
+        }
+
+        status += " breadcrumb";
+        return (
+            <div className={status}>{this.props.label}</div>
         );
     }
 }
