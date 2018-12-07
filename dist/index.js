@@ -21297,12 +21297,13 @@ if (false) {} else {
 /*!*********************!*\
   !*** ./src/app.jsx ***!
   \*********************/
-/*! exports provided: Application */
+/*! exports provided: Application, Modal */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Application", function() { return Application; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Modal", function() { return Modal; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -21321,13 +21322,15 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * This file is part of Cockpit.
@@ -21366,9 +21369,29 @@ function (_React$Component) {
     _classCallCheck(this, Application);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Application).call(this));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "hideModal", function () {
+      _this.setState({
+        modalVisible: false
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "showModal", function (modalContent) {
+      // handle the show and hide of the app level modal
+      console.log("content: ");
+      console.log(modalContent);
+
+      _this.setState({
+        modalVisible: true,
+        modalContent: modalContent
+      });
+    });
+
     _this.state = {
       'hostname': _("Unknown"),
-      "svctoken": null
+      "svctoken": null,
+      modalVisible: false,
+      modalContent: ''
     };
     return _this;
   }
@@ -21383,8 +21406,8 @@ function (_React$Component) {
           svctoken: content
         });
       }).fail(function (error) {
-        console.log("Can't read the svctoken file");
-        console.log("Error : " + error);
+        console.error("Can't read the svctoken file");
+        console.error("Error : " + error.message);
       });
     }
   }, {
@@ -21394,13 +21417,50 @@ function (_React$Component) {
       console.log("svctoken is " + this.state.svctoken);
       return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         className: "container-fluid"
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "Ceph Installer"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_components_installationsteps_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
-        svctoken: this.state.svctoken
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(Modal, {
+        show: this.state.modalVisible,
+        content: this.state.modalContent,
+        closeHandler: this.hideModal
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, "Ceph Installer"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_components_installationsteps_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        svctoken: this.state.svctoken,
+        modalHandler: this.showModal
       }));
     }
   }]);
 
   return Application;
+}(react__WEBPACK_IMPORTED_MODULE_1___default.a.Component);
+var Modal =
+/*#__PURE__*/
+function (_React$Component2) {
+  _inherits(Modal, _React$Component2);
+
+  function Modal(props) {
+    var _this3;
+
+    _classCallCheck(this, Modal);
+
+    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(Modal).call(this, props));
+    _this3.state = {};
+    return _this3;
+  }
+
+  _createClass(Modal, [{
+    key: "render",
+    value: function render() {
+      var showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
+      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        className: showHideClass
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("section", {
+        className: "modal-main"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, this.props.content, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("button", {
+        className: "modal-close btn btn-primary btn-lg",
+        onClick: this.props.closeHandler
+      }, "Close"))));
+    }
+  }]);
+
+  return Modal;
 }(react__WEBPACK_IMPORTED_MODULE_1___default.a.Component);
 
 /***/ }),
@@ -21905,7 +21965,7 @@ function (_React$Component) {
 /*!***************************************!*\
   !*** ./src/components/deploypage.jsx ***!
   \***************************************/
-/*! exports provided: DeployPage, RuntimeSummary, ExecutionProgress, FailureSummary, FailureDetail, default */
+/*! exports provided: DeployPage, RuntimeSummary, ExecutionProgress, FailureSummary, FailureDetail, BreadCrumbStatus, Breadcrumb, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21915,6 +21975,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ExecutionProgress", function() { return ExecutionProgress; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FailureSummary", function() { return FailureSummary; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FailureDetail", function() { return FailureDetail; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BreadCrumbStatus", function() { return BreadCrumbStatus; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Breadcrumb", function() { return Breadcrumb; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
@@ -21962,25 +22024,170 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(DeployPage).call(this, props));
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setRoleState", function (eventData) {
+      var currentState = _this.state.roleState;
+      var changesMade = false;
+      var eventRoleName;
+      var shortName = eventData.data.role.replace("ceph-", '');
+
+      if (_this.roleSequence.includes(shortName)) {
+        eventRoleName = shortName + "s";
+      } else {
+        eventRoleName = shortName;
+      }
+
+      switch (eventData.msg) {
+        case "running":
+          if (_this.roleActive == null) {
+            // first time through
+            currentState['mons'] = 'active';
+            _this.roleActive = 'mons';
+            changesMade = true;
+            break;
+          } else {
+            if (eventRoleName != "") {
+              console.log("current role active: " + _this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName); // if the event role is not in the list AND
+
+              if (!_this.roleSequence.includes(shortName) && _this.roleSeen.includes(_this.roleActive.slice(0, -1))) {
+                currentState[_this.roleActive] = 'complete'; // FIXME: this won't work for iscsi
+
+                var a = _this.roleActive.slice(0, -1); // remove the 's'
+
+
+                var nextRole = _this.roleSequence[_this.roleSequence.indexOf(a) + 1];
+
+                currentState[nextRole + 's'] = 'active';
+                _this.roleActive = nextRole + 's';
+                changesMade = true;
+                break;
+              }
+
+              if (!_this.roleSeen.includes(shortName) && _this.roleSequence.includes(shortName)) {
+                _this.roleSeen.push(shortName);
+              } // we have seen the role-active name
+              // set the current role to complete and move pending to the next
+              // if the shortname is in the sequence, but not in last seen
+              // - add it to last seen
+
+            }
+          }
+
+          break;
+
+        case "failed":
+          currentState[_this.roleActive] = 'failed'; // mark current breadcrumb as complete
+
+          changesMade = true;
+          break;
+
+        case "successful":
+          currentState[_this.roleActive] = 'complete'; // mark current breadcrumb as complete
+
+          changesMade = true;
+          break;
+      }
+
+      if (changesMade) {
+        _this.setState({
+          roleState: currentState
+        });
+      }
+
+      console.log("roles seen " + _this.roleSeen);
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "formattedOutput", function (output) {
+      var cmdOutput = output.map(function (textLine) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "code"
+        }, textLine);
+      });
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, "Ceph Cluster Status"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "\xA0"), cmdOutput);
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "fetchCephState", function () {
+      console.log("querying events for " + _this.playbookUUID);
+
+      if (_this.mocked) {
+        // just return the mocked data output
+        console.log("using mocked data");
+        console.log("calling the main app modal");
+
+        var content = _this.formattedOutput(_this.mockCephOutput);
+
+        _this.props.modalHandler(content);
+      } else {
+        console.log("fetching event data from the playbook run");
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["getEvents"])(_this.playbookUUID, _this.props.svctoken).then(function (resp) {
+          var response = JSON.parse(resp);
+          var foundEvent = '';
+          var evtIDs = Object.keys(response.data.events).reverse();
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = evtIDs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var evt = _step.value;
+              var thisEvent = response.data.events[evt];
+
+              if (thisEvent['event'] == 'runner_on_ok' && thisEvent['task'].startsWith('show ceph status for')) {
+                foundEvent = evt;
+                break;
+              }
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          if (foundEvent != '') {
+            Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["getJobEvent"])(_this.playbookUUID, foundEvent, _this.props.svctoken).then(function (resp) {
+              var response = JSON.parse(resp);
+              var output = response.data.event_data.res.msg;
+
+              var content = _this.formattedOutput(output);
+
+              _this.props.modalHandler(content);
+            }).catch(function (e) {
+              console.error("Error fetching job event: " + e.message);
+            });
+          } else {
+            console.log("playbook didn't have a show ceph status task");
+          }
+        }).catch(function (e) {
+          console.error("Unable to fetch events for play " + _this.playbookUUID);
+        });
+      }
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deployBtnHandler", function () {
-      // user clicked deploy
-      console.log("User clicked the deploy button - here's a dump of current state");
+      // user clicked deploy/Complete or retry button (multi-personality syndrome)
+      console.log("User clicked the Deploy/Complete/Retry button");
+
+      if (_this.state.deployBtnText == 'Complete') {
+        _this.fetchCephState();
+
+        return;
+      }
+
+      console.log("current app state is;");
       console.log(JSON.stringify(_this.state.settings));
 
       _this.setState({
         deployActive: true,
         deployBtnText: 'Running',
-        deployEnabled: false,
-        status: {
-          status: "",
-          msg: "",
-          data: {
-            ok: 0,
-            failed: 0,
-            skipped: 0
-          } // finished: false
-
-        }
+        deployEnabled: false
       });
 
       _this.props.deployHandler(); // turns of the navigation bar
@@ -21996,13 +22203,13 @@ function (_React$Component) {
       chain = chain.then(function () {
         return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["storeGroupVars"])('all', vars, _this.props.svctoken);
       });
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator = roleList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var roleGroup = _step.value;
+        for (var _iterator2 = roleList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var roleGroup = _step2.value;
 
           switch (roleGroup) {
             case "mons":
@@ -22042,16 +22249,16 @@ function (_React$Component) {
           }
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+            _iterator2.return();
           }
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          if (_didIteratorError2) {
+            throw _iteratorError2;
           }
         }
       }
@@ -22060,13 +22267,13 @@ function (_React$Component) {
 
       if (roleList.includes("osds")) {
         console.log("generating hostvars for the osd hosts");
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
 
         try {
           var _loop = function _loop() {
-            var host = _step2.value;
+            var host = _step3.value;
 
             if (host.osd) {
               var osd_metadata = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["hostVars"])(host, _this.state.settings.flashUsage);
@@ -22076,20 +22283,20 @@ function (_React$Component) {
             }
           };
 
-          for (var _iterator2 = _this.state.settings.hosts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          for (var _iterator3 = _this.state.settings.hosts[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
             _loop();
           }
         } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
+            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+              _iterator3.return();
             }
           } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            if (_didIteratorError3) {
+              throw _iteratorError3;
             }
           }
         }
@@ -22107,21 +22314,40 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "startPlaybook", function () {
       console.log("Start playbook and set up timer to refresh every 2secs");
-      _this.intervalHandler = setInterval(_this.getPlaybookState, 2000);
 
-      if (_this.mockdata.length > 0) {
-        _this.setState({
-          mocked: true
+      if (_this.mocked) {
+        _this.activeMockData = _this.mockEvents.slice(0);
+        _this.intervalHandler = setInterval(_this.getPlaybookState, 2000);
+      } else {
+        // Start the playbook
+        var playbookName;
+        var varOverrides = {};
+
+        if (_this.state.settings.installType.toUpperCase() == 'CONTAINER') {
+          playbookName = 'site-container.yml';
+        } else {
+          playbookName = 'site.yml';
+        }
+
+        console.log("Attempting to start playbook " + playbookName);
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["runPlaybook"])(playbookName, varOverrides, _this.props.svctoken).then(function (resp) {
+          var response = JSON.parse(resp);
+
+          if (response.status == "STARTED") {
+            _this.playbookUUID = response.data.play_uuid;
+            console.log("playbook has started with UUID " + _this.playbookUUID);
+            _this.intervalHandler = setInterval(_this.getPlaybookState, 2000);
+          }
+        }).catch(function (e) {
+          console.log("Problem starting the playbook - unable to continue: " + e + ", " + e.message);
         });
-
-        _this.activeMockData = _this.mockdata.slice(0);
       }
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "getPlaybookState", function () {
       console.log("fetch state from the playbook run");
 
-      if (_this.state.mocked) {
+      if (_this.mocked) {
         if (_this.activeMockData.length > 0) {
           var mockData = _this.activeMockData.shift();
 
@@ -22130,18 +22356,18 @@ function (_React$Component) {
           _this.setState({
             status: mockData
           });
+
+          _this.setRoleState(mockData); // TODO: look at the data to determine progress state for the breadcrumb
+
         } else {
           console.log("All mocked data used up");
           clearInterval(_this.intervalHandler);
-          var playStatus = _this.state.status.status;
+
+          var playStatus = _this.state.status.msg.toUpperCase();
+
           console.log("Last status is " + playStatus);
           var buttonText;
-
-          if (playStatus == 'failed') {
-            buttonText = 'Retry';
-          } else {
-            buttonText = playStatus.charAt(0).toUpperCase() + playStatus.slice(1);
-          }
+          buttonText = playStatus == "SUCCESSFUL" ? "Complete" : "Retry";
 
           _this.setState({
             deployActive: false,
@@ -22149,6 +22375,40 @@ function (_React$Component) {
             deployEnabled: true
           });
         }
+      } else {
+        // this is a real run
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["getPlaybookState"])(_this.playbookUUID, _this.props.svctoken).then(function (resp) {
+          // process the response
+          var response = JSON.parse(resp);
+
+          _this.setState({
+            status: response
+          });
+
+          var msg = response.msg.toUpperCase();
+          var buttonText;
+
+          switch (msg) {
+            case "FAILED":
+            case "CANCELED":
+            case "SUCCESSFUL":
+              buttonText = msg == "SUCCESSFUL" ? "Complete" : "Retry";
+              clearInterval(_this.intervalHandler);
+
+              _this.setState({
+                deployActive: false,
+                deployBtnText: buttonText,
+                deployEnabled: true
+              });
+
+              break;
+
+            default: // TODO: play is still active - let's look at the role/task to provide a progress update
+
+          }
+        }).catch(function (e) {
+          console.log("Problem fetching playbook execution state from runner-service");
+        });
       }
     });
 
@@ -22158,24 +22418,31 @@ function (_React$Component) {
       statusMsg: '',
       deployActive: false,
       settings: {},
+      roleState: {},
       status: {
-        status: "",
+        status: '',
         msg: "",
         data: {
           ok: 0,
           failed: 0,
-          skipped: 0
+          skipped: 0,
+          role: '',
+          task: ''
         }
-      },
-      mocked: false
+      }
     };
+    _this.roleSequence = [];
+    _this.roleActive = null;
+    _this.roleSeen = [];
+    _this.mocked = true;
+    _this.playbookUUID = '';
     _this.intervalHandler = 0;
     _this.activeMockData = [];
-    _this.mockdata = [{
-      status: "running",
-      msg: "ok",
+    _this.mockEvents = [{
+      msg: "running",
       data: {
-        task: "doing osd stuff 1",
+        role: "ceph-common",
+        task: "doing pre-req stuff",
         last_task_num: 10,
         ok: 5,
         skipped: 2,
@@ -22183,10 +22450,10 @@ function (_React$Component) {
         failures: {}
       }
     }, {
-      status: "running",
-      msg: "ok",
+      msg: "running",
       data: {
-        task: "doing osd stuff 2",
+        role: "ceph-mon",
+        task: "fetching keys",
         last_task_num: 20,
         ok: 15,
         skipped: 10,
@@ -22194,51 +22461,81 @@ function (_React$Component) {
         failures: {}
       }
     }, {
-      status: "running",
-      msg: "ok",
+      msg: "running",
       data: {
-        task: "doing osd stuff 3",
+        role: "ceph-common",
+        task: "doing pre-req stuff",
+        last_task_num: 23,
+        ok: 17,
+        skipped: 11,
+        failed: 0,
+        failures: {}
+      }
+    }, {
+      msg: "running",
+      data: {
+        role: "ceph-mgr",
+        task: "fetching image",
         last_task_num: 30,
         ok: 20,
         skipped: 20,
-        failed: 1,
-        failures: {
-          'ceph-1': {
-            msg: "bad things happened"
-          }
-        }
+        failed: 0,
+        failures: {} //     'ceph-1': {msg: "bad things happened"}
+        // }
+
       }
     }, {
-      status: "running",
-      msg: "ok",
+      msg: "running",
       data: {
-        task: "doing osd stuff 4",
+        role: "ceph-validate",
+        task: "doing pre-req stuff",
+        last_task_num: 33,
+        ok: 22,
+        skipped: 21,
+        failed: 0,
+        failures: {}
+      }
+    }, {
+      msg: "running",
+      data: {
+        role: "ceph-osd",
+        task: "formatting devices",
         last_task_num: 45,
         ok: 25,
         skipped: 30,
-        failed: 1,
-        failures: {
-          'ceph-1': {
-            msg: "bad things happened"
-          }
-        }
+        failed: 0,
+        failures: {} //     'ceph-1': {msg: "bad things happened"}
+        // }
+
       }
     }, {
-      status: "failed",
-      msg: "ok",
+      msg: "running",
       data: {
-        task: "doing osd stuff 5",
+        role: "ceph-osd",
+        task: "updating systemd",
         last_task_num: 80,
         ok: 30,
         skipped: 45,
-        failed: 1,
-        failures: {
-          'ceph-1': {
-            msg: "bad things happened"
-          }
-        }
+        failed: 0,
+        failures: {} //     'ceph-1': {msg: "bad things happened"}
+        // }
+
+      }
+    }, {
+      msg: "successful",
+      data: {
+        role: "",
+        task: "checking mon state",
+        last_task_num: 99,
+        ok: 35,
+        skipped: 55,
+        failed: 0,
+        failures: {} //     'ceph-1': {msg: "bad things happened"}
+        // }
+
       }
     }];
+    _this.mockCephOutput = ["  cluster:", "    id:     1b04e377-6d86-447e-929d-c4e5880fcf02", "    health: HEALTH_OK", " ", "  services:", "    mon: 3 daemons, quorum ceph-1,ceph-2,ceph-3", "    mgr: ceph-1(active), standbys: ceph-2, ceph-3", "    osd: 0 osds: 0 up, 0 in", " ", "  data:", "    pools:   0 pools, 0 pgs", "    objects: 0  objects, 0 B", "    usage:   0 B used, 0 B / 0 B avail", "    pgs:     ", " "];
     return _this;
   }
 
@@ -22251,24 +22548,65 @@ function (_React$Component) {
         this.setState({
           settings: props.settings
         });
+        var allRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])(props.settings.hosts);
+
+        if (allRoles.length > 0) {
+          var tmpRoleState = {};
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = allRoles[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var role = _step4.value;
+              tmpRoleState[role] = 'pending';
+
+              if (role == 'mons') {
+                tmpRoleState['mgrs'] = 'pending';
+              }
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+                _iterator4.return();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+
+          this.setState({
+            roleState: tmpRoleState
+          });
+          this.roleSequence = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_2__["cephAnsibleSequence"])(allRoles);
+        }
       }
     }
   }, {
     key: "render",
     value: function render() {
       console.log("in deploypage render method");
-      var spinner;
+      var spinner; // var breadcrumbs;
 
       if (this.state.deployActive) {
         spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier deploy-summary"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier spinner spinner-lg"
-        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RuntimeSummary, null));
+        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RuntimeSummary, null)); // breadcrumbs = (
+        //     <div className="div-center">
+        //         <BreadCrumbStatus roleState={this.state.roleState} />
+        //     </div>
+        // );
       } else {
         spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier deploy-summary"
-        });
+        }); // breadcrumbs = (<div />);
       }
 
       var deployBtnClass;
@@ -22302,6 +22640,11 @@ function (_React$Component) {
         className: "divCenter"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "separatorLine"
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "div-center"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(BreadCrumbStatus, {
+        runStatus: this.state.status.status,
+        roleState: this.state.roleState
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ExecutionProgress, {
         active: this.state.deployActive,
         status: this.state.status
@@ -22381,10 +22724,20 @@ function (_React$Component3) {
     value: function render() {
       var progress;
       var status;
+      var taskInfo;
       progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
 
       if (this.props.status.status != '') {
         status = this.props.status;
+        console.log("rendering playbook run details");
+        console.log(JSON.stringify(status));
+
+        if (status.data.role != '') {
+          taskInfo = status.data.role + " : " + status.data.task;
+        } else {
+          taskInfo = status.data.task;
+        }
+
         progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           style: {
             float: "left"
@@ -22407,7 +22760,7 @@ function (_React$Component3) {
           className: "task-title aligned-right float-left"
         }, "Current Task:"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "float-left"
-        }, status.data.task));
+        }, taskInfo));
       } // tried using rowSpan, but it doesn't render correctly, so switched to
       // multiple side-by-side divs
 
@@ -22445,10 +22798,11 @@ function (_React$Component4) {
       if (this.props.failures > 0) {
         var failedHosts = Object.keys(this.props.status.data.failures);
         failureRows = failedHosts.map(function (host, id, ary) {
+          var hostError = _this5.props.status.data.failures[host]['event_data'];
           return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(FailureDetail, {
             key: id,
             hostname: host,
-            errorText: _this5.props.status.data.failures[host]['msg']
+            errorEvent: hostError
           });
         });
         failureSection = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
@@ -22484,7 +22838,12 @@ function (_React$Component5) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this6)), "clipboardCopy", function () {
       console.log("copying error for " + _this6.props.hostname + " to the clipboard");
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["copyToClipboard"])(_this6.props.errorText);
+      var errorText;
+      errorText = _this6.props.hostname + " failed in role '";
+      errorText += _this6.props.errorEvent['role'] + "', task '";
+      errorText += _this6.props.errorEvent['task'] + "'. Error msg - ";
+      errorText += _this6.props.errorEvent['res']['msg'];
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["copyToClipboard"])(errorText);
     });
 
     _this6.state = {};
@@ -22498,7 +22857,7 @@ function (_React$Component5) {
         className: "fhost"
       }, this.props.hostname), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "fdetail"
-      }, this.props.errorText), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+      }, "[", this.props.errorEvent['role'], "] ", this.props.errorEvent['task'], react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), this.props.errorEvent['res']['msg']), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "fbtn"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
         className: "pficon-export",
@@ -22508,6 +22867,89 @@ function (_React$Component5) {
   }]);
 
   return FailureDetail;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+var BreadCrumbStatus =
+/*#__PURE__*/
+function (_React$Component6) {
+  _inherits(BreadCrumbStatus, _React$Component6);
+
+  function BreadCrumbStatus() {
+    _classCallCheck(this, BreadCrumbStatus);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(BreadCrumbStatus).apply(this, arguments));
+  }
+
+  _createClass(BreadCrumbStatus, [{
+    key: "render",
+    value: function render() {
+      var _this7 = this;
+
+      var breadcrumbs;
+
+      if (this.props.runStatus != '') {
+        var roles = Object.keys(this.props.roleState);
+        breadcrumbs = roles.map(function (role) {
+          return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Breadcrumb, {
+            key: role,
+            label: role,
+            state: _this7.props.roleState[role]
+          });
+        });
+      } else {
+        breadcrumbs = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
+      }
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "display-inline-block"
+      }, breadcrumbs);
+    }
+  }]);
+
+  return BreadCrumbStatus;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+var Breadcrumb =
+/*#__PURE__*/
+function (_React$Component7) {
+  _inherits(Breadcrumb, _React$Component7);
+
+  function Breadcrumb() {
+    _classCallCheck(this, Breadcrumb);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(Breadcrumb).apply(this, arguments));
+  }
+
+  _createClass(Breadcrumb, [{
+    key: "render",
+    value: function render() {
+      console.log("rendering a breadcrumb");
+      var status;
+
+      switch (this.props.state) {
+        case "pending":
+          status = "grey";
+          break;
+
+        case "active":
+          status = "blue";
+          break;
+
+        case "complete":
+          status = "green";
+          break;
+
+        case "failed":
+          status = "red";
+          break;
+      }
+
+      status += " breadcrumb";
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: status
+      }, this.props.label);
+    }
+  }]);
+
+  return Breadcrumb;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 /* harmony default export */ __webpack_exports__["default"] = (DeployPage);
 
@@ -23887,6 +24329,7 @@ function (_React$Component) {
         action: this.nextHandler,
         settings: this.state,
         deployHandler: this.deployHandler,
+        modalHandler: this.props.modalHandler,
         svctoken: this.props.svctoken
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_infobar_jsx__WEBPACK_IMPORTED_MODULE_9__["default"], {
         info: this.infoText[this.state.pageNum] || ''
@@ -25210,7 +25653,7 @@ document.addEventListener("DOMContentLoaded", function () {
 /*!************************************!*\
   !*** ./src/services/ansibleMap.js ***!
   \************************************/
-/*! exports provided: hostVars, osdsVars, allVars, monsVars, mgrsVars */
+/*! exports provided: hostVars, osdsVars, allVars, monsVars, mgrsVars, cephAnsibleSequence */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25220,6 +25663,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "allVars", function() { return allVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "monsVars", function() { return monsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mgrsVars", function() { return mgrsVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cephAnsibleSequence", function() { return cephAnsibleSequence; });
 function hostVars(hostMetadata, flashUsage) {
   // gets run once per host to generate the hostvars variables
   console.log("hostvars called with " + JSON.stringify(hostMetadata));
@@ -25347,6 +25791,10 @@ function allVars(vars) {
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
   forYML.ip_version = vars.networkType;
+  forYML.disk_list = {
+    rc: 0
+  }; // workaround for osd_run_sh template error?
+
   return forYML;
 }
 function monsVars(vars) {
@@ -25385,6 +25833,53 @@ function mgrsVars(vars) {
 
   return forYML;
 }
+function cephAnsibleSequence(roles) {
+  // the goal here it to align to the execution sequence of the ceph-ansible playbook
+  // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
+  // FIXME: iscsi is not included at the moment
+  var rolesIn = [];
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = roles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var r = _step2.value;
+      rolesIn.push(r.slice(0, -1)); // drop the last char
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
+  var allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw']; // ceph-ansible sequence
+
+  var sequence = [];
+
+  for (var _i = 0; _i < allRoles.length; _i++) {
+    var role = allRoles[_i];
+
+    if (rolesIn.includes(role)) {
+      sequence.push(role);
+
+      if (role == 'mon') {
+        sequence.push('mgr');
+      }
+    }
+  }
+
+  return sequence;
+}
 
 /***/ }),
 
@@ -25392,7 +25887,7 @@ function mgrsVars(vars) {
 /*!**********************************!*\
   !*** ./src/services/apicalls.js ***!
   \**********************************/
-/*! exports provided: addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getJobEvent, storeGroupVars, storeHostVars */
+/*! exports provided: addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getEvents, getJobEvent, storeGroupVars, storeHostVars */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25408,6 +25903,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "runPlaybook", function() { return runPlaybook; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getPlaybookState", function() { return getPlaybookState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTaskEvents", function() { return getTaskEvents; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getEvents", function() { return getEvents; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getJobEvent", function() { return getJobEvent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeGroupVars", function() { return storeGroupVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeHostVars", function() { return storeHostVars; });
@@ -25536,6 +26032,13 @@ function getPlaybookState(playUUID, svcToken) {
 function getTaskEvents(playUUID, taskName, svcToken) {
   console.log("looking for job events");
   var url = "/api/v1/jobs/" + playUUID + "/events?task=" + taskName;
+  return http.get(url, null, {
+    Authorization: svcToken
+  });
+}
+function getEvents(playUUID, svcToken) {
+  console.log("fetching events from play with UUID " + playUUID);
+  var url = "/api/v1/jobs/" + playUUID + "/events";
   return http.get(url, null, {
     Authorization: svcToken
   });

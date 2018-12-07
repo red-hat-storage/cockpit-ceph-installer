@@ -8,6 +8,10 @@ General
     - TODO: the plugin doesn't flag an error if the runner-service is not there! 
     - cockpit -> flask. On older versions of flask, the cockpit.http calls receive a RST (reset) packet from flask, so calls to the API fail. When this
     happens the UI stops working due to the js error. flask versions found to work flask >= 1.0.2, flask_restful 0.3.6
+    - ceph-ansible provides .sample named playbooks that need to be copied/renamed before use
+      - this should be done by the plugin post-install script
+    - test is hitting a j2 template error with undefined ansible variable disk_list. Workaround applied in 
+      ansibleMap.js
 
 hostspage.jsx
     - TODO: validate roles based on the mode (dev or prod) in the host mask & the host row
@@ -21,6 +25,11 @@ validatepage.jsx
     TODO: for testing checks are currently bypassing with skipChecks=true in the class definition - which just allows the 
         next button to work, without any validity checks
     TODO: Add some 'business logic' to analyse the cluster as a whole. checkrole focuses only at the per host level.
+        if one osd node has ssd and hdd, they all must for example
+        all monitors on the same public network
+        is there a min of 3 mons defined
+        is there a min of 3 osd hosts defined
+        total host count >= 5 in prod mode or 3 in POC mode
 
 networkpage.jsx
     NIC bandwidth is reported as unknown, when ansible returns a speed of 0.
