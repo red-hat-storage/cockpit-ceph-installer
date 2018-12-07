@@ -117,6 +117,12 @@ export function getTaskEvents(playUUID, taskName, svcToken) {
     return http.get(url, null, { Authorization: svcToken });
 }
 
+export function getEvents(playUUID, svcToken) {
+    console.log("fetching events from play with UUID " + playUUID);
+    let url = "/api/v1/jobs/" + playUUID + "/events";
+    return http.get(url, null, {Authorization: svcToken});
+}
+
 export function getJobEvent(playUUID, eventUUID, svcToken) {
     console.log("fetching event ID " + eventUUID);
     let url = "/api/v1/jobs/" + playUUID + "/events/" + eventUUID;
