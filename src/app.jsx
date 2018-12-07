@@ -32,7 +32,9 @@ export class Application extends React.Component {
         super();
         this.state = {
             'hostname': _("Unknown"),
-            "svctoken": null
+            "svctoken": null,
+            modalVisible: false,
+            modalContent: ''
         };
     }
 
@@ -40,9 +42,23 @@ export class Application extends React.Component {
         getSVCToken()
                 .done((content, tag) => { this.setState({svctoken: content}) })
                 .fail((error) => {
-                    console.log("Can't read the svctoken file");
-                    console.log("Error : " + error);
+                    console.error("Can't read the svctoken file");
+                    console.error("Error : " + error.message);
                 });
+    }
+
+    hideModal = () => {
+        this.setState({modalVisible: false});
+    }
+
+    showModal = (modalContent) => {
+        // handle the show and hide of the app level modal
+        console.log("content: ");
+        console.log(modalContent);
+        this.setState({
+            modalVisible: true,
+            modalContent: modalContent
+        });
     }
 
     render() {
@@ -51,10 +67,40 @@ export class Application extends React.Component {
 
         return (
             <div className="container-fluid">
+                <Modal
+                    show={this.state.modalVisible}
+                    content={this.state.modalContent}
+                    closeHandler={this.hideModal} />
                 <h2>Ceph Installer</h2>
                 {/* <ProgressTracker /> */}
-                <InstallationSteps svctoken={this.state.svctoken} />
+                <InstallationSteps svctoken={this.state.svctoken} modalHandler={this.showModal} />
                 {/* <InfoBar /> */}
+            </div>
+        );
+    }
+}
+
+export class Modal extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
+    render() {
+        let showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
+        return (
+            <div className={showHideClass}>
+                <section className="modal-main">
+                    <div>
+                        { this.props.content }
+                        <br />
+                        <button
+                            className="modal-close btn btn-primary btn-lg"
+                            onClick={this.props.closeHandler}>
+                            Close
+                        </button>
+                    </div>
+                </section>
             </div>
         );
     }

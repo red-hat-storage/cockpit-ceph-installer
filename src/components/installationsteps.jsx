@@ -173,6 +173,7 @@ export class InstallationSteps extends React.Component {
                         action={this.nextHandler}
                         settings={this.state}
                         deployHandler={this.deployHandler}
+                        modalHandler={this.props.modalHandler}
                         svctoken={this.props.svctoken} />
                 </div>
                 <InfoBar
