@@ -4,7 +4,7 @@ import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars, cephAnsibleSequence } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
-import { buildRoles, copyToClipboard } from '../services/utils.js';
+import { buildRoles, copyToClipboard, currentTime } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     constructor(props) {
@@ -29,6 +29,8 @@ export class DeployPage extends React.Component {
                 }
             }
         };
+        this.startTime = null;
+        this.endTime = null;
         this.roleSequence = [];
         this.roleActive = null;
         this.roleSeen = [];
@@ -317,7 +319,7 @@ export class DeployPage extends React.Component {
 
     startPlaybook = () => {
         console.log("Start playbook and set up timer to refresh every 2secs");
-
+        this.startTime = currentTime();
         if (this.mocked) {
             this.activeMockData = this.mockEvents.slice(0);
             this.intervalHandler = setInterval(this.getPlaybookState, 2000);
@@ -363,7 +365,7 @@ export class DeployPage extends React.Component {
                 console.log("Last status is " + playStatus);
                 let buttonText;
                 buttonText = (playStatus == "SUCCESSFUL") ? "Complete" : "Retry";
-
+                this.endTime = currentTime();
                 this.setState({
                     deployActive: false,
                     deployBtnText: buttonText,
@@ -387,6 +389,7 @@ export class DeployPage extends React.Component {
                         case "SUCCESSFUL":
                             buttonText = (msg == "SUCCESSFUL") ? "Complete" : "Retry";
                             clearInterval(this.intervalHandler);
+                            this.endTime = currentTime();
                             this.setState({
                                 deployActive: false,
                                 deployBtnText: buttonText,
