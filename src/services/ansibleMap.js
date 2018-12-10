@@ -92,6 +92,9 @@ export function allVars (vars) {
     if (vars.installType == "Container") {
         forYML.containerized_deployment = true;
     }
+    if (vars.rgwNetwork != '') {
+        forYML.radosgw_address_block = vars.rgwNetwork;
+    }
     forYML.ceph_origin = 'repository';
     forYML.public_network = vars.publicNetwork;
     forYML.cluster_network = vars.clusterNetwork;
