@@ -27,6 +27,7 @@ export class InstallationSteps extends React.Component {
             flashUsage: "Journals/Logs",
             publicNetwork: '',
             clusterNetwork: '',
+            rgwNetwork:'',
             networkType: 'ipv4',
             deployStarted: false
         };
