@@ -527,7 +527,7 @@ export class ExecutionProgress extends React.Component {
             }
             progress = (
                 <div>
-                    <div style={{float: "left"}}>
+                    <div className="float-left">
                         <table className="playbook-table">
                             <tbody>
                                 <tr>
@@ -545,10 +545,10 @@ export class ExecutionProgress extends React.Component {
                             </tbody>
                         </table>
                     </div>
-                    <div className="task-title aligned-right float-left" >
+                    <div className="task-title aligned-right float-left padding-sides" >
                     Current Task:
                     </div>
-                    <div className="float-left" >
+                    <div className="float-left padding-sides" >
                         { taskInfo }
                     </div>
                 </div>
