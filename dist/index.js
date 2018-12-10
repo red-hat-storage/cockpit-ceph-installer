@@ -21945,6 +21945,7 @@ function (_React$Component) {
     value: function componentWillUnmount(props) {
       console.log("Unmounting the ElapsedTime component, cancelling the timer");
       clearInterval(this.loadInterval);
+      this.props.callback(this.state.timer);
     }
   }, {
     key: "render",
@@ -22313,6 +22314,7 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "startPlaybook", function () {
       console.log("Start playbook and set up timer to refresh every 2secs");
+      _this.startTime = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["currentTime"])();
 
       if (_this.mocked) {
         _this.activeMockData = _this.mockEvents.slice(0);
@@ -22367,6 +22369,7 @@ function (_React$Component) {
           console.log("Last status is " + playStatus);
           var buttonText;
           buttonText = playStatus == "SUCCESSFUL" ? "Complete" : "Retry";
+          _this.endTime = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["currentTime"])();
 
           _this.setState({
             deployActive: false,
@@ -22393,6 +22396,7 @@ function (_React$Component) {
             case "SUCCESSFUL":
               buttonText = msg == "SUCCESSFUL" ? "Complete" : "Retry";
               clearInterval(_this.intervalHandler);
+              _this.endTime = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["currentTime"])();
 
               _this.setState({
                 deployActive: false,
@@ -22402,7 +22406,7 @@ function (_React$Component) {
 
               break;
 
-            default: // TODO: play is still active - let's look at the role/task to provide a progress update
+            default: // play is still active - NO-OP
 
           }
         }).catch(function (e) {
@@ -22411,12 +22415,19 @@ function (_React$Component) {
       }
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "storeRuntime", function (timer) {
+      _this.setState({
+        runTime: timer
+      });
+    });
+
     _this.state = {
       deployEnabled: true,
       deployBtnText: 'Deploy',
       statusMsg: '',
       deployActive: false,
       settings: {},
+      runTime: 0,
       roleState: {},
       status: {
         status: '',
@@ -22430,6 +22441,8 @@ function (_React$Component) {
         }
       }
     };
+    _this.startTime = null;
+    _this.endTime = null;
     _this.roleSequence = [];
     _this.roleActive = null;
     _this.roleSeen = [];
@@ -22590,22 +22603,20 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       console.log("in deploypage render method");
-      var spinner; // var breadcrumbs;
+      var spinner;
 
       if (this.state.deployActive) {
         spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier deploy-summary"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier spinner spinner-lg"
-        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RuntimeSummary, null)); // breadcrumbs = (
-        //     <div className="div-center">
-        //         <BreadCrumbStatus roleState={this.state.roleState} />
-        //     </div>
-        // );
+        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RuntimeSummary, {
+          callback: this.storeRuntime
+        }));
       } else {
         spinner = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "modifier deploy-summary"
-        }); // breadcrumbs = (<div />);
+        });
       }
 
       var deployBtnClass;
@@ -22646,7 +22657,8 @@ function (_React$Component) {
         roleState: this.state.roleState
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ExecutionProgress, {
         active: this.state.deployActive,
-        status: this.state.status
+        status: this.state.status,
+        runtime: this.state.runTime
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(FailureSummary, {
         status: this.state.status,
         failures: this.state.status.data.failed
@@ -22697,7 +22709,9 @@ function (_React$Component2) {
         className: "aligned-right"
       }, "Start time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, this.state.now)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "aligned-right"
-      }, "Run time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_timer_jsx__WEBPACK_IMPORTED_MODULE_4__["ElapsedTime"], null))))));
+      }, "Run time:\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_timer_jsx__WEBPACK_IMPORTED_MODULE_4__["ElapsedTime"], {
+        callback: this.props.callback
+      }))))));
     }
   }]);
 
@@ -22724,6 +22738,7 @@ function (_React$Component3) {
       var progress;
       var status;
       var taskInfo;
+      var taskLabel;
       progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
 
       if (this.props.status.status != '') {
@@ -22735,6 +22750,32 @@ function (_React$Component3) {
           taskInfo = status.data.role + " : " + status.data.task;
         } else {
           taskInfo = status.data.task;
+        }
+
+        switch (status.msg.toUpperCase()) {
+          case "FAILED":
+            taskLabel = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+              style: {
+                color: "red"
+              }
+            }, "FAILED");
+            taskInfo = '';
+            break;
+
+          case "SUCCESSFUL":
+            taskLabel = "Deployment Successful ";
+
+            if (this.props.runtime > 0) {
+              var date = new Date(null);
+              date.setSeconds(this.props.runtime);
+              taskLabel += "(run time: " + date.toISOString().substr(11, 8) + ")";
+            }
+
+            taskInfo = '';
+            break;
+
+          default:
+            taskLabel = "Current Task:";
         }
 
         progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -22754,8 +22795,14 @@ function (_React$Component3) {
         }, "Task Failures"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
           className: "task-data aligned-right"
         }, status.data.failed))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          className: "task-title aligned-right float-left padding-sides"
-        }, "Current Task:"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "float-left",
+          style: {
+            width: "40px",
+            minWidth: "40px"
+          }
+        }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "float-left padding-sides"
+        }, taskLabel), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "float-left padding-sides"
         }, taskInfo));
       } // tried using rowSpan, but it doesn't render correctly, so switched to
@@ -24186,7 +24233,10 @@ function (_React$Component) {
       clusterNetwork: '',
       rgwNetwork: '',
       networkType: 'ipv4',
-      deployStarted: false
+      deployStarted: false // startTime: '',
+      // endTime: '',
+      // runDuration: ''
+
     };
     _this.page = {
       welcome: "page",
@@ -24194,9 +24244,7 @@ function (_React$Component) {
       hosts: "page behind",
       validate: "page behind",
       network: "page behind",
-      // commit: "page behind",
-      deploy: "page behind" // finish: "page behind"
-
+      deploy: "page behind"
     };
     _this.infoText = ["", "The environment settings define the basic constraints that will apply to the target Ceph cluster", "Enter the hostnames using either the hostname or a hostname pattern to " + "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc)", "By probing the hosts, we can check that there are enough hardware resources to" + " support the intended Ceph roles. It also allows you to visually check the" + " detected devices and configuration are as expected. Once probed, you may" + " hover over the hostname to show the hardware model name of the server."];
     _this.visited = [];
@@ -24439,7 +24487,7 @@ function (_React$Component) {
         netState['clusterNetwork'] = this.internalNetworks[0];
         netState['publicNetwork'] = this.externalNetworks[0];
 
-        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(this.props.hosts).includes('rgws')) {
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(props.hosts).includes('rgws')) {
           console.log("determining the rgw networks");
           this.s3Networks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'rgw');
           netState['rgwNetwork'] = this.s3Networks[0];
@@ -24451,23 +24499,7 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      console.log("rendering network page"); // var RGWComponent;
-      // if (this.s3Networks.length > 0) {
-      //     // Network options for rgw selection
-      //     RGWComponent = (
-      //         // <NetworkOptions
-      //         //     title="S3 Client Network"
-      //         //     description="Subnets common to radosgw hosts"
-      //         //     subnets={this.s3Networks}
-      //         //     name="rgwNetwork"
-      //         //     lookup={this.subnetLookup}
-      //         //     hosts={this.props.hosts}
-      //         //     updateHandler={this.updateHandler} />
-      //     );
-      // } else {
-      //     RGWComponent = (<div />);
-      // }
-
+      console.log("rendering network page");
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "network",
         className: this.props.className
@@ -26055,7 +26087,7 @@ function storeHostVars(hostName, groupName, vars, svcToken) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup */
+/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -26081,6 +26113,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyToClipboard", function() { return copyToClipboard; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commonSubnets", function() { return commonSubnets; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildSubnetLookup", function() { return buildSubnetLookup; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentTime", function() { return currentTime; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _apicalls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./apicalls.js */ "./src/services/apicalls.js");
@@ -26620,45 +26653,11 @@ function buildSubnetLookup(hostArray) {
 
   console.log("lookup " + JSON.stringify(subnetLookup));
   return subnetLookup;
-} //         allSubnets.push(props.hosts[idx].subnets);
-//         // process each subnet
-//         for (let subnet of props.hosts[idx].subnets) {
-//             if (!Object.keys(this.subnetLookup).includes(subnet)) {
-//                 this.subnetLookup[subnet] = {};
-//             }
-//             let speedInt = props.hosts[idx].subnet_details[subnet].speed;
-//             if (speedInt <= 0) {
-//                 console.log("speed is <= 0");
-//                 speed = 'Unknown';
-//             } else {
-//                 console.log("speed is >0 ");
-//                 speed = speedInt.toString();
-//             }
-//             let spds = Object.keys(this.subnetLookup[subnet]);
-//             let snet = this.subnetLookup[subnet];
-//             if (!spds.includes(speed)) {
-//                 snet[speed] = [props.hosts[idx].hostname];
-//             } else {
-//                 snet[speed].push(props.hosts[idx].hostname);
-//             }
-//         }
-//         if (props.hosts[idx]['osd']) {
-//             // this is an OSD host
-//             osdSubnets.push(props.hosts[idx].subnets);
-//         }
-//     }
-//     console.log(JSON.stringify(props.hosts[idx].subnet_details));
-// }
-// // console.log("subnet lookup table: " + JSON.stringify(subnetLookup));
-// let commonOSDSubnets = [];
-// let commonSubnets = [];
-// if (osdSubnets.length > 0) {
-//     commonOSDSubnets = arrayIntersect(osdSubnets);
-// }
-// if (allSubnets.length > 0) {
-//     commonSubnets = arrayIntersect(allSubnets);
-// }
-// }
+}
+function currentTime() {
+  var d = new Date();
+  return d.toISOString().substr(11, 8);
+}
 
 /***/ }),
 
