@@ -434,3 +434,8 @@ export function buildSubnetLookup(hostArray) {
     console.log("lookup " + JSON.stringify(subnetLookup));
     return subnetLookup;
 }
+
+export function currentTime() {
+    let d = new Date();
+    return d.toISOString().substr(11, 8);
+}
