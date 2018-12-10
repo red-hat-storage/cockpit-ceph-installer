@@ -113,7 +113,7 @@ export class NetworkOptions extends React.Component {
     updateState = (event) => {
         console.log("change in the radio button set " + event.target.name);
         console.log("lookup the subnet to determine hosts by bandwidth: " + event.target.value);
-        console.log("lookup table is " + JSON.stringify(this.props.lookup));
+        // console.log("lookup table is " + JSON.stringify(this.props.lookup));
         this.setState({
             [event.target.getAttribute('name')]: event.target.value,
             selected: event.target.value,
@@ -145,9 +145,9 @@ export class NetworkOptions extends React.Component {
             name: this.props.name,
             horizontal: false
         };
-        var RGWComponent;
+        var subnetSelection;
         if (this.state.subnets.length > 0) {
-            RGWComponent = (
+            subnetSelection = (
                 <div className="float-left network-subnets">
                     <h4 className="textCenter" >{this.props.title}</h4>
                     <p>{this.props.description}</p>
@@ -157,20 +157,14 @@ export class NetworkOptions extends React.Component {
 
             );
         } else {
-            RGWComponent = (
+            subnetSelection = (
                 <div />
             );
         }
         return (
             <div>
-                { RGWComponent }
+                { subnetSelection }
             </div>
-            // <div className="float-left network-subnets">
-            //     <h4 className="textCenter" >{this.props.title}</h4>
-            //     <p>{this.props.description}</p>
-            //     <RadioSet config={radioConfig} callback={this.updateState} />
-            //     <SubnetMsg msg={this.state.msg} />
-            // </div>
         );
     }
 }
