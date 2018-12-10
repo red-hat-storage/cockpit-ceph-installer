@@ -30,6 +30,9 @@ export class InstallationSteps extends React.Component {
             rgwNetwork:'',
             networkType: 'ipv4',
             deployStarted: false
+            // startTime: '',
+            // endTime: '',
+            // runDuration: ''
         };
         this.page = {
             welcome: "page",
@@ -37,9 +40,7 @@ export class InstallationSteps extends React.Component {
             hosts: "page behind",
             validate: "page behind",
             network: "page behind",
-            // commit: "page behind",
             deploy: "page behind"
-            // finish: "page behind"
         };
         this.infoText = [
             "",
