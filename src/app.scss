@@ -410,6 +410,14 @@ tbody {
     display:block;
     float: left;
 }
+.network-subnets {
+    margin-left: 80px; 
+    border-bottom: 2px solid white; 
+    padding-bottom: 20px;
+}
+.network-subnets:hover {
+    border-bottom: 2px solid #39a5dc;
+}
 .network-msgs {
     width: 100%;
     display: flex;
@@ -451,6 +459,8 @@ table.playbook-table td {
 }
 .float-left {
     float: left;
+}
+.padding-sides {
     padding: 0px 5px 0px 5px;
 }
 #failures {
@@ -596,4 +606,10 @@ display: none;
 }
 .div-center {
     text-align: center;
+}
+.centered-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-content: start;
 }
