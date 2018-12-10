@@ -1,7 +1,7 @@
 import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
 import { RadioSet } from './common/radioset.jsx';
-import { arrayIntersect, netSummary } from '../services/utils.js';
+import { netSummary, commonSubnets, buildSubnetLookup, buildRoles } from '../services/utils.js';
 import '../app.scss';
 
 export class NetworkPage extends React.Component {
@@ -9,74 +9,37 @@ export class NetworkPage extends React.Component {
         super(props);
         this.state = {
             publicNetwork: '',
-            clusterNetwork: ''
+            clusterNetwork: '',
+            rgwNetwork: ''
         };
-        this.internalNetworks = [];
-        this.externalNetworks = [];
-        this.subnetLookup = {};
+        this.internalNetworks = []; // suitable for cluster connectivity
+        this.externalNetworks = []; // shared across all nodes
+        this.s3Networks = []; // common to Radosgw hosts
+        this.subnetLookup = {}; // Used for speed/bandwidth metadata
     }
 
     componentWillReceiveProps(props) {
-        // pick up the state change from the parent
-        console.log("props received, calculate the networks");
+        if (props.className == 'page') {
+            // the page is active, so refresh the items with updated props
+            // from the parent
 
-        let osdSubnets = []; // subnets present on OSD hosts
-        let allSubnets = []; // subnets present on all hosts
-        var speed;
-        // goal is to have a lookup table like this
-        // subnet -> speed -> array of hosts with that speed
-        for (let idx = 0; idx < props.hosts.length; idx++) {
-            if (props.hosts[idx].hasOwnProperty('subnets')) {
-                allSubnets.push(props.hosts[idx].subnets);
-                // process each subnet
-                for (let subnet of props.hosts[idx].subnets) {
-                    if (!Object.keys(this.subnetLookup).includes(subnet)) {
-                        this.subnetLookup[subnet] = {};
-                    }
-                    let speedInt = props.hosts[idx].subnet_details[subnet].speed;
-                    if (speedInt <= 0) {
-                        console.log("speed is <= 0");
-                        speed = 'Unknown';
-                    } else {
-                        console.log("speed is >0 ");
-                        speed = speedInt.toString();
-                    }
-                    let spds = Object.keys(this.subnetLookup[subnet]);
-                    let snet = this.subnetLookup[subnet];
-                    if (!spds.includes(speed)) {
-                        snet[speed] = [props.hosts[idx].hostname];
-                    } else {
-                        snet[speed].push(props.hosts[idx].hostname);
-                    }
-                }
+            console.log("setting subnet array state variables");
+            this.internalNetworks = commonSubnets(props.hosts, 'osd');
+            this.externalNetworks = commonSubnets(props.hosts, 'all');
+            this.subnetLookup = buildSubnetLookup(props.hosts);
+            let netState = {};
 
-                if (props.hosts[idx]['osd']) {
-                    // this is an OSD host
-                    osdSubnets.push(props.hosts[idx].subnets);
-                }
+            netState['clusterNetwork'] = this.internalNetworks[0];
+            netState['publicNetwork'] = this.externalNetworks[0];
+
+            if (buildRoles(this.props.hosts).includes('rgws')) {
+                console.log("determining the rgw networks");
+                this.s3Networks = commonSubnets(props.hosts, 'rgw');
+                netState['rgwNetwork'] = this.s3Networks[0];
             }
-            console.log(JSON.stringify(props.hosts[idx].subnet_details));
+
+            this.setState(netState);
         }
-        // console.log("subnet lookup table: " + JSON.stringify(subnetLookup));
-        let commonOSDSubnets = [];
-        let commonSubnets = [];
-
-        if (osdSubnets.length > 0) {
-            commonOSDSubnets = arrayIntersect(osdSubnets);
-        }
-
-        if (allSubnets.length > 0) {
-            commonSubnets = arrayIntersect(allSubnets);
-        }
-
-        console.log("setting subnet array state variables");
-        this.internalNetworks = commonOSDSubnets;
-        this.externalNetworks = commonSubnets;
-
-        this.setState({
-            clusterNetwork: commonOSDSubnets[0],
-            publicNetwork: commonSubnets[0]
-        });
     }
 
     updateParent = () => {
@@ -91,30 +54,58 @@ export class NetworkPage extends React.Component {
 
     render() {
         console.log("rendering network page");
+        // var RGWComponent;
+        // if (this.s3Networks.length > 0) {
+        //     // Network options for rgw selection
+        //     RGWComponent = (
+        //         // <NetworkOptions
+        //         //     title="S3 Client Network"
+        //         //     description="Subnets common to radosgw hosts"
+        //         //     subnets={this.s3Networks}
+        //         //     name="rgwNetwork"
+        //         //     lookup={this.subnetLookup}
+        //         //     hosts={this.props.hosts}
+        //         //     updateHandler={this.updateHandler} />
+        //     );
+        // } else {
+        //     RGWComponent = (<div />);
+        // }
+
         return (
             <div id="network" className={this.props.className}>
                 <h3>Network Configuration</h3>
                 <p>The network topology plays a significant role in determining the performance of Ceph services. The ideal
                      network configuration uses a front-end (public) and backend (cluster) network topology. This approach
                      separates network load like object replication from client load. The probe performed against your hosts
-                     has revealed the following networking options for the cluster and public networks.
+                     has revealed the following networking options;
                 </p>
-                <NetworkOptions
-                    title="Cluster Network"
-                    description="Subnets common to all OSD hosts"
-                    subnets={this.internalNetworks}
-                    name="clusterNetwork"
-                    lookup={this.subnetLookup}
-                    hosts={this.props.hosts}
-                    updateHandler={this.updateHandler} />
-                <NetworkOptions
-                    title="Public Network"
-                    description="Subnets common to all hosts within the cluster"
-                    subnets={this.externalNetworks}
-                    name="publicNetwork"
-                    lookup={this.subnetLookup}
-                    hosts={this.props.hosts}
-                    updateHandler={this.updateHandler} />
+                <div className="centered-container">
+                    <NetworkOptions
+                        title="Cluster Network"
+                        description="Subnets common to all OSD hosts"
+                        subnets={this.internalNetworks}
+                        name="clusterNetwork"
+                        lookup={this.subnetLookup}
+                        hosts={this.props.hosts}
+                        updateHandler={this.updateHandler} />
+                    <NetworkOptions
+                        title="Public Network"
+                        description="Subnets common to all hosts within the cluster"
+                        subnets={this.externalNetworks}
+                        name="publicNetwork"
+                        lookup={this.subnetLookup}
+                        hosts={this.props.hosts}
+                        updateHandler={this.updateHandler} />
+                    <NetworkOptions
+                        title="S3 Client Network"
+                        description="Subnets common to radosgw hosts"
+                        subnets={this.s3Networks}
+                        name="rgwNetwork"
+                        lookup={this.subnetLookup}
+                        hosts={this.props.hosts}
+                        updateHandler={this.updateHandler} />
+                </div>
+
                 <NextButton action={this.updateParent} />
             </div>
         );
@@ -132,8 +123,9 @@ export class NetworkOptions extends React.Component {
     }
 
     updateState = (event) => {
-        console.log("change in the radio button set");
-        console.log("lookup the subnet to determine hosts by bandwidth");
+        console.log("change in the radio button set " + event.target.name);
+        console.log("lookup the subnet to determine hosts by bandwidth: " + event.target.value);
+        console.log("lookup table is " + JSON.stringify(this.props.lookup));
         this.setState({
             [event.target.getAttribute('name')]: event.target.value,
             selected: event.target.value,
@@ -143,13 +135,17 @@ export class NetworkOptions extends React.Component {
     }
 
     componentWillReceiveProps(props) {
-        console.log("got props update");
-        const {subnets} = this.state.subnets;
-        if (props.subnets != subnets) {
+        console.log("checking to see if subnet list need to change: " + props.name);
+        var subnets = this.state.subnets.sort();
+        // console.log("comparing " + JSON.stringify(props.subnets) + " to " + JSON.stringify(subnets));
+        if (JSON.stringify(props.subnets.sort()) != JSON.stringify(subnets)) {
+            console.log("- initialising the radio set");
             this.setState({
                 subnets: props.subnets,
                 msg: netSummary(props.lookup, props.subnets[0], props.hosts)
             });
+        } else {
+            console.log("no change in subnets");
         }
     }
 
@@ -161,14 +157,32 @@ export class NetworkOptions extends React.Component {
             name: this.props.name,
             horizontal: false
         };
+        var RGWComponent;
+        if (this.state.subnets.length > 0) {
+            RGWComponent = (
+                <div className="float-left network-subnets">
+                    <h4 className="textCenter" >{this.props.title}</h4>
+                    <p>{this.props.description}</p>
+                    <RadioSet config={radioConfig} callback={this.updateState} />
+                    <SubnetMsg msg={this.state.msg} />
+                </div>
 
+            );
+        } else {
+            RGWComponent = (
+                <div />
+            );
+        }
         return (
-            <div className="network-container">
-                <h2 className="textCenter" >{this.props.title}</h2>
-                <p>{this.props.description}</p>
-                <RadioSet config={radioConfig} callback={this.updateState} />
-                <SubnetMsg msg={this.state.msg} />
+            <div>
+                { RGWComponent }
             </div>
+            // <div className="float-left network-subnets">
+            //     <h4 className="textCenter" >{this.props.title}</h4>
+            //     <p>{this.props.description}</p>
+            //     <RadioSet config={radioConfig} callback={this.updateState} />
+            //     <SubnetMsg msg={this.state.msg} />
+            // </div>
         );
     }
 }

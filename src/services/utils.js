@@ -364,3 +364,73 @@ export function copyToClipboard(text) {
     document.execCommand('copy');
     textField.remove();
 }
+
+export function commonSubnets(hostArray, role) {
+    // determine the common subnets for a given role
+    let subnets = []; // subnets present on all hosts
+    console.log("Looking for common subnets across " + hostArray.length + " hosts, with role " + role);
+
+    for (let idx = 0; idx < hostArray.length; idx++) {
+        if (hostArray[idx].hasOwnProperty('subnets')) {
+            switch (role) {
+            case "all":
+                subnets.push(hostArray[idx].subnets);
+                break;
+            case "osd":
+                if (hostArray[idx].osd) {
+                    subnets.push(hostArray[idx].subnets);
+                }
+                break;
+            case "rgw":
+                if (hostArray[idx].rgw) {
+                    subnets.push(hostArray[idx].subnets);
+                }
+                break;
+            }
+        }
+    }
+
+    if (subnets.length > 0) {
+        console.log("subnets :" + JSON.stringify(subnets));
+        return arrayIntersect(subnets);
+    } else {
+        console.error("No subnets found in host data!");
+        return [];
+    }
+}
+
+export function buildSubnetLookup(hostArray) {
+    // look through the subnets to determine useful metadata
+    var speed;
+    var subnetLookup = {};
+
+    // goal is to have a lookup table like this
+    // subnet -> speed -> array of hosts with that speed
+    for (let idx = 0; idx < hostArray.length; idx++) {
+        if (hostArray[idx].hasOwnProperty('subnets')) {
+            // process each subnet
+            for (let subnet of hostArray[idx].subnets) {
+                if (!Object.keys(subnetLookup).includes(subnet)) {
+                    subnetLookup[subnet] = {};
+                }
+                let speedInt = hostArray[idx].subnet_details[subnet].speed;
+                if (speedInt <= 0) {
+                    // console.log("speed is <= 0");
+                    speed = 'Unknown';
+                } else {
+                    // console.log("speed is >0 ");
+                    speed = speedInt.toString();
+                }
+                let spds = Object.keys(subnetLookup[subnet]);
+                let snet = subnetLookup[subnet];
+                if (!spds.includes(speed)) {
+                    snet[speed] = [hostArray[idx].hostname];
+                } else {
+                    snet[speed].push(hostArray[idx].hostname);
+                }
+            }
+        }
+    }
+    console.log("lookup " + JSON.stringify(subnetLookup));
+    return subnetLookup;
+}
