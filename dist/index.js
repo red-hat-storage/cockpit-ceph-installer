@@ -22046,8 +22046,9 @@ function (_React$Component) {
             break;
           } else {
             if (eventRoleName != "") {
-              console.log("current role active: " + _this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName); // if the event role is not in the list AND
-
+              // console.log("current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
+              // if the event role is not in the list AND we have seen the role-active name
+              // - set the current role to complete and move pending to the next
               if (!_this.roleSequence.includes(shortName) && _this.roleSeen.includes(_this.roleActive.slice(0, -1))) {
                 currentState[_this.roleActive] = 'complete'; // FIXME: this won't work for iscsi
 
@@ -22060,15 +22061,13 @@ function (_React$Component) {
                 _this.roleActive = nextRole + 's';
                 changesMade = true;
                 break;
-              }
+              } // if the shortname is in the sequence, but not in last seen
+              // - add it to last seen
+
 
               if (!_this.roleSeen.includes(shortName) && _this.roleSequence.includes(shortName)) {
                 _this.roleSeen.push(shortName);
-              } // we have seen the role-active name
-              // set the current role to complete and move pending to the next
-              // if the shortname is in the sequence, but not in last seen
-              // - add it to last seen
-
+              }
             }
           }
 
@@ -22739,9 +22738,7 @@ function (_React$Component3) {
         }
 
         progress = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          style: {
-            float: "left"
-          }
+          className: "float-left"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
           className: "playbook-table"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
@@ -22757,9 +22754,9 @@ function (_React$Component3) {
         }, "Task Failures"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
           className: "task-data aligned-right"
         }, status.data.failed))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          className: "task-title aligned-right float-left"
+          className: "task-title aligned-right float-left padding-sides"
         }, "Current Task:"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          className: "float-left"
+          className: "float-left padding-sides"
         }, taskInfo));
       } // tried using rowSpan, but it doesn't render correctly, so switched to
       // multiple side-by-side divs
@@ -24187,6 +24184,7 @@ function (_React$Component) {
       flashUsage: "Journals/Logs",
       publicNetwork: '',
       clusterNetwork: '',
+      rgwNetwork: '',
       networkType: 'ipv4',
       deployStarted: false
     };
@@ -24413,113 +24411,69 @@ function (_React$Component) {
 
     _this.state = {
       publicNetwork: '',
-      clusterNetwork: ''
+      clusterNetwork: '',
+      rgwNetwork: ''
     };
-    _this.internalNetworks = [];
-    _this.externalNetworks = [];
-    _this.subnetLookup = {};
+    _this.internalNetworks = []; // suitable for cluster connectivity
+
+    _this.externalNetworks = []; // shared across all nodes
+
+    _this.s3Networks = []; // common to Radosgw hosts
+
+    _this.subnetLookup = {}; // Used for speed/bandwidth metadata
+
     return _this;
   }
 
   _createClass(NetworkPage, [{
     key: "componentWillReceiveProps",
     value: function componentWillReceiveProps(props) {
-      // pick up the state change from the parent
-      console.log("props received, calculate the networks");
-      var osdSubnets = []; // subnets present on OSD hosts
+      if (props.className == 'page') {
+        // the page is active, so refresh the items with updated props
+        // from the parent
+        console.log("setting subnet array state variables");
+        this.internalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'osd');
+        this.externalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'all');
+        this.subnetLookup = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildSubnetLookup"])(props.hosts);
+        var netState = {};
+        netState['clusterNetwork'] = this.internalNetworks[0];
+        netState['publicNetwork'] = this.externalNetworks[0];
 
-      var allSubnets = []; // subnets present on all hosts
-
-      var speed; // goal is to have a lookup table like this
-      // subnet -> speed -> array of hosts with that speed
-
-      for (var idx = 0; idx < props.hosts.length; idx++) {
-        if (props.hosts[idx].hasOwnProperty('subnets')) {
-          allSubnets.push(props.hosts[idx].subnets); // process each subnet
-
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
-
-          try {
-            for (var _iterator = props.hosts[idx].subnets[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var subnet = _step.value;
-
-              if (!Object.keys(this.subnetLookup).includes(subnet)) {
-                this.subnetLookup[subnet] = {};
-              }
-
-              var speedInt = props.hosts[idx].subnet_details[subnet].speed;
-
-              if (speedInt <= 0) {
-                console.log("speed is <= 0");
-                speed = 'Unknown';
-              } else {
-                console.log("speed is >0 ");
-                speed = speedInt.toString();
-              }
-
-              var spds = Object.keys(this.subnetLookup[subnet]);
-              var snet = this.subnetLookup[subnet];
-
-              if (!spds.includes(speed)) {
-                snet[speed] = [props.hosts[idx].hostname];
-              } else {
-                snet[speed].push(props.hosts[idx].hostname);
-              }
-            }
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return != null) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
-            }
-          }
-
-          if (props.hosts[idx]['osd']) {
-            // this is an OSD host
-            osdSubnets.push(props.hosts[idx].subnets);
-          }
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(this.props.hosts).includes('rgws')) {
+          console.log("determining the rgw networks");
+          this.s3Networks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'rgw');
+          netState['rgwNetwork'] = this.s3Networks[0];
         }
 
-        console.log(JSON.stringify(props.hosts[idx].subnet_details));
-      } // console.log("subnet lookup table: " + JSON.stringify(subnetLookup));
-
-
-      var commonOSDSubnets = [];
-      var commonSubnets = [];
-
-      if (osdSubnets.length > 0) {
-        commonOSDSubnets = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["arrayIntersect"])(osdSubnets);
+        this.setState(netState);
       }
-
-      if (allSubnets.length > 0) {
-        commonSubnets = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["arrayIntersect"])(allSubnets);
-      }
-
-      console.log("setting subnet array state variables");
-      this.internalNetworks = commonOSDSubnets;
-      this.externalNetworks = commonSubnets;
-      this.setState({
-        clusterNetwork: commonOSDSubnets[0],
-        publicNetwork: commonSubnets[0]
-      });
     }
   }, {
     key: "render",
     value: function render() {
-      console.log("rendering network page");
+      console.log("rendering network page"); // var RGWComponent;
+      // if (this.s3Networks.length > 0) {
+      //     // Network options for rgw selection
+      //     RGWComponent = (
+      //         // <NetworkOptions
+      //         //     title="S3 Client Network"
+      //         //     description="Subnets common to radosgw hosts"
+      //         //     subnets={this.s3Networks}
+      //         //     name="rgwNetwork"
+      //         //     lookup={this.subnetLookup}
+      //         //     hosts={this.props.hosts}
+      //         //     updateHandler={this.updateHandler} />
+      //     );
+      // } else {
+      //     RGWComponent = (<div />);
+      // }
+
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "network",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Network Configuration"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "The network topology plays a significant role in determining the performance of Ceph services. The ideal network configuration uses a front-end (public) and backend (cluster) network topology. This approach separates network load like object replication from client load. The probe performed against your hosts has revealed the following networking options for the cluster and public networks."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Network Configuration"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "The network topology plays a significant role in determining the performance of Ceph services. The ideal network configuration uses a front-end (public) and backend (cluster) network topology. This approach separates network load like object replication from client load. The probe performed against your hosts has revealed the following networking options;"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "centered-container"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
         title: "Cluster Network",
         description: "Subnets common to all OSD hosts",
         subnets: this.internalNetworks,
@@ -24535,7 +24489,15 @@ function (_React$Component) {
         lookup: this.subnetLookup,
         hosts: this.props.hosts,
         updateHandler: this.updateHandler
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
+        title: "S3 Client Network",
+        description: "Subnets common to radosgw hosts",
+        subnets: this.s3Networks,
+        name: "rgwNetwork",
+        lookup: this.subnetLookup,
+        hosts: this.props.hosts,
+        updateHandler: this.updateHandler
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["NextButton"], {
         action: this.updateParent
       }));
     }
@@ -24558,8 +24520,9 @@ function (_React$Component2) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "updateState", function (event) {
       var _this2$setState;
 
-      console.log("change in the radio button set");
-      console.log("lookup the subnet to determine hosts by bandwidth");
+      console.log("change in the radio button set " + event.target.name);
+      console.log("lookup the subnet to determine hosts by bandwidth: " + event.target.value);
+      console.log("lookup table is " + JSON.stringify(_this2.props.lookup));
 
       _this2.setState((_this2$setState = {}, _defineProperty(_this2$setState, event.target.getAttribute('name'), event.target.value), _defineProperty(_this2$setState, "selected", event.target.value), _defineProperty(_this2$setState, "msg", Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["netSummary"])(_this2.props.lookup, event.target.value, _this2.props.hosts)), _this2$setState));
 
@@ -24577,14 +24540,17 @@ function (_React$Component2) {
   _createClass(NetworkOptions, [{
     key: "componentWillReceiveProps",
     value: function componentWillReceiveProps(props) {
-      console.log("got props update");
-      var subnets = this.state.subnets.subnets;
+      console.log("checking to see if subnet list need to change: " + props.name);
+      var subnets = this.state.subnets.sort(); // console.log("comparing " + JSON.stringify(props.subnets) + " to " + JSON.stringify(subnets));
 
-      if (props.subnets != subnets) {
+      if (JSON.stringify(props.subnets.sort()) != JSON.stringify(subnets)) {
+        console.log("- initialising the radio set");
         this.setState({
           subnets: props.subnets,
           msg: Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["netSummary"])(props.lookup, props.subnets[0], props.hosts)
         });
+      } else {
+        console.log("no change in subnets");
       }
     }
   }, {
@@ -24597,16 +24563,30 @@ function (_React$Component2) {
         name: this.props.name,
         horizontal: false
       };
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "network-container"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", {
-        className: "textCenter"
-      }, this.props.title), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, this.props.description), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
-        config: radioConfig,
-        callback: this.updateState
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(SubnetMsg, {
-        msg: this.state.msg
-      }));
+      var RGWComponent;
+
+      if (this.state.subnets.length > 0) {
+        RGWComponent = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "float-left network-subnets"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", {
+          className: "textCenter"
+        }, this.props.title), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, this.props.description), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
+          config: radioConfig,
+          callback: this.updateState
+        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(SubnetMsg, {
+          msg: this.state.msg
+        }));
+      } else {
+        RGWComponent = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
+      }
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, RGWComponent) // <div className="float-left network-subnets">
+      //     <h4 className="textCenter" >{this.props.title}</h4>
+      //     <p>{this.props.description}</p>
+      //     <RadioSet config={radioConfig} callback={this.updateState} />
+      //     <SubnetMsg msg={this.state.msg} />
+      // </div>
+      ;
     }
   }]);
 
@@ -25786,6 +25766,10 @@ function allVars(vars) {
     forYML.containerized_deployment = true;
   }
 
+  if (vars.rgwNetwork != '') {
+    forYML.radosgw_address_block = vars.rgwNetwork;
+  }
+
   forYML.ceph_origin = 'repository';
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
@@ -26071,7 +26055,7 @@ function storeHostVars(hostName, groupName, vars, svcToken) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard */
+/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -26095,6 +26079,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "netSummary", function() { return netSummary; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collocationOK", function() { return collocationOK; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyToClipboard", function() { return copyToClipboard; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commonSubnets", function() { return commonSubnets; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildSubnetLookup", function() { return buildSubnetLookup; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _apicalls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./apicalls.js */ "./src/services/apicalls.js");
@@ -26537,6 +26523,142 @@ function copyToClipboard(text) {
   document.execCommand('copy');
   textField.remove();
 }
+function commonSubnets(hostArray, role) {
+  // determine the common subnets for a given role
+  var subnets = []; // subnets present on all hosts
+
+  console.log("Looking for common subnets across " + hostArray.length + " hosts, with role " + role);
+
+  for (var idx = 0; idx < hostArray.length; idx++) {
+    if (hostArray[idx].hasOwnProperty('subnets')) {
+      switch (role) {
+        case "all":
+          subnets.push(hostArray[idx].subnets);
+          break;
+
+        case "osd":
+          if (hostArray[idx].osd) {
+            subnets.push(hostArray[idx].subnets);
+          }
+
+          break;
+
+        case "rgw":
+          if (hostArray[idx].rgw) {
+            subnets.push(hostArray[idx].subnets);
+          }
+
+          break;
+      }
+    }
+  }
+
+  if (subnets.length > 0) {
+    console.log("subnets :" + JSON.stringify(subnets));
+    return arrayIntersect(subnets);
+  } else {
+    console.error("No subnets found in host data!");
+    return [];
+  }
+}
+function buildSubnetLookup(hostArray) {
+  // look through the subnets to determine useful metadata
+  var speed;
+  var subnetLookup = {}; // goal is to have a lookup table like this
+  // subnet -> speed -> array of hosts with that speed
+
+  for (var idx = 0; idx < hostArray.length; idx++) {
+    if (hostArray[idx].hasOwnProperty('subnets')) {
+      // process each subnet
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = hostArray[idx].subnets[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var subnet = _step3.value;
+
+          if (!Object.keys(subnetLookup).includes(subnet)) {
+            subnetLookup[subnet] = {};
+          }
+
+          var speedInt = hostArray[idx].subnet_details[subnet].speed;
+
+          if (speedInt <= 0) {
+            // console.log("speed is <= 0");
+            speed = 'Unknown';
+          } else {
+            // console.log("speed is >0 ");
+            speed = speedInt.toString();
+          }
+
+          var spds = Object.keys(subnetLookup[subnet]);
+          var snet = subnetLookup[subnet];
+
+          if (!spds.includes(speed)) {
+            snet[speed] = [hostArray[idx].hostname];
+          } else {
+            snet[speed].push(hostArray[idx].hostname);
+          }
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+    }
+  }
+
+  console.log("lookup " + JSON.stringify(subnetLookup));
+  return subnetLookup;
+} //         allSubnets.push(props.hosts[idx].subnets);
+//         // process each subnet
+//         for (let subnet of props.hosts[idx].subnets) {
+//             if (!Object.keys(this.subnetLookup).includes(subnet)) {
+//                 this.subnetLookup[subnet] = {};
+//             }
+//             let speedInt = props.hosts[idx].subnet_details[subnet].speed;
+//             if (speedInt <= 0) {
+//                 console.log("speed is <= 0");
+//                 speed = 'Unknown';
+//             } else {
+//                 console.log("speed is >0 ");
+//                 speed = speedInt.toString();
+//             }
+//             let spds = Object.keys(this.subnetLookup[subnet]);
+//             let snet = this.subnetLookup[subnet];
+//             if (!spds.includes(speed)) {
+//                 snet[speed] = [props.hosts[idx].hostname];
+//             } else {
+//                 snet[speed].push(props.hosts[idx].hostname);
+//             }
+//         }
+//         if (props.hosts[idx]['osd']) {
+//             // this is an OSD host
+//             osdSubnets.push(props.hosts[idx].subnets);
+//         }
+//     }
+//     console.log(JSON.stringify(props.hosts[idx].subnet_details));
+// }
+// // console.log("subnet lookup table: " + JSON.stringify(subnetLookup));
+// let commonOSDSubnets = [];
+// let commonSubnets = [];
+// if (osdSubnets.length > 0) {
+//     commonOSDSubnets = arrayIntersect(osdSubnets);
+// }
+// if (allSubnets.length > 0) {
+//     commonSubnets = arrayIntersect(allSubnets);
+// }
+// }
 
 /***/ }),
 
