@@ -22,6 +22,7 @@ export class ElapsedTime extends React.Component {
     componentWillUnmount(props) {
         console.log("Unmounting the ElapsedTime component, cancelling the timer");
         clearInterval(this.loadInterval);
+        this.props.callback(this.state.timer);
     }
 
     render() {

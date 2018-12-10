@@ -15,6 +15,7 @@ export class DeployPage extends React.Component {
             statusMsg: '',
             deployActive: false,
             settings: {},
+            runTime: 0,
             roleState: {},
             status: {
                 status: '',
@@ -393,7 +394,7 @@ export class DeployPage extends React.Component {
                             });
                             break;
                         default:
-                            // TODO: play is still active - let's look at the role/task to provide a progress update
+                            // play is still active - NO-OP
                         }
                     })
                     .catch(e => {
@@ -402,26 +403,23 @@ export class DeployPage extends React.Component {
         }
     }
 
+    storeRuntime = (timer) => {
+        this.setState({runTime: timer});
+    }
+
     render() {
         console.log("in deploypage render method");
         var spinner;
-        // var breadcrumbs;
 
         if (this.state.deployActive) {
             spinner = (
                 <div className="modifier deploy-summary">
                     <div className="modifier spinner spinner-lg">&nbsp;</div>
-                    <RuntimeSummary />
+                    <RuntimeSummary callback={this.storeRuntime} />
                 </div>
             );
-            // breadcrumbs = (
-            //     <div className="div-center">
-            //         <BreadCrumbStatus roleState={this.state.roleState} />
-            //     </div>
-            // );
         } else {
             spinner = (<div className="modifier deploy-summary" />);
-            // breadcrumbs = (<div />);
         }
 
         var deployBtnClass;
@@ -457,7 +455,7 @@ export class DeployPage extends React.Component {
                 <div className="div-center">
                     <BreadCrumbStatus runStatus={this.state.status.status} roleState={this.state.roleState} />
                 </div>
-                <ExecutionProgress active={this.state.deployActive} status={this.state.status} />
+                <ExecutionProgress active={this.state.deployActive} status={this.state.status} runtime={this.state.runTime} />
                 <FailureSummary status={this.state.status} failures={this.state.status.data.failed} />
                 {/* <NextButton btnText="Finish" disabled={!this.state.finished} action={this.props.action} /> */}
 
@@ -494,7 +492,7 @@ export class RuntimeSummary extends React.Component {
                         </tr>
                         <tr>
                             <td className="aligned-right">Run time:&nbsp;</td>
-                            <td><ElapsedTime /></td>
+                            <td><ElapsedTime callback={this.props.callback} /></td>
                         </tr>
                     </tbody>
                 </table>
@@ -514,6 +512,7 @@ export class ExecutionProgress extends React.Component {
         var progress;
         var status;
         var taskInfo;
+        var taskLabel;
         progress = (<div />);
 
         if (this.props.status.status != '') {
@@ -525,6 +524,24 @@ export class ExecutionProgress extends React.Component {
             } else {
                 taskInfo = status.data.task;
             }
+            switch (status.msg.toUpperCase()) {
+            case "FAILED":
+                taskLabel = (<span style={{color: "red"}}>FAILED</span>);
+                taskInfo = '';
+                break;
+            case "SUCCESSFUL":
+                taskLabel = "Deployment Successful ";
+                if (this.props.runtime > 0) {
+                    let date = new Date(null);
+                    date.setSeconds(this.props.runtime);
+                    taskLabel += "(run time: " + date.toISOString().substr(11, 8) + ")";
+                }
+                taskInfo = '';
+                break;
+            default:
+                taskLabel = "Current Task:";
+            }
+
             progress = (
                 <div>
                     <div className="float-left">
@@ -545,8 +562,9 @@ export class ExecutionProgress extends React.Component {
                             </tbody>
                         </table>
                     </div>
-                    <div className="task-title aligned-right float-left padding-sides" >
-                    Current Task:
+                    <div className="float-left" style={{width: "40px", minWidth: "40px"}} >&nbsp;</div>
+                    <div className="float-left padding-sides" >
+                        { taskLabel }
                     </div>
                     <div className="float-left padding-sides" >
                         { taskInfo }
