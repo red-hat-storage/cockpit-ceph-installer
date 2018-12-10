@@ -32,7 +32,7 @@ export class NetworkPage extends React.Component {
             netState['clusterNetwork'] = this.internalNetworks[0];
             netState['publicNetwork'] = this.externalNetworks[0];
 
-            if (buildRoles(this.props.hosts).includes('rgws')) {
+            if (buildRoles(props.hosts).includes('rgws')) {
                 console.log("determining the rgw networks");
                 this.s3Networks = commonSubnets(props.hosts, 'rgw');
                 netState['rgwNetwork'] = this.s3Networks[0];
@@ -54,22 +54,6 @@ export class NetworkPage extends React.Component {
 
     render() {
         console.log("rendering network page");
-        // var RGWComponent;
-        // if (this.s3Networks.length > 0) {
-        //     // Network options for rgw selection
-        //     RGWComponent = (
-        //         // <NetworkOptions
-        //         //     title="S3 Client Network"
-        //         //     description="Subnets common to radosgw hosts"
-        //         //     subnets={this.s3Networks}
-        //         //     name="rgwNetwork"
-        //         //     lookup={this.subnetLookup}
-        //         //     hosts={this.props.hosts}
-        //         //     updateHandler={this.updateHandler} />
-        //     );
-        // } else {
-        //     RGWComponent = (<div />);
-        // }
 
         return (
             <div id="network" className={this.props.className}>
