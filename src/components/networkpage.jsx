@@ -36,6 +36,10 @@ export class NetworkPage extends React.Component {
                 console.log("determining the rgw networks");
                 this.s3Networks = commonSubnets(props.hosts, 'rgw');
                 netState['rgwNetwork'] = this.s3Networks[0];
+            } else {
+                console.log("no rgw role seen across the hosts");
+                this.s3Networks = [];
+                netState['rgwNetwork'] = '';
             }
 
             this.setState(netState);
