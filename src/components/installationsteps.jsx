@@ -169,6 +169,7 @@ export class InstallationSteps extends React.Component {
                     <NetworkPage
                         className={this.page['network']}
                         action={this.nextHandler}
+                        modalHandler={this.props.modalHandler}
                         hosts={this.state.hosts} />
                     <DeployPage
                         className={this.page['deploy']}
