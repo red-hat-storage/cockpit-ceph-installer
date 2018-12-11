@@ -222,15 +222,25 @@ export class ValidatePage extends React.Component {
 
         console.log("toggle selection of all hosts in the table" + event.target + " " + event.target.checked + " " + event.target.getAttribute('name'));
         var hostsCopy = JSON.parse(JSON.stringify(this.state.hosts));
+        var hostsChanged = false;
         for (let i = 0; i < hostsCopy.length; i++) {
             if (this.hostOK(hostsCopy[i])) {
                 hostsCopy[i].selected = event.target.checked;
+                hostsChanged = true;
             }
         }
-        this.setState({
-            selectAll: event.target.checked,
-            hosts: hostsCopy
-        });
+
+        if (hostsChanged) {
+            this.setState({
+                selectAll: event.target.checked,
+                hosts: hostsCopy
+            });
+        } else {
+            let errorMsg = (
+                <div>There aren't any usable hosts. All hosts have errors or warnings related to them</div>
+            );
+            this.showModal(errorMsg);
+        }
     }
 
     toggleSingleRow = (event) => {
