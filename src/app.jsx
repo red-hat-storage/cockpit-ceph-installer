@@ -23,6 +23,7 @@ import './app.scss';
 // import ProgressTracker from './components/progresstracker.jsx';
 import InstallationSteps from './components/installationsteps.jsx';
 import { getSVCToken } from './services/utils.js';
+import { GenericModal } from './components/common/modal.jsx';
 // import InfoBar from './components/infobar.jsx';
 
 const _ = cockpit.gettext;
@@ -67,7 +68,7 @@ export class Application extends React.Component {
 
         return (
             <div className="container-fluid">
-                <Modal
+                <GenericModal
                     show={this.state.modalVisible}
                     content={this.state.modalContent}
                     closeHandler={this.hideModal} />
@@ -75,32 +76,6 @@ export class Application extends React.Component {
                 {/* <ProgressTracker /> */}
                 <InstallationSteps svctoken={this.state.svctoken} modalHandler={this.showModal} />
                 {/* <InfoBar /> */}
-            </div>
-        );
-    }
-}
-
-export class Modal extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
-    render() {
-        let showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
-        return (
-            <div className={showHideClass}>
-                <section className="modal-main">
-                    <div>
-                        { this.props.content }
-                        <br />
-                        <button
-                            className="modal-close btn btn-primary btn-lg"
-                            onClick={this.props.closeHandler}>
-                            Close
-                        </button>
-                    </div>
-                </section>
             </div>
         );
     }
