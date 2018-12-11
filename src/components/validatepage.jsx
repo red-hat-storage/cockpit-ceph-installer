@@ -1,6 +1,7 @@
 import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
+import { GenericModal } from './common/modal.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { toggleHostRole, buildRoles, checkPlaybook, countNICs, msgCount, sortByKey, collocationOK, getHost } from '../services/utils.js';
 import { runPlaybook, getJobEvent, deleteHost } from '../services/apicalls.js';
@@ -11,6 +12,8 @@ export class ValidatePage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            modalVisable: false,
+            modalContent: '',
             ready: false,
             probeEnabled: true,
             selectAll: false,
@@ -20,7 +23,7 @@ export class ValidatePage extends React.Component {
             pendingProbe: true,
             probeStatusMsg: ''
         };
-
+        this.probeSummary = '';
         this.eventLookup = {}; // lookup for probe results
         this.skipChecks = true;
     }
@@ -66,6 +69,7 @@ export class ValidatePage extends React.Component {
                 break;
             }
         }
+        this.probeSummary = JSON.stringify(this.state.hosts);
     }
 
     updateProbeStatus = (response, playUUID) => {
@@ -209,7 +213,10 @@ export class ValidatePage extends React.Component {
 
     toggleAllRows = (event) => {
         if (!this.state.ready) {
-            console.log("can't select hosts until the probe has been done");
+            let errorMsg = (
+                <div>You can't select 'ALL' hosts until a probe has been performed</div>
+            );
+            this.showModal(errorMsg);
             return;
         }
 
@@ -236,11 +243,28 @@ export class ValidatePage extends React.Component {
                     this.setState({hosts: hostsCopy});
                     break;
                 } else {
-                    console.log("Only hosts with a status of null or OK can be selected");
+                    let errorMsg = (
+                        <div>Only hosts with a status of 'OK' can be selected</div>
+                    );
+                    this.showModal(errorMsg);
                 }
                 break;
             }
         }
+    }
+
+    hideModal = () => {
+        this.setState({modalVisible: false});
+    }
+
+    showModal = (modalContent) => {
+        // handle the show and hide of the app level modal
+        console.log("content: ");
+        console.log(modalContent);
+        this.setState({
+            modalVisible: true,
+            modalContent: modalContent
+        });
     }
 
     checkHostsReady = () => {
@@ -248,6 +272,15 @@ export class ValidatePage extends React.Component {
         // all selected hosts must have a status of OK
         let candidateHosts = [];
         let hostsToDelete = [];
+        if (JSON.stringify(this.state.hosts) != this.probeSummary) {
+            console.log("clicked next, but changes detected since last probe");
+            let errorMsg = (
+                <div>
+                    You have made role changes, so a further probe is required.
+                </div>);
+            this.showModal(errorMsg);
+            return;
+        }
 
         if (this.skipChecks) {
             console.log("all checks bypassed");
@@ -263,10 +296,10 @@ export class ValidatePage extends React.Component {
                 hostsToDelete.push(this.state.hosts[i].hostname);
             }
         }
-        if (this.state.probePending) {
-            console.error("You must run another probe, since changes have been made");
-            return;
-        }
+        // if (this.state.probePending) {
+        //     console.error("You must run another probe, since changes have been made");
+        //     return;
+        // }
 
         // TODO: this is mickey-mouse for testing ONLY
         if (candidateHosts.length < 1) {
@@ -344,6 +377,10 @@ export class ValidatePage extends React.Component {
                  probe the hosts to validate that their hardware configuration is compatible with
                  their intended Ceph role. Once the probe is complete you must select the hosts to
                  use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
+                <GenericModal
+                    show={this.state.modalVisible}
+                    content={this.state.modalContent}
+                    closeHandler={this.hideModal} />
                 <div className="spacer" />
                 <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
                 { spinner }
