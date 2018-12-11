@@ -208,7 +208,7 @@ export class ValidatePage extends React.Component {
     }
 
     hostOK (host) {
-        return (['', 'OK'].includes(host.ready));
+        return (['OK'].includes(host.ready));
     }
 
     toggleAllRows = (event) => {
