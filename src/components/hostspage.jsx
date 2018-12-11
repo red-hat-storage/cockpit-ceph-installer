@@ -3,6 +3,7 @@ import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
+import { GenericModal } from './common/modal.jsx';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
 import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost } from '../services/utils.js';
@@ -13,6 +14,8 @@ export class HostsPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            modalVisible: false,
+            modalContent: '',
             hosts: [],
             ready: false
         };
@@ -35,14 +38,15 @@ export class HostsPage extends React.Component {
                 }
             });
             if (hostOKCount != this.state.hosts.length) {
-                console.log("Can't continue with hosts in a error state");
+                let errorMsg = (
+                    <div>Can't continue with host(s) in a error state</div>
+                );
+                this.showModal(errorMsg);
                 return;
             }
 
             console.log("TODO: check we have minimum config size of mons and osds");
             let usable = true;
-
-            // check collocation rules?
 
             if (usable) {
                 this.props.action(this.state);
@@ -54,6 +58,12 @@ export class HostsPage extends React.Component {
 
     addHostsToTable = (stateObject) => {
         console.log("received mask information " + JSON.stringify(stateObject));
+
+        // before we do anything, we need to look at the mask to ensure that it will
+        // resolve to new hosts. If not, this is a no-op.
+        if (this.expandHosts(stateObject.hostmask).length == 0) {
+            return;
+        }
 
         // check selected groups are in the inventory
         var roleList = buildRoles([stateObject]);
@@ -191,13 +201,21 @@ export class HostsPage extends React.Component {
         let currentHosts = Object.keys(this.config);
         console.log("config lookup is: " + JSON.stringify(currentHosts));
         let candidates = hosts.slice(0);
+        let hostErrors = [];
         candidates.forEach((hostName) => {
             if (currentHosts.includes(hostName)) {
                 // need to drop to avoid duplicate
-                console.log("dropping host " + hostName + " to avoid duplicate entries");
+                hostErrors.push(hostName);
                 hosts = removeItem(hosts, hostName);
             }
         });
+        if (hostErrors.length > 0) {
+            let pfx = (hostErrors == 1) ? "Host" : "Hosts";
+            let errorMsg = (
+                <div>{ pfx } { hostErrors.join(',') } already defined. To add a role, simply update an existing entry</div>
+            );
+            this.showModal(errorMsg);
+        }
 
         return hosts;
     }
@@ -314,6 +332,20 @@ export class HostsPage extends React.Component {
         }
     }
 
+    hideModal = () => {
+        this.setState({modalVisible: false});
+    }
+
+    showModal = (modalContent) => {
+        // handle the show and hide of the app level modal
+        console.log("content: ");
+        console.log(modalContent);
+        this.setState({
+            modalVisible: true,
+            modalContent: modalContent
+        });
+    }
+
     render() {
         var rows;
         if (this.state.hosts.length > 0) {
@@ -335,6 +367,10 @@ export class HostsPage extends React.Component {
                  expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless
                  SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to
                  resolve the issue and remove/re-add the host.
+                <GenericModal
+                    show={this.state.modalVisible}
+                    content={this.state.modalContent}
+                    closeHandler={this.hideModal} />
                 <div className="divCenter">
                     <div>
                         <HostMask callback={this.addHostsToTable} clusterType={this.props.clusterType} installType={this.props.installType} />
