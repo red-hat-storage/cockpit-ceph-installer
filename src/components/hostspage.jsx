@@ -39,7 +39,7 @@ export class HostsPage extends React.Component {
             });
             if (hostOKCount != this.state.hosts.length) {
                 let errorMsg = (
-                    <div>Can't continue with host(s) in a error state</div>
+                    <div>Can't continue with {this.state.hosts.length - hostOKCount} host(s) in a 'NOTOK' state</div>
                 );
                 this.showModal(errorMsg);
                 return;
@@ -54,6 +54,17 @@ export class HostsPage extends React.Component {
         } else {
             console.log("You haven't got any hosts - can't continue");
         }
+    }
+
+    showSSHError = (hostName) => {
+        let modalMsg = (
+            <div>
+                You need to copy the ssh public key from this host to {hostName}<br /><br />
+                <pre>
+                    ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub root@{hostName}
+                </pre>
+            </div>);
+        this.showModal(modalMsg);
     }
 
     addHostsToTable = (stateObject) => {
@@ -115,6 +126,7 @@ export class HostsPage extends React.Component {
                                 var ctr = 0;
                                 var hostStatus = 'Unknown';
                                 var hostInfo = '';
+                                var modalMsg;
 
                                 // run the add hosts serially - avoids inventory update conflicts/retries
                                 var sequence = Promise.resolve();
@@ -132,15 +144,27 @@ export class HostsPage extends React.Component {
                                                 case 401:
                                                     console.log("SSH key problem with " + hostName);
                                                     hostStatus = "NOTOK";
-                                                    hostInfo = "SSH Auth failure";
+                                                    hostInfo = (
+                                                        <div>
+                                                            SSH Auth failure to { hostName }&nbsp;
+                                                            <a className="pficon-help clickable" onClick={(e) => { that.showSSHError(hostName) }}>&nbsp;</a>
+                                                        </div>);
                                                     break;
                                                 case 404:
                                                     console.log("Server " + hostName + " not found");
                                                     hostStatus = "NOTOK";
-                                                    hostInfo = "Host not found (DNS issue?)";
+                                                    hostInfo = (<div>Host not found (DNS issue?)</div>);
                                                     break;
                                                 default:
-                                                    console.log("Wacky response " + err.status);
+                                                    modalMsg = (
+                                                        <div>
+                                                            Unexpected response when attempting to add '{ hostName }'<br />
+                                                            Status: { err.status }<br />
+                                                            Msg: {err.message }<br />
+                                                        </div>
+                                                    );
+                                                    this.showModal(modalMsg);
+                                                    console.error("Unknown response to add host request: " + err.status + " / " + err.message);
                                                 }
                                             })
                                             .finally(() => {
@@ -462,7 +486,7 @@ class HostDataRow extends React.Component {
                     { this.colorify(this.state.host.status) }
                 </td>
                 <td className="leftAligned tdHostInfo">
-                    { this.colorify(this.state.host.info) }
+                    { this.state.host.info }
                 </td>
                 <td className="tdDeleteBtn">
                     <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} />
