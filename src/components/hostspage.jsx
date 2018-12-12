@@ -56,17 +56,6 @@ export class HostsPage extends React.Component {
         }
     }
 
-    showSSHError = (hostName) => {
-        let modalMsg = (
-            <div>
-                You need to copy the ssh public key from this host to {hostName}<br /><br />
-                <pre>
-                    ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub root@{hostName}
-                </pre>
-            </div>);
-        this.showModal(modalMsg);
-    }
-
     addHostsToTable = (stateObject) => {
         console.log("received mask information " + JSON.stringify(stateObject));
 
@@ -137,6 +126,7 @@ export class HostsPage extends React.Component {
                                         console.log(resp);
                                         let r = JSON.parse(resp);
                                         console.log("host is " + hostName);
+                                        hostInfo = '';
                                         hostStatus = r.status;
                                     })
                                             .catch((err) => {
@@ -144,16 +134,12 @@ export class HostsPage extends React.Component {
                                                 case 401:
                                                     console.log("SSH key problem with " + hostName);
                                                     hostStatus = "NOTOK";
-                                                    hostInfo = (
-                                                        <div>
-                                                            SSH Auth failure to { hostName }&nbsp;
-                                                            <a className="pficon-help clickable" onClick={(e) => { that.showSSHError(hostName) }}>&nbsp;</a>
-                                                        </div>);
+                                                    hostInfo = "SSH Auth failure to " + hostName;
                                                     break;
                                                 case 404:
                                                     console.log("Server " + hostName + " not found");
                                                     hostStatus = "NOTOK";
-                                                    hostInfo = (<div>Host not found (DNS issue?)</div>);
+                                                    hostInfo = "Host not found (DNS issue?)";
                                                     break;
                                                 default:
                                                     modalMsg = (
@@ -378,7 +364,8 @@ export class HostsPage extends React.Component {
                             key={host.hostname}
                             hostData={host}
                             roleChange={this.updateHost}
-                            deleteRow={this.deleteHost} />;
+                            deleteRow={this.deleteHost}
+                            modal={this.showModal} />;
             });
         } else {
             rows = emptyRow();
@@ -485,8 +472,8 @@ class HostDataRow extends React.Component {
                 <td className="textCenter hostStatusCell">
                     { this.colorify(this.state.host.status) }
                 </td>
-                <td className="leftAligned tdHostInfo">
-                    { this.state.host.info }
+                <td className="tdHostInfo">
+                    <HostInfo hostname={this.state.host.hostname} info={this.state.host.info} modal={this.props.modal} />
                 </td>
                 <td className="tdDeleteBtn">
                     <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} />
@@ -689,6 +676,32 @@ class HostMask extends React.Component {
                     className="btn btn-primary btn-lg"
                     onClick={this.checkMaskValid} >
                     Add</button>
+            </div>
+        );
+    }
+}
+
+export class HostInfo extends React.Component {
+    render () {
+        var helper = (<div />);
+        if (this.props.info.startsWith('SSH')) {
+            let helperMsg = (
+                <div>
+                    You need to copy the ssh public key from this host to {this.props.hostname}<br /><br />
+                    <pre>
+                        ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub root@{this.props.hostname}
+                    </pre>
+                </div>
+            );
+            helper = (
+                <a className="pficon-help" onClick={(e) => { this.props.modal(helperMsg) }} />
+            );
+        }
+
+        return (
+            <div>
+                <span className="leftAligned">{this.props.info}</span>
+                { helper }
             </div>
         );
     }
