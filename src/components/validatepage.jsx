@@ -157,6 +157,7 @@ export class ValidatePage extends React.Component {
         let playbookVars = {
             inventory: rolesByHost,
             mode: clusterType,
+            osdtype: this.props.osdType.toLowerCase(),
             flashusage: flashusage,
             deployment: this.props.installType.toLowerCase()
         };
