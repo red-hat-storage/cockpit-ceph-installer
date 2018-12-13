@@ -101,6 +101,7 @@ export function allVars (vars) {
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
     forYML.disk_list = {rc: 0}; // workaround for osd_run_sh template error?
+    forYML.docker_pull_timeout = "600s"; // workaround for local network wet string
 
     return forYML;
 }
