@@ -379,7 +379,7 @@ export class DeployPage extends React.Component {
                         // process the response
                         let response = JSON.parse(resp);
                         this.setState({status: response});
-
+                        this.setRoleState(response);
                         let msg = response.msg.toUpperCase();
                         let buttonText;
 
@@ -666,11 +666,21 @@ export class FailureDetail extends React.Component {
 }
 
 export class BreadCrumbStatus extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            roles: []
+        };
+    }
+
+    componentWillReceiveProps (props) {
+        this.setState({roles: Object.keys(props.roleState)});
+    }
+
     render () {
         var breadcrumbs;
         if (this.props.runStatus != '') {
-            var roles = Object.keys(this.props.roleState);
-            breadcrumbs = roles.map(role => {
+            breadcrumbs = this.state.roles.map(role => {
                 return <Breadcrumb
                             key={role}
                             label={role}
