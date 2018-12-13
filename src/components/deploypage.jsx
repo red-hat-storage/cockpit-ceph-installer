@@ -34,7 +34,7 @@ export class DeployPage extends React.Component {
         this.roleSequence = [];
         this.roleActive = null;
         this.roleSeen = [];
-        this.mocked = true;
+        this.mocked = false;
         this.playbookUUID = '';
         this.intervalHandler = 0;
         this.activeMockData = [];
@@ -523,7 +523,7 @@ export class ExecutionProgress extends React.Component {
             console.log("rendering playbook run details");
             console.log(JSON.stringify(status));
             if (status.data.role != '') {
-                taskInfo = status.data.role + " : " + status.data.task;
+                taskInfo = "[" + status.data.role + "] " + status.data.task;
             } else {
                 taskInfo = status.data.task;
             }
@@ -542,7 +542,7 @@ export class ExecutionProgress extends React.Component {
                 taskInfo = '';
                 break;
             default:
-                taskLabel = "Current Task:";
+                taskLabel = "Task:";
             }
 
             progress = (
