@@ -343,7 +343,10 @@ export class HostsPage extends React.Component {
     }
 
     hideModal = () => {
-        this.setState({modalVisible: false});
+        this.setState({
+            modalVisible: false,
+            modalContent: ''
+        });
     }
 
     showModal = (modalContent) => {

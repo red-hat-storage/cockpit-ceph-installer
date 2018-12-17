@@ -67,22 +67,27 @@ export class InstallationSteps extends React.Component {
     }
 
     nextHandler (param) {
+        let ignoredKeys = ['className', 'modalVisible', 'modalContent'];
         if (param !== undefined) {
             if (param.constructor === {}.constructor) {
                 // this is a json object
                 let stateObject = param;
                 // console.log(JSON.stringify(stateObject));
                 console.log("Lets apply the settings to the parents config object");
-                if ('className' in stateObject) {
-                    console.log("removing className attribute");
-                    delete stateObject['className'];
-                }
+                // if ('className' in stateObject) {
+                //     console.log("removing className attribute");
+                //     delete stateObject['className'];
+                // }
                 // this.config = Object.assign(this.config, stateObject);
                 // console.log("installation config holds: " + JSON.stringify(this.config));
                 let keys = Object.keys(stateObject);
                 for (var k of keys) {
-                    console.log("processing key : " + k + " value of " + JSON.stringify(stateObject[k]));
-                    this.setState({[k]: stateObject[k]});
+                    if (ignoredKeys.includes(k)) {
+                        console.log("skipping update for key: " + k);
+                    } else {
+                        console.log("processing key : " + k + " value of " + JSON.stringify(stateObject[k]));
+                        this.setState({[k]: stateObject[k]});
+                    }
                 }
                 // this.config = Object.assign(this.config, stateObject);
                 // console.log("installation config holds: " + JSON.stringify(this.config));
