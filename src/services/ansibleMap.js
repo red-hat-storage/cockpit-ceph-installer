@@ -86,7 +86,7 @@ export function allVars (vars) {
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
-        forYML.rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3.2
+        forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
         break;
     }
     if (vars.installType == "Container") {
@@ -117,7 +117,7 @@ export function mgrsVars (vars) {
     let forYML = {};
 
     const community_dashboard_versions = ["13", "14"];
-    const rhcs_dashboard_versions = ["3.2", "4.0"];
+    const rhcs_dashboard_versions = ["4"];
 
     switch (vars.sourceType) {
     case "Community":

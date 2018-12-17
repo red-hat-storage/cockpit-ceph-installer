@@ -19,13 +19,13 @@ export class EnvironmentPage extends React.Component {
             osdMode: "Standard",
             installType: "Container",
             flashUsage: "Journals/Logs",
-            targetVersion: "RHCS 3.1"
+            targetVersion: "RHCS 3"
         };
 
         this.installSource = {
-            "Red Hat": ["RHCS 3.1", 'RHCS 3.0'],
+            "Red Hat": ["RHCS 3", 'RHCS 4'],
             "Distribution": ["13 (Mimic)", "12 (Luminous)"],
-            "Community": ["13 (Mimic)", "12 (Luminous)"]
+            "Community": ["13 (Mimic)", "12 (Luminous)", "14 (Nautilus)"]
         };
 
         this.clusterTypes = ["Production", "Development/POC"];
