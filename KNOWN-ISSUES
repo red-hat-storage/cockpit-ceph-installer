@@ -11,7 +11,10 @@ General
     - ceph-ansible provides .sample named playbooks that need to be copied/renamed before use
       - this should be done by the plugin post-install script
     - test is hitting a j2 template error with undefined ansible variable disk_list. Workaround applied in 
-      ansibleMap.js
+      ansibleMap.js - KNOWN ISSUE in ceph-ansible, resolved on Master (Seb)
+    - docker pull timeout shows this error
+      ceph-3 failed in role 'ceph-container-common', task 'pulling docker.io/ceph/daemon:latest image'. Error msg - non-zero return code
+      WORKAROUND: all.yml now written with 600s timeout (default is 300s)
 
 hostspage.jsx
     - TODO: validate roles based on the mode (dev or prod) in the host mask & the host row
@@ -19,8 +22,9 @@ hostspage.jsx
     - Once collocation rules are applied, and the inventory created, the user could go back to the environment page and
       select a different cluster type, which would not match with the new collocation rules. If the user selects a different cluster or install
       type, the inventory should probably be wiped and they should start again from scratch
+    - if you get ssh auth issues, the modal dialog presents the path to the prod mode ansible-runner-service file - even when the daemon is actually
+      running in dev mode
       
-
 validatepage.jsx
     TODO: for testing checks are currently bypassing with skipChecks=true in the class definition - which just allows the 
         next button to work, without any validity checks
