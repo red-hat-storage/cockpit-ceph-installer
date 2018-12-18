@@ -376,7 +376,7 @@ export class HostsPage extends React.Component {
 
         return (
             <div id="hosts" className={this.props.className}>
-                <h3>Host Definition</h3>
+                <h3>2. Host Definition</h3>
                 Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be
                  expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless
                  SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to
