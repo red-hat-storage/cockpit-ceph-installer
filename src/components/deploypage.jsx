@@ -650,12 +650,21 @@ export class FailureDetail extends React.Component {
     }
 
     render() {
+        let errorDetail;
+        if (this.props.errorEvent.res.results) {
+            // try to use stderr
+            let results = this.props.errorEvent.res.results[0];
+            errorDetail = results.stderr;
+        } else {
+            errorDetail = this.props.errorEvent.res.msg;
+        }
+
         return (
             <tr>
                 <td className="fhost">{this.props.hostname}</td>
                 <td className="fdetail">
                     [{this.props.errorEvent['role']}] {this.props.errorEvent['task']}<br />
-                    {this.props.errorEvent['res']['msg']}
+                    { errorDetail }
                 </td>
                 <td className="fbtn">
                     <button className="pficon-export" onClick={this.clipboardCopy} />
