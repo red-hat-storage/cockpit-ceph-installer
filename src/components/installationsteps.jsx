@@ -44,13 +44,18 @@ export class InstallationSteps extends React.Component {
         };
         this.infoText = [
             "",
-            "The environment settings define the basic constraints that will apply to the target Ceph cluster",
+            "The environment settings define the basic constraints that will apply to the target Ceph cluster.",
             "Enter the hostnames using either the hostname or a hostname pattern to " +
-                "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc)",
+                "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc).",
             "By probing the hosts, we can check that there are enough hardware resources to" +
                 " support the intended Ceph roles. It also allows you to visually check the" +
                 " detected devices and configuration are as expected. Once probed, you may" +
-                " hover over the hostname to show the hardware model name of the server."
+                " hover over the hostname to show the hardware model name of the server.",
+            "Separating network traffic across multiple subnets is a recommeded best practice" +
+                " for performance and fault tolerance.",
+            "When you click 'Deploy', the Ansible settings will be committed to disk using standard" +
+                " Ansible formats. This allows you to refer to or modify these settings at a later date" +
+                " if you decide to manage your cluster with Ansible."
         ];
         this.visited = [];
     }
