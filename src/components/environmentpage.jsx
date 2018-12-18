@@ -34,10 +34,11 @@ export class EnvironmentPage extends React.Component {
         // the result of a cockpit.file read request, so the config is editable from
         // a file - instead of hacking code!
         this.osd_type = {
-            description: "Select the OSD type",
+            description: "OSD type",
             options: ["Bluestore", "Filestore"],
             default: "Bluestore",
             name: "osdType",
+            tooltip: "Bluestore is the default OSD type, offering more features and improved\nperformance. Filestore is supported as a legacy option only",
             horizontal: true
         };
         this.network_type = {
@@ -45,35 +46,40 @@ export class EnvironmentPage extends React.Component {
             options: ['ipv4', 'ipv6'],
             default: 'ipv4',
             name: 'networkType',
+            tooltip: "",
             horizontal: true
         };
         this.source = {
-            description: "Select the software source type",
+            description: "Software source",
             options: ["Red Hat", "OS Distribution", "Community"],
             default: "Red Hat",
             name: "sourceType",
+            tooltip: '',
             horizontal: true
         };
         this.osd_mode = {
-            description: "Select the level of data security required on the OSD drives",
+            description: "Data protection (data-at-rest)",
             options: ["Standard", "Encrypted"],
             default: "Standard",
             name: "osdMode",
+            tooltip: "For added security, you may use at-rest encryption for your storage devices",
             horizontal: true
         };
+
         this.install_type = {
-            description: "Choose an installation type. Ceph can be installed either as regular packages (RPMs) or as container images. " +
-                         "Container deployments support collocation of more Ceph services",
+            description: "Installation type",
             options: ["Container", "RPM"],
             default: "Container",
             name: "installType",
+            tooltip: "Ceph can be installed as lightweight container images, or as rpm packages.\nContainer deployments offer service isolation enabling improved\ncollocation and hardware utilization",
             horizontal: true
         };
         this.flash_usage = {
-            description: "Flash (SSD or NVMe) media can be used as either Journals/Logs or as the main backing storage itself (OSD)",
+            description: "Flash device usage",
             options: ["Journals/Logs", "OSD Data"],
             default: "Journals/Logs",
             name: "flashUsage",
+            tooltip: 'SSD or NVMe media can be used as either Journals/Logs or as the\nmain backing storage itself (OSD)',
             horizontal: true
         };
     }
@@ -112,7 +118,7 @@ export class EnvironmentPage extends React.Component {
 
         return (
             <div id="environment" className={this.props.className}>
-                <h3>Environment</h3>
+                <h3>1. Environment</h3>
                 Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.
                 <div >
                     <Selector labelName="Installation Source" options={Object.keys(this.installSource)} callback={this.installChange} />
