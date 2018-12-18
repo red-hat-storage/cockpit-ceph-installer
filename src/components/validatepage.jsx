@@ -421,7 +421,7 @@ export class ValidatePage extends React.Component {
                                     <th className="textCenter fact">HDD</th>
                                     <th className="textCenter fact">SSD</th>
                                     <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
-                                    <th className="leftAligned thHostInfo">Ready</th>
+                                    <th className="leftAligned thHostInfo">Status</th>
                                 </tr>
                             </thead>
                             <tbody >
