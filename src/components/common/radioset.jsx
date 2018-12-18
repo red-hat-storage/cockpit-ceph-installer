@@ -30,14 +30,32 @@ export class RadioSet extends React.Component {
 
     render() {
         var radioGrpClass;
+        var toolTip;
         if (this.props.config.horizontal) {
-            radioGrpClass = "radio radio-inline";
+            radioGrpClass = "radio-common radio-inline";
         } else {
-            radioGrpClass = "radio radio-block";
+            radioGrpClass = "radio-common radio-block";
         }
+
+        if (this.props.config.tooltip != '') {
+            let info = this.props.config.tooltip.split('\n').map((text, key) => {
+                return <div key={key}>{text}</div>;
+            });
+            toolTip = (
+                <div className="textInfo">
+                    &nbsp;<sup><span className="pficon-info" /></sup>
+                    <span className="tooltipContent">{info}</span>
+                </div>
+            );
+        } else {
+            toolTip = (
+                <span />
+            );
+        }
+
         return (
             <div>
-                <div>{this.props.config.description}</div>
+                <div><b>{this.props.config.description}</b>{ toolTip }</div>
 
                 {
                     this.props.config.options.map((text, i) => (
