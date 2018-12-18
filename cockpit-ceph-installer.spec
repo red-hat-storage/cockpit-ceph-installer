@@ -35,6 +35,7 @@ if [ "$1" = 1 ]; then
 # copy the sample playbooks for installation, so they're available to the runner-service
   cp %{_datadir}/ceph-ansible/site.yml.sample %{_datadir}/ceph-ansible/site.yml 
   cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-docker.yml 
+  cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-container.yml 
 
 # TODO: Could change ansible-runner-service target_user parm = ceph (default will be root)
 #       i.d add the parameter and restart runner-service daemon
