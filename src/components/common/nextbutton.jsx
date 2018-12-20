@@ -14,7 +14,7 @@ export class NextButton extends React.Component {
         if (this.props.btnText != undefined) {
             btnText = this.props.btnText;
         } else {
-            btnText = 'Next';
+            btnText = 'Next >';
         }
 
         return (
