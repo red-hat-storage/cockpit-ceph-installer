@@ -58,11 +58,12 @@ export class EnvironmentPage extends React.Component {
             horizontal: true
         };
         this.osd_mode = {
-            description: "Data protection (data-at-rest)",
-            options: ["Standard", "Encrypted"],
-            default: "Standard",
+            description: "Encryption",
+            options: ["None", "Encrypted"],
+            default: "None",
             name: "osdMode",
-            tooltip: "For added security, you may use at-rest encryption for your storage devices",
+            info: "For added security, you may use at-rest encryption for your storage devices",
+            tooltip: "Data encryption uses the Linux dmcrypt subsystem (LUKS1)",
             horizontal: true
         };
 
@@ -71,15 +72,17 @@ export class EnvironmentPage extends React.Component {
             options: ["Container", "RPM"],
             default: "Container",
             name: "installType",
-            tooltip: "Ceph can be installed as lightweight container images, or as rpm packages.\nContainer deployments offer service isolation enabling improved\ncollocation and hardware utilization",
+            info: "Ceph can be installed as lightweight container images, or as rpm packages. Container deployments offer service isolation enabling improved collocation and hardware utilization",
+            tooltip: "Containers simplify deployment",
             horizontal: true
         };
         this.flash_usage = {
-            description: "Flash device usage",
+            description: "Disk Configuration",
             options: ["Journals/Logs", "OSD Data"],
             default: "Journals/Logs",
             name: "flashUsage",
-            tooltip: 'SSD or NVMe media can be used as either Journals/Logs or as the\nmain backing storage itself (OSD)',
+            info: "Flash media can be used for all data, or as a means of enhancing performance by aggregating fast media with slower devices (journaling)",
+            tooltip: "The installation process will check HDD:Flash media ratios\nagainst best practice",
             horizontal: true
         };
     }
@@ -125,15 +128,10 @@ export class EnvironmentPage extends React.Component {
                     <Selector labelName="Target Version" value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
                     <Selector labelName="Cluster Type" options={this.clusterTypes} callback={this.clusterTypeChange} />
                 </div>
-                <p>&nbsp;</p>
                 <RadioSet config={this.network_type} callback={this.updateState} />
-                <p>&nbsp;</p>
                 <RadioSet config={this.osd_type} callback={this.updateState} />
-                <p>&nbsp;</p>
                 <RadioSet config={this.flash_usage} callback={this.updateState} />
-                <p>&nbsp;</p>
                 <RadioSet config={this.osd_mode} callback={this.updateState} />
-                <p>&nbsp;</p>
                 <RadioSet config={this.install_type} callback={this.updateState} />
                 <NextButton action={this.checkReady} />
             </div>
