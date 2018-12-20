@@ -2,6 +2,7 @@ import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { GenericModal } from './common/modal.jsx';
+import { Arrow } from './common/arrow.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { toggleHostRole, buildRoles, checkPlaybook, countNICs, msgCount, sortByKey, collocationOK, getHost } from '../services/utils.js';
 import { runPlaybook, getJobEvent, deleteHost } from '../services/apicalls.js';
@@ -400,10 +401,11 @@ export class ValidatePage extends React.Component {
                 </div>
                 <div className="divCenter">
                     <div>
-                        <table className="roleTable" >
+                        <table id="probe-table" className="roleTable" >
                             <thead>
                                 <tr>
                                     <th className="tdSelector">
+                                        <div className="arrow-dummy" />
                                         <HostSelector
                                             name="*ALL*"
                                             selected={this.state.selectAll}
@@ -424,9 +426,10 @@ export class ValidatePage extends React.Component {
                                     <th className="leftAligned thHostInfo">Status</th>
                                 </tr>
                             </thead>
-                            <tbody >
-                                { rows }
+                            <tbody>
+                                <tr className="dummy-row" />
                             </tbody>
+                            {rows}
                         </table>
                     </div>
                 </div>
@@ -439,7 +442,9 @@ export class ValidatePage extends React.Component {
 class HostDiscoveryRow extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            msgClass: 'hidden'
+        };
     }
 
     toggleSelect = (event) => {
@@ -453,45 +458,72 @@ class HostDiscoveryRow extends React.Component {
         this.props.updateRole(host.hostname, role, checkedState);
     }
 
+    rowGroupHandler = () => {
+        console.log("change the state of the msg row");
+        if (this.state.msgClass === 'hidden') {
+            this.setState({msgClass: "visible"});
+        } else {
+            this.setState({msgClass: "hidden"});
+        }
+    }
+
     render () {
         var host = this.props.hostData;
+        var probeMsgs = "full-width " + this.state.msgClass;
+        let rowExpansion;
+
+        if (host.msgs.length > 0) {
+            rowExpansion = (
+                <Arrow clickHandler={this.rowGroupHandler} />
+            );
+        } else {
+            rowExpansion = (
+                <div className="arrow-dummy" />
+            );
+        }
 
         return (
-            <tr>
-                <td className="tdSelector" >
-                    <HostSelector name={host.hostname} selected={host.selected} callback={this.toggleSelect} />
-                </td>
-                <td className="thHostname">
-                    <div className="textInfo">
-                        {host.hostname}
-                        <span className="tooltipContent">{host.model}</span>
-                    </div>
-                </td>
-                <td className="thRoleWidth">
-                    <RoleCheckbox role="mon" checked={host.mon} callback={this.changeRole} />
-                </td>
-                <td className="thRoleWidth">
-                    <RoleCheckbox role="mds" checked={host.mds} callback={this.changeRole} />
-                </td>
-                <td className="thRoleWidth">
-                    <RoleCheckbox role="osd" checked={host.osd} callback={this.changeRole} />
-                </td>
-                <td className="thRoleWidth">
-                    <RoleCheckbox role="rgw" checked={host.rgw} callback={this.changeRole} />
-                </td>
-                <td className="thRoleWidth">
-                    <RoleCheckbox role="iscsi" checked={host.iscsi} callback={this.changeRole} />
-                </td>
-                <td className="fact" >{host.cpu}</td>
-                <td className="fact" >{host.ram}</td>
-                <td className="fact" >{host.nic}</td>
-                <td className="fact" >{host.hdd}</td>
-                <td className="fact" >{host.ssd}</td>
-                <td className="capacity" >{host.capacity}</td>
-                <td className="leftAligned thHostInfo" >
-                    <HostStatus status={host.ready} msgs={host.msgs} />
-                </td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td className="tdSelector" >
+                        { rowExpansion }
+                        <HostSelector name={host.hostname} selected={host.selected} callback={this.toggleSelect} />
+                    </td>
+                    <td className="thHostname">
+                        <div className="textInfo">
+                            {host.hostname}
+                            <span className="tooltipContent">{host.model}</span>
+                        </div>
+                    </td>
+                    <td className="thRoleWidth">
+                        <RoleCheckbox role="mon" checked={host.mon} callback={this.changeRole} />
+                    </td>
+                    <td className="thRoleWidth">
+                        <RoleCheckbox role="mds" checked={host.mds} callback={this.changeRole} />
+                    </td>
+                    <td className="thRoleWidth">
+                        <RoleCheckbox role="osd" checked={host.osd} callback={this.changeRole} />
+                    </td>
+                    <td className="thRoleWidth">
+                        <RoleCheckbox role="rgw" checked={host.rgw} callback={this.changeRole} />
+                    </td>
+                    <td className="thRoleWidth">
+                        <RoleCheckbox role="iscsi" checked={host.iscsi} callback={this.changeRole} />
+                    </td>
+                    <td className="fact" >{host.cpu}</td>
+                    <td className="fact" >{host.ram}</td>
+                    <td className="fact" >{host.nic}</td>
+                    <td className="fact" >{host.hdd}</td>
+                    <td className="fact" >{host.ssd}</td>
+                    <td className="capacity" >{host.capacity}</td>
+                    <td className="leftAligned thHostInfo" >
+                        <HostStatus status={host.ready} msgs={host.msgs} />
+                    </td>
+                </tr>
+                <tr className={ probeMsgs }>
+                    <HostMsgs msgs={host.msgs} />
+                </tr>
+            </tbody>
         );
     }
 }
@@ -500,17 +532,17 @@ class HostStatus extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            msgClass: "hidden"
+            // msgClass: "hidden"
         };
     }
 
-    toggleMsgs = () => {
-        if (this.state.msgClass == 'hidden') {
-            this.setState({msgClass: "visible"});
-        } else {
-            this.setState({msgClass: "hidden"});
-        }
-    }
+    // toggleMsgs = () => {
+    //     if (this.state.msgClass == 'hidden') {
+    //         this.setState({msgClass: "visible"});
+    //     } else {
+    //         this.setState({msgClass: "hidden"});
+    //     }
+    // }
 
     buildSummary = () => {
         var status = this.props.status;
@@ -521,7 +553,7 @@ class HostStatus extends React.Component {
             return (<span key={i} className={mtype}><b>{msgSummary[mtype]}</b>&nbsp;{mtype}</span>);
         });
         if (msgTypes.length > 0) {
-            return (<span className="clickable"><b>{status}</b>&nbsp;{ summary }</span>);
+            return (<span><b>{status}</b>&nbsp;{ summary }</span>);
         } else {
             return (<span><b>{status}</b></span>);
         }
@@ -532,8 +564,7 @@ class HostStatus extends React.Component {
 
         return (
             <div>
-                <div onClick={this.toggleMsgs} >{ hostState }</div>
-                <HostMsgs display={this.state.msgClass} msgs={this.props.msgs} />
+                <div>{ hostState }</div>
             </div>
         );
     }
@@ -541,27 +572,23 @@ class HostStatus extends React.Component {
 
 class HostMsgs extends React.Component {
     render() {
-        let display = "scrollX " + this.props.display;
+        // let display = "scrollX " + this.props.display;
 
         var msgLines = this.props.msgs.map((m, i) => {
             var [mType, mDesc] = m.split(':');
-            var highlight = "hiddenTable " + mType + "Text";
+            var highlight = "display-inline-block hiddenTable " + mType + "Text probe-result";
             return (
-                <tr key={i} className="hiddenTable">
-                    <td className={highlight}>{mType}</td>
-                    <td>{mDesc}</td>
-                </tr>
-
+                <div key={i} className="probe-detail">
+                    <span className={highlight}>{mType}</span>
+                    <span>{mDesc}</span>
+                </div>
             );
         });
+        // let tdStyle = "full-width " + this.props.msgClass;
         return (
-            <div className={ display }>
-                <table className="hiddenTable">
-                    <tbody className="hiddenTable">
-                        { msgLines }
-                    </tbody>
-                </table>
-            </div>
+            <td colSpan="14" className="full-width display-inline-block" >
+                {msgLines}
+            </td>
         );
     }
 }
