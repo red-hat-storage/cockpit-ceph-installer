@@ -444,7 +444,7 @@ export class DeployPage extends React.Component {
 
             <div id="deploy" className={this.props.className}>
 
-                <h3>5. Deploy the Cluster</h3>
+                <h3>6. Deploy the Cluster</h3>
                 You are now ready to start the deployment process. <br />
                 All the options you've chosen will be saved to disk, and the deployment engine (Ansible) invoked
                  to configure your hosts. Deployment progress will be shown below.<br />

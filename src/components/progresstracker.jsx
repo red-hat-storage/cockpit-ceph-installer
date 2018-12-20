@@ -5,12 +5,12 @@ export class ProgressTracker extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
-        this.itemState = Array(6).fill("indicator");
+        this.itemState = Array(7).fill("indicator");
     }
 
     render() {
         if (this.props.pageNum >= 1) {
-            for (let i = 1; i < 6; i++) {
+            for (let i = 1; i < 7; i++) {
                 if (i == this.props.pageNum) {
                     this.itemState[i] = "indicator selected selectable";
                 } else {
@@ -31,7 +31,9 @@ export class ProgressTracker extends React.Component {
                 <span className="joiner">&nbsp;</span>
                 <span label-name="Network" onClick={() => this.props.pageSwitcher(4)} className={this.itemState[4]}>4</span>
                 <span className="joiner">&nbsp;</span>
-                <span label-name="Deploy" onClick={() => this.props.pageSwitcher(5)} className={this.itemState[5]}>5</span>
+                <span label-name="Review" onClick={() => this.props.pageSwitcher(5)} className={this.itemState[5]}>5</span>
+                <span className="joiner">&nbsp;</span>
+                <span label-name="Deploy" onClick={() => this.props.pageSwitcher(6)} className={this.itemState[6]}>6</span>
             </div>
         );
     }

@@ -5,6 +5,7 @@ import EnvironmentPage from './environmentpage.jsx';
 import HostsPage from './hostspage.jsx';
 import ValidatePage from './validatepage.jsx';
 import NetworkPage from './networkpage.jsx';
+import ReviewPage from './reviewpage.jsx';
 import DeployPage from './deploypage.jsx';
 import ProgressTracker from './progresstracker.jsx';
 import InfoBar from './infobar.jsx';
@@ -40,6 +41,7 @@ export class InstallationSteps extends React.Component {
             hosts: "page behind",
             validate: "page behind",
             network: "page behind",
+            review: "page behind",
             deploy: "page behind"
         };
         this.infoText = [
@@ -53,6 +55,8 @@ export class InstallationSteps extends React.Component {
                 " hover over the hostname to show the hardware model name of the server.",
             "Separating network traffic across multiple subnets is a recommeded best practice" +
                 " for performance and fault tolerance.",
+            "Review the configuration information that you have provided, prior to moving to installation. Use" +
+                " the back button to return to prior pages to change your selections.",
             "When you click 'Deploy', the Ansible settings will be committed to disk using standard" +
                 " Ansible formats. This allows you to refer to or modify these settings at a later date" +
                 " if you decide to manage your cluster with Ansible."
@@ -101,7 +105,7 @@ export class InstallationSteps extends React.Component {
         }
         let current = this.state.pageNum;
         let newPage = current + 1;
-        if (current < 5) {
+        if (current < 6) {
             if (!this.visited.includes(newPage)) {
                 this.visited.push(newPage);
             }
@@ -179,6 +183,11 @@ export class InstallationSteps extends React.Component {
                         svctoken={this.props.svctoken} />
                     <NetworkPage
                         className={this.page['network']}
+                        action={this.nextHandler}
+                        modalHandler={this.props.modalHandler}
+                        hosts={this.state.hosts} />
+                    <ReviewPage
+                        className={this.page['review']}
                         action={this.nextHandler}
                         modalHandler={this.props.modalHandler}
                         hosts={this.state.hosts} />
