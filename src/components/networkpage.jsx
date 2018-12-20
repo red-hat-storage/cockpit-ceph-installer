@@ -149,7 +149,7 @@ export class NetworkOptions extends React.Component {
         if (this.state.subnets.length > 0) {
             subnetSelection = (
                 <div className="float-left network-subnets">
-                    <h4 className="textCenter" >{this.props.title}</h4>
+                    <h4 className="textCenter" ><b>{this.props.title}</b></h4>
                     <p>{this.props.description}</p>
                     <RadioSet config={radioConfig} callback={this.updateState} />
                     <SubnetMsg msg={this.state.msg} />
