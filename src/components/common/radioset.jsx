@@ -30,14 +30,19 @@ export class RadioSet extends React.Component {
 
     render() {
         var radioGrpClass;
+        var labelClass;
         var toolTip;
+        var radioGrp;
+        var buttons;
         if (this.props.config.horizontal) {
-            radioGrpClass = "radio-common radio-inline";
+            radioGrpClass = "radio radio-common display-inline-block";
+            labelClass = "radio-label-horizontal display-inline-block";
         } else {
-            radioGrpClass = "radio-common radio-block";
+            radioGrpClass = "radio radio-common display-block";
+            labelClass = "radio-label-vertical";
         }
 
-        if (this.props.config.tooltip != '') {
+        if (this.props.config.tooltip) {
             let info = this.props.config.tooltip.split('\n').map((text, key) => {
                 return <div key={key}>{text}</div>;
             });
@@ -52,24 +57,40 @@ export class RadioSet extends React.Component {
                 <span />
             );
         }
+        buttons = this.props.config.options.map((text, i) => {
+            return (
+                <div className={ radioGrpClass } key={i}>
+                    <label>
+                        <input type="radio"
+                        onClick={this.changeHandler}
+                        name={ this.props.config.name }
+                        value={ text }
+                        defaultChecked={ this.props.config.default === text } />
+                        { text }
+                    </label>
+                </div>);
+        });
+
+        if (this.props.config.info) {
+            radioGrp = (
+                <div className="display-inline-block">
+                    <div className="radio-info">{this.props.config.info}</div>
+                    <div>
+                        <div className="radio-spacer display-inline-block">&nbsp;</div>
+                        {buttons}
+                    </div>
+                </div>
+            );
+        } else {
+            radioGrp = buttons;
+        }
 
         return (
             <div>
-                <div><b>{this.props.config.description}</b>{ toolTip }</div>
-
-                {
-                    this.props.config.options.map((text, i) => (
-                        <label className={ radioGrpClass } key={ i }>
-                            <input type="radio"
-                            onClick={this.changeHandler}
-                            // style={ this.radioStyle }
-                            name={ this.props.config.name }
-                            value={ text }
-                            defaultChecked={ this.props.config.default === text } />
-                            { text }
-                        </label>
-                    ))
-                }
+                <div className="display-inline-block radio-container">
+                    <div className={labelClass}><b>{this.props.config.description}</b>{ toolTip }</div>
+                    {radioGrp}
+                </div>
             </div>
         );
     }
