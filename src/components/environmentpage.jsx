@@ -77,12 +77,12 @@ export class EnvironmentPage extends React.Component {
             horizontal: true
         };
         this.flash_usage = {
-            description: "Disk Configuration",
+            description: "Flash Configuration",
             options: ["Journals/Logs", "OSD Data"],
             default: "Journals/Logs",
             name: "flashUsage",
-            info: "Flash media can be used for all data, or as a means of enhancing performance by aggregating fast media with slower devices (journaling)",
-            tooltip: "The installation process will check HDD:Flash media ratios\nagainst best practice",
+            info: "Flash media (SSD or NVMe) can be used for all data, or as journal devices to improve the performance of slower devices (HDDs)",
+            tooltip: "In Journal 'mode', the installation process will check HDD:Flash media\nratios against best practice",
             horizontal: true
         };
     }
