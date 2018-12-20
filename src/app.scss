@@ -11,7 +11,21 @@ tr {
 }
 table {
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: fixed; 
+    height: 380px;
+    display:block;
+    overflow-y:auto;
+}
+  
+  
+table#probe-table thead {
+    position: fixed;
+    z-index: 2; 
+}
+  
+.dummy-row {
+    height: 3em;
+    display: block; 
 }
 .emptyTable {
     width: 100%;
@@ -52,7 +66,7 @@ table {
 }
 .dropdown {
     min-width: 160px;
-    padding: 5px 0;
+    padding: 1px 0;
     margin: 2px 0 0;
     font-size: 12px;
     text-align: left;
@@ -103,20 +117,20 @@ table {
     width: 150px;
     margin-top: 0px; 
 }
-.radio-inline {
-    display: inline-block;
-}
-.radio-block {
-    display: block;
-}
+// .radio-inline-block {
+//     display: inline-block;
+// }
+// .radio-block {
+//     display: block;
+// }
 th {
     background-color: #f9f9f9;
     font-size: 1.1em;
 }
-tbody {
-    overflow-y: auto;
-    display: block; 
-}
+// tbody {
+//     overflow-y: auto;
+//     display: block; 
+// }
 .roleTable td {
     border-left: 1px solid lightgrey;   
     border-right: 1px solid lightgrey;   
@@ -129,10 +143,10 @@ tbody {
 .roleTable th {
     height: 30px;
 }
-.roleTable tr:hover {
+.roleTable tbody:hover {
     background-color: #F8F9F9;
 }
-.roleTable tbody {
+.roleTable table {
     height: 380px;
 }
 .thHostInfo, .tdHostInfo  {
@@ -145,6 +159,7 @@ tbody {
 .tdSelector {
     min-width: 35px; 
     text-align: center;
+    padding: 0px;
 }
 
 .page {
@@ -158,6 +173,7 @@ tbody {
 }
 .behind {
     position: absolute;
+    width:0;
     top: 0px;
     left: 0px;
     z-index: -1;
@@ -336,6 +352,17 @@ tbody {
     color: blue;
     font-weight: bold;
 }
+.probe-result {
+ 
+    min-width: 90px;
+    padding-right: 40px; 
+}
+.probe-detail {
+    border-bottom: 1px solid #eeeeee;
+    margin-bottom: 10px;
+    margin-left:40px;
+    margin-right: 40px;
+}
 .scrollX{
     overflow-x: auto;
     width: 100%;
@@ -356,12 +383,13 @@ tbody {
 
 .hiddenTable td{
     border: 0px;
-    min-width: 45px;
+    min-width: 80px;
     padding-left: 3px;
     padding-right: 3px; }
   
   .hiddenTable tr {
     border-bottom: 1px solid #EEEEEE;
+    margin-left:60px;
   }
   .hiddenTable tbody {
     height: inherit;
@@ -415,16 +443,19 @@ tbody {
 }
 .network-subnets {
     margin-left: 80px; 
-    border-bottom: 2px solid white; 
-    padding-bottom: 20px;
+    border-top: 2px solid white; 
+    margin-top:20px;
 }
 .network-subnets:hover {
-    border-bottom: 2px solid #39a5dc;
+    border-top: 2px solid #39a5dc;
 }
 .network-msgs {
     width: 100%;
-    display: flex;
+    display: block;
     position: relative;
+    border-top: 1px solid lightgray;
+    margin-top:20px;
+    padding:10px 0px;
 }
 .btn-offset {
     margin-left:-30px;
@@ -616,3 +647,76 @@ display: none;
     justify-content: center;
     align-content: start;
 }
+.full-width {
+    width: 100%;
+}
+.arrow-dummy {
+    display: inline-block;
+    width: 10px;
+    height: 5px;
+    top: -.2em;
+}
+.arrow-right {
+    width: 0;
+    height: 0;
+    position:relative;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    transition: all 0.1s 0.1s;
+    border-left: 5px solid darkgray; 
+    margin-right:5px;
+    top: -.2em;
+  }
+  
+.arrow-right:hover {
+    border-left: 5px solid black;
+    cursor: pointer; 
+}
+  
+.toggle-reset {
+    transform: rotate(0deg); 
+}
+  
+.toggle-down {
+    border-left: 5px solid black;
+    transform: rotate(90deg); 
+}
+.sel-container-horizontal {
+    width: 200px; }
+  
+.sel-container-vertical {
+    width: 400px;
+    margin:10px }
+  
+.sel-label-vertical {
+        width: 190px;
+        margin-right: 40px;
+        text-align: right; }
+  
+.sel-label-horizontal {
+    text-align: center; }
+
+.radio-label-horizontal {
+    width: 200px;
+    margin-right: 20px;
+    text-align: right;
+    vertical-align: top; }
+      
+.radio-label-vertical {
+    position: relative; }
+      
+.radio-info {
+    width: 600px;
+    margin-left: 20px;
+    display: inline-flex;
+}
+      
+.radio-spacer {
+    background-color: black;
+    margin-left: 0px;
+    margin-top:5px;
+    width: 0px;
+    content: ''; }
+      
+.radio-container {
+    margin-top:10px; }
