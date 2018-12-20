@@ -15,12 +15,21 @@ export class Selector extends React.Component {
 
     render() {
         console.log("rendering selector");
+        let divStyle;
+        let labelStyle;
+        if (this.props.horizontal) {
+            divStyle = "display-inline-block sel-container-horizontal";
+            labelStyle = "display-block sel-label-horizontal";
+        } else {
+            divStyle = "display-block sel-container-vertical";
+            labelStyle = "display-inline-block sel-label-vertical";
+        }
         var options = this.props.options.map(function(opt, item) {
             return <option key={ item } value={ opt }>{ opt }</option>;
         });
         return (
-            <div style={{display: "inline-block", width: "200px"}}>
-                <div><b>{this.props.labelName}</b></div>
+            <div className={divStyle}>
+                <div className={labelStyle}><b>{this.props.labelName}</b></div>
                 <select className="dropdown" value={this.props.value} onChange={this.selectorChanged}>
                     { options }
                 </select>
