@@ -140,3 +140,8 @@ export function storeHostVars(hostName, groupName, vars, svcToken) {
     let url = "/api/v1/hostvars/" + hostName + "/groups/" + groupName;
     return http.post(url, vars, { Authorization: svcToken });
 }
+
+export function checkAPI(svcToken) {
+    console.log("checking API is there");
+    return http.get("api", null, {Authorization: svcToken});
+}
