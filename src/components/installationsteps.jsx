@@ -189,8 +189,7 @@ export class InstallationSteps extends React.Component {
                     <ReviewPage
                         className={this.page['review']}
                         action={this.nextHandler}
-                        modalHandler={this.props.modalHandler}
-                        hosts={this.state.hosts} />
+                        config={this.state} />
                     <DeployPage
                         className={this.page['deploy']}
                         action={this.nextHandler}

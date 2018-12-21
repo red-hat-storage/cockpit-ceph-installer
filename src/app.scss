@@ -721,3 +721,41 @@ display: none;
       
 .radio-container {
     margin-top:10px; }
+
+    .review-table-label {
+        width: 180px;
+        font-weight: bold; }
+      
+      .review-table td {
+        padding: 5px; }
+      
+      .review-table tr:nth-child(even) {
+        background-color: #f5f5f5; }
+      
+      .review-table caption {
+        font-size: 1.3em;
+        color: black; }
+      
+      .review-table tbody {
+        border: 1px solid darkgray; }
+      
+      .review-table-value {
+        width: 120px; }
+      
+      .review-table-container {
+        position: relative;
+        display:inline-block ;
+}
+.review-table-whitespace {
+    width:50px;
+    display:inline-block;
+}
+      .align-left {
+        text-align: left; }
+      
+      .align-right {
+        text-align: right; }
+      .tab {
+        width: 20px;
+        display:inline-block;
+      }
