@@ -22,6 +22,10 @@ table#probe-table thead {
     position: fixed;
     z-index: 2; 
 }
+table#failures thead {
+    position: fixed;
+    z-index: 2; 
+}
   
 .dummy-row {
     height: 3em;
@@ -489,6 +493,9 @@ table.skinny-table {
 table.playbook-table td {
     padding: 0px 5px 0px 5px;
 }
+table.playbook-table {
+    height:60px;
+  }
 .update-me {
     display: table-cell;
 }
@@ -498,16 +505,16 @@ table.playbook-table td {
 .padding-sides {
     padding: 0px 5px 0px 5px;
 }
-#failures {
-    margin-top: 20px;
-    width: 100%;
-    height: 330px;
-    display: inline-flex; 
-}
+// #failures {
+//     margin-top: 20px;
+//     width: 100%;
+//     display: inline-flex; 
+// }
   
 .failure-table {
     display:inline-flex;
-    margin: 0 auto;
+    height:330px;
+    margin-top:20px;
 }
 .fhost {
     width: 140px;
@@ -518,18 +525,25 @@ table.playbook-table td {
     width: 800px;
     min-width:800px; 
 }
-#failures tr td {
+table#failures tr td {
     padding: 10px 5px 10px 5px;
-    border: 1px solid lightgrey; 
-}
-    
-#failures th {
+    border: 1px solid lightgrey; }
+  
+  table#failures thead {
+    position: fixed;
+   }
+  
+  table#failures th {
     border: 1px solid lightgrey;
     padding: 0px 5px 0px 5px;
-    border-bottom: 0px; 
-}
+    height: 2em;
+  }
+  
+  .failures-dummy-row {
+    height: 2em;
+    display: block; }
     
-#failures tr:hover {
+table#failures tr:hover {
     background-color: #F8F9F9; 
 }
     
@@ -538,7 +552,7 @@ table.playbook-table td {
     text-align: center; 
 }
 
-/* handle modal */
+/* handle simple modal */
 .modal {
     position: fixed;
     top: 0;
@@ -690,9 +704,9 @@ display: none;
     margin:10px }
   
 .sel-label-vertical {
-        width: 190px;
-        margin-right: 40px;
-        text-align: right; }
+    width: 190px;
+    margin-right: 40px;
+    text-align: right; }
   
 .sel-label-horizontal {
     text-align: center; }
@@ -722,40 +736,48 @@ display: none;
 .radio-container {
     margin-top:10px; }
 
-    .review-table-label {
-        width: 180px;
-        font-weight: bold; }
+.review-table-label {
+    width: 180px;
+    font-weight: bold; }
       
-      .review-table td {
-        padding: 5px; }
+.review-table td {
+    padding: 5px; }
       
-      .review-table tr:nth-child(even) {
-        background-color: #f5f5f5; }
+.review-table tr:nth-child(even) {
+    background-color: #f5f5f5; }
       
-      .review-table caption {
-        font-size: 1.3em;
-        color: black; }
+.review-table caption {
+    font-size: 1.3em;
+    color: black; }
       
-      .review-table tbody {
-        border: 1px solid darkgray; }
+.review-table tbody {
+    border: 1px solid darkgray; }
       
-      .review-table-value {
-        width: 120px; }
+.review-table-value {
+    width: 120px; }
       
-      .review-table-container {
-        position: relative;
-        display:inline-block ;
+.review-table-container {
+    position: relative;
+    display:inline-block ;
 }
 .review-table-whitespace {
     width:50px;
     display:inline-block;
 }
-      .align-left {
-        text-align: left; }
+.align-left {
+    text-align: left; }
       
-      .align-right {
-        text-align: right; }
-      .tab {
-        width: 20px;
-        display:inline-block;
-      }
+.align-right {
+    text-align: right; }
+.tab {
+    width: 20px;
+    display:inline-block;
+}
+.link {
+    color: blue; 
+}
+
+.link:hover {
+    font-weight:bold;
+    cursor: pointer;
+}

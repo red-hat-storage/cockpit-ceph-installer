@@ -4,7 +4,9 @@ import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars, cephAnsibleSequence } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
-import { buildRoles, copyToClipboard, currentTime } from '../services/utils.js';
+import { GenericModal } from './common/modal.jsx';
+// import { buildRoles, copyToClipboard, currentTime } from '../services/utils.js';
+import { buildRoles, currentTime } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     constructor(props) {
@@ -34,7 +36,7 @@ export class DeployPage extends React.Component {
         this.roleSequence = [];
         this.roleActive = null;
         this.roleSeen = [];
-        this.mocked = false;
+        this.mocked = true;
         this.playbookUUID = '';
         this.intervalHandler = 0;
         this.activeMockData = [];
@@ -76,14 +78,46 @@ export class DeployPage extends React.Component {
             {msg: "running", data: {
                 role: "ceph-osd",
                 task: "updating systemd", last_task_num: 80,
-                ok: 30, skipped: 45, failed: 0, failures: {}
-                //     'ceph-1': {msg: "bad things happened"}
-                // }
+                ok: 30, skipped: 45, failed: 16, failures: {
+                    'ceph-1': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-2': {event_data: {res: {results: [{stderr: "bad things happened on a big scale with lots of small gremlins released into the wild running riot. bad things happened on a big scale with lots of small gremlins released into the wild running riot!"}], msg:"bad stuff happened"}}},
+                    'ceph-3': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-4': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-5': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-6': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-7': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-8': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-9': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-10': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-11': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-12': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-13': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-14': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-15': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-16': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                }
             }},
-            {msg: "successful", data: {
-                role: "",
+            {msg: "failed", data: {
+                role: "ceph-osd",
                 task: "checking mon state", last_task_num: 99,
-                ok: 35, skipped: 55, failed: 0, failures: {}
+                ok: 35, skipped: 55, failed: 16, failures: {
+                    'ceph-1': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-2': {event_data: {res: {results: [{stderr: "bad things happened on a big scale with lots of small gremlins released into the wild running riot. bad things happened on a big scale with lots of small gremlins released into the wild running riot!"}], msg:"bad stuff happened"}}},
+                    'ceph-3': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-4': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-5': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-6': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-7': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-8': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-9': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-10': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-11': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-12': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-13': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-14': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-15': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                    'ceph-16': {event_data: {res: {results: [{stderr: "bad things happened"}], msg:"bad stuff happened"}}},
+                }
                 //     'ceph-1': {msg: "bad things happened"}
                 // }
             }}
@@ -589,7 +623,23 @@ export class FailureSummary extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            modalVisible: false,
+            modalContent: ''
         };
+    }
+
+    showModal = (content) => {
+        this.setState({
+            modalVisible: true,
+            modalContent: content
+        });
+    }
+
+    hideModal = () => {
+        this.setState({
+            modalVisible: false,
+            modalContent: ''
+        });
     }
 
     render() {
@@ -607,17 +657,20 @@ export class FailureSummary extends React.Component {
                 return <FailureDetail
                             key={id}
                             hostname={host}
-                            errorEvent={hostError} />;
+                            errorEvent={hostError}
+                            modalHandler={this.showModal} />;
             });
 
             failureSection = (
-                <table className="failure-table">
-                    <tbody>
+                <table id="failures" className="failure-table">
+                    <thead>
                         <tr>
                             <th className="fhost">Hostname</th>
                             <th className="fdetail">Task Name / Failure Reason</th>
-                            <th className="fbtn">&nbsp;</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        <tr className="failures-dummy-row" />
                         { failureRows }
                     </tbody>
                 </table>
@@ -625,7 +678,11 @@ export class FailureSummary extends React.Component {
         }
 
         return (
-            <div id="failures">
+            <div>
+                <GenericModal
+                    show={this.state.modalVisible}
+                    content={this.state.modalContent}
+                    closeHandler={this.hideModal} />
                 { failureSection }
             </div>
         );
@@ -639,24 +696,33 @@ export class FailureDetail extends React.Component {
         };
     }
 
-    clipboardCopy = () => {
-        console.log("copying error for " + this.props.hostname + " to the clipboard");
-        let errorText;
-        errorText = this.props.hostname + " failed in role '";
-        errorText += this.props.errorEvent['role'] + "', task '";
-        errorText += this.props.errorEvent['task'] + "'. Error msg - ";
-        errorText += this.props.errorEvent['res']['msg'];
-        copyToClipboard(errorText);
-    }
+    // clipboardCopy = () => {
+    //     console.log("copying error for " + this.props.hostname + " to the clipboard");
+    //     let errorText;
+    //     errorText = this.props.hostname + " failed in role '";
+    //     errorText += this.props.errorEvent['role'] + "', task '";
+    //     errorText += this.props.errorEvent['task'] + "'. Error msg - ";
+    //     errorText += this.props.errorEvent['res']['msg'];
+    //     copyToClipboard(errorText);
+    // }
 
     render() {
         let errorDetail;
         if (this.props.errorEvent.res.results) {
             // try to use stderr
             let results = this.props.errorEvent.res.results[0];
-            errorDetail = results.stderr;
+            if (results.stderr.length > 100) {
+                errorDetail = (
+                    <span>{results.stderr.slice(0, 100)}
+                        <span className="link" onClick={() => {
+                            this.props.modalHandler(results.stderr);
+                        }}><i>&nbsp;...more</i></span>
+                    </span>);
+            } else {
+                errorDetail = (<span>{results.stderr}</span>);
+            }
         } else {
-            errorDetail = this.props.errorEvent.res.msg;
+            errorDetail = (<span>{this.props.errorEvent.res.msg}</span>);
         }
 
         return (
@@ -666,9 +732,9 @@ export class FailureDetail extends React.Component {
                     [{this.props.errorEvent['role']}] {this.props.errorEvent['task']}<br />
                     { errorDetail }
                 </td>
-                <td className="fbtn">
+                {/* <td className="fbtn">
                     <button className="pficon-export" onClick={this.clipboardCopy} />
-                </td>
+                </td> */}
             </tr>
         );
     }
