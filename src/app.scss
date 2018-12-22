@@ -188,7 +188,15 @@ th {
     right: 20px;
     bottom: -10px;
 }
-
+.nav-button {
+    margin-right:20px;
+float:right;
+}
+.nav-button-container {
+    position: absolute;
+    width:100%;
+    bottom: -10px;
+}
 .indicator:before {
     position:absolute;
     top: -35px;

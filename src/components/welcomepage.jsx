@@ -1,5 +1,5 @@
 import React from 'react';
-import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import { GenericModal } from './common/modal.jsx';
 import { checkAPI } from '../services/apicalls.js';
 import '../app.scss';
@@ -89,7 +89,10 @@ export class WelcomePage extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                <NextButton action={this.checkRunnerAvailable} />
+
+                <div className="nav-button-container">
+                    <UIButton primary btnLabel="Environment >" action={this.checkRunnerAvailable} />
+                </div>
             </div>
         );
     }
