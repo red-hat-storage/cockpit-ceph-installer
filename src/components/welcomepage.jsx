@@ -1,13 +1,43 @@
 import React from 'react';
 import { NextButton } from './common/nextbutton.jsx';
+import { GenericModal } from './common/modal.jsx';
+import { checkAPI } from '../services/apicalls.js';
 import '../app.scss';
 
 export class WelcomePage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            modalVisible: false,
+            modalContent: '',
             className: this.props.className
         };
+    }
+
+    hideModal = () => {
+        this.setState({
+            modalVisible: false,
+            modalContent: ''
+        });
+    }
+
+    checkRunnerAvailable = () => {
+        console.log("check the ansible-runner-service API is there");
+
+        checkAPI()
+                .then((resp) => {
+                    console.log("API Ok, so let's get started!");
+                    this.props.action();
+                })
+                .catch(error => {
+                    console.log("error " + error.message);
+                    let errMsg = "Unable to access the ansible-runner-service API. Please check that the service is started, and retry.";
+                    this.setState({
+                        modalVisible: true,
+                        modalContent: errMsg
+                    });
+                }
+                );
     }
 
     render() {
@@ -21,6 +51,10 @@ export class WelcomePage extends React.Component {
                 step is complete, you automatically move on to the next step but can return to
                 a prior steps by simply clicking the relevant step number above.
                 <p />
+                <GenericModal
+                    show={this.state.modalVisible}
+                    content={this.state.modalContent}
+                    closeHandler={this.hideModal} />
                 The information below describes the installation steps;<br />
                 <table >
                     <tbody>
@@ -55,7 +89,7 @@ export class WelcomePage extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                <NextButton action={this.props.action} />
+                <NextButton action={this.checkRunnerAvailable} />
             </div>
         );
     }
