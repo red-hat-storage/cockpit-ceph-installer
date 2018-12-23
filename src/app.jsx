@@ -72,7 +72,7 @@ export class Application extends React.Component {
                     show={this.state.modalVisible}
                     content={this.state.modalContent}
                     closeHandler={this.hideModal} />
-                <h2>Ceph Installer</h2>
+                <h2><b>Ceph Installer</b></h2>
                 {/* <ProgressTracker /> */}
                 <InstallationSteps svctoken={this.state.svctoken} modalHandler={this.showModal} />
                 {/* <InfoBar /> */}
