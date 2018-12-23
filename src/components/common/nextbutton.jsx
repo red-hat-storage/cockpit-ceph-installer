@@ -25,7 +25,13 @@ export class NextButton extends React.Component {
 
 export class UIButton extends React.Component {
     render () {
-        let btnClass = (this.props.primary) ? "nav-button btn btn-lg btn-primary" : "nav-button btn btn-lg";
+        let btnClass;
+        if (this.props.btnClass) {
+            btnClass = this.props.btnClass;
+        } else {
+            btnClass = (this.props.primary) ? "nav-button btn btn-lg btn-primary" : "nav-button btn btn-lg";
+        }
+
         return (
             <button className={btnClass} disabled={this.props.disabled} onClick={this.props.action}>{this.props.btnLabel}</button>
         );
