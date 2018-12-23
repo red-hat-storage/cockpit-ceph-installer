@@ -1,5 +1,5 @@
 import React from 'react';
-// import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import '../app.scss';
 import { allVars, osdsVars, monsVars, mgrsVars, hostVars, cephAnsibleSequence } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
@@ -463,13 +463,13 @@ export class DeployPage extends React.Component {
         switch (this.state.deployBtnText) {
         case "Failed":
         case "Retry":
-            deployBtnClass = "btn btn-danger btn-lg btn-offset";
+            deployBtnClass = "nav-button btn btn-danger btn-lg";
             break;
         case "Complete":
-            deployBtnClass = "btn btn-success btn-lg btn-offset";
+            deployBtnClass = "nav-button btn btn-success btn-lg";
             break;
         default:
-            deployBtnClass = "btn btn-primary btn-lg btn-offset";
+            deployBtnClass = "nav-button btn btn-primary btn-lg";
             break;
         }
         console.log("btn class string is " + deployBtnClass);
@@ -495,7 +495,10 @@ export class DeployPage extends React.Component {
                 <ExecutionProgress active={this.state.deployActive} status={this.state.status} runtime={this.state.runTime} />
                 <FailureSummary status={this.state.status} failures={this.state.status.data.failed} />
                 {/* <NextButton btnText="Finish" disabled={!this.state.finished} action={this.props.action} /> */}
-
+                <div className="nav-button-container">
+                    <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
+                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                </div>
             </div>
         );
     }

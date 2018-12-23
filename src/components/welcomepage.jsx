@@ -91,7 +91,7 @@ export class WelcomePage extends React.Component {
                 </table>
 
                 <div className="nav-button-container">
-                    <UIButton primary btnLabel="Environment >" action={this.checkRunnerAvailable} />
+                    <UIButton primary btnLabel="Environment" action={this.checkRunnerAvailable} />
                 </div>
             </div>
         );

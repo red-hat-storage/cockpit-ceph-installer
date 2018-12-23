@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { GenericModal } from './common/modal.jsx';
@@ -17,7 +17,8 @@ export class HostsPage extends React.Component {
             modalVisible: false,
             modalContent: '',
             hosts: [],
-            ready: false
+            ready: false,
+            addHostsVisible: false
         };
         this.config = {};
         this.cache = {
@@ -413,7 +414,11 @@ export class HostsPage extends React.Component {
                         </table>
                     </div>
                 </div>
-                <NextButton disabled={!this.state.ready} action={this.nextAction} />
+                <div className="nav-button-container">
+                    <UIButton primary disabled={!this.state.ready} btnLabel="Validate" action={this.nextAction} />
+                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                </div>
+                {/* <NextButton disabled={!this.state.ready} action={this.nextAction} /> */}
             </div>
         );
     }

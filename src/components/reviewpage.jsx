@@ -1,5 +1,5 @@
 import React from 'react';
-import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import { buildRoles, hostsWithRoleCount, msgCount } from '../services/utils.js';
 import '../app.scss';
 
@@ -103,7 +103,10 @@ export class ReviewPage extends React.Component {
                     <StaticTable title="Validation Summary" data={this.validationData} align="right" />
                 </div>
                 <HostListing hosts={this.hostList} />
-                <NextButton action={this.props.action} />
+                <div className="nav-button-container">
+                    <UIButton primary btnLabel="Deploy" action={this.props.action} />
+                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                </div>
             </div>
         );
     }

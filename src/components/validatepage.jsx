@@ -1,5 +1,5 @@
 import React from 'react';
-import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { GenericModal } from './common/modal.jsx';
 import { Arrow } from './common/arrow.jsx';
@@ -359,6 +359,8 @@ export class ValidatePage extends React.Component {
 
         var spinner;
         var rows;
+        var probeButtonClass;
+        var nextButtonClass;
         if (this.state.hosts.length > 0) {
             rows = this.state.hosts.map(host => {
                 return <HostDiscoveryRow
@@ -381,6 +383,8 @@ export class ValidatePage extends React.Component {
             spinner = (<div style={{display: "inline-block", width: "40px"}} />);
         }
 
+        probeButtonClass = (this.state.pendingProbe) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
+        nextButtonClass = (this.state.ready) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
         return (
 
             <div id="validate" className={this.props.className} >
@@ -433,7 +437,13 @@ export class ValidatePage extends React.Component {
                         </table>
                     </div>
                 </div>
-                <NextButton action={this.checkHostsReady} disabled={!this.state.ready} />
+                <div className="nav-button-container">
+                    <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network" action={this.checkHostsReady} />
+                    <UIButton btnClass={ probeButtonClass } btnLabel="Probe Hosts" action={this.probeHosts} />
+                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                </div>
+
+                {/* <NextButton action={this.checkHostsReady} disabled={!this.state.ready} /> */}
             </div>
         );
     }

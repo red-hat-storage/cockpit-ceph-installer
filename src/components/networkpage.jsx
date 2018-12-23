@@ -1,5 +1,5 @@
 import React from 'react';
-import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import { RadioSet } from './common/radioset.jsx';
 import { netSummary, commonSubnets, buildSubnetLookup, buildRoles } from '../services/utils.js';
 import '../app.scss';
@@ -93,8 +93,10 @@ export class NetworkPage extends React.Component {
                         hosts={this.props.hosts}
                         updateHandler={this.updateHandler} />
                 </div>
-
-                <NextButton action={this.updateParent} />
+                <div className="nav-button-container">
+                    <UIButton primary btnLabel="Review" action={this.updateParent} />
+                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                </div>
             </div>
         );
     }

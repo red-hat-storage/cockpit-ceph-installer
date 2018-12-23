@@ -1,5 +1,5 @@
 import React from 'react';
-import { NextButton } from './common/nextbutton.jsx';
+import { UIButton } from './common/nextbutton.jsx';
 import { RadioSet } from './common/radioset.jsx';
 import { Selector } from './common/selector.jsx';
 
@@ -133,7 +133,9 @@ export class EnvironmentPage extends React.Component {
                 <RadioSet config={this.flash_usage} callback={this.updateState} />
                 <RadioSet config={this.osd_mode} callback={this.updateState} />
                 <RadioSet config={this.install_type} callback={this.updateState} />
-                <NextButton action={this.checkReady} />
+                <div className="nav-button-container">
+                    <UIButton primary btnLabel="Hosts" action={this.checkReady} />
+                </div>
             </div>
         );
     }

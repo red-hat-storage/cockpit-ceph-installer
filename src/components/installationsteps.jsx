@@ -120,6 +120,15 @@ export class InstallationSteps extends React.Component {
         }
     }
 
+    prevPageHandler = () => {
+        console.log("return to prior page");
+        let current = this.state.pageNum;
+        this.setState({
+            pageNum: current - 1,
+            lastPage: current
+        });
+    }
+
     jumpToPageHandler (param) {
         if (!this.state.deployStarted) {
             if (this.visited.includes(param)) {
@@ -168,6 +177,7 @@ export class InstallationSteps extends React.Component {
                     <HostsPage
                         className={this.page['hosts']}
                         action={this.nextHandler}
+                        prevPage={this.prevPageHandler}
                         hosts={this.state.hosts}
                         installType={this.state.installType}
                         clusterType={this.state.clusterType}
@@ -175,6 +185,7 @@ export class InstallationSteps extends React.Component {
                     <ValidatePage
                         className={this.page['validate']}
                         action={this.nextHandler}
+                        prevPage={this.prevPageHandler}
                         hosts={this.state.hosts}
                         clusterType={this.state.clusterType}
                         installType={this.state.installType}
@@ -184,15 +195,18 @@ export class InstallationSteps extends React.Component {
                     <NetworkPage
                         className={this.page['network']}
                         action={this.nextHandler}
+                        prevPage={this.prevPageHandler}
                         modalHandler={this.props.modalHandler}
                         hosts={this.state.hosts} />
                     <ReviewPage
                         className={this.page['review']}
                         action={this.nextHandler}
+                        prevPage={this.prevPageHandler}
                         config={this.state} />
                     <DeployPage
                         className={this.page['deploy']}
                         action={this.nextHandler}
+                        prevPage={this.prevPageHandler}
                         settings={this.state}
                         deployHandler={this.deployHandler}
                         modalHandler={this.props.modalHandler}
