@@ -82,6 +82,8 @@ export class ReviewPage extends React.Component {
             this.clusterData['Cluster Network'] = props.config.clusterNetwork;
             if (props.config.rgwNetwork) {
                 this.clusterData['S3 Network'] = props.config.rgwNetwork;
+            } else {
+                this.clusterData['S3 Network'] = '';
             }
 
             this.hostList = JSON.parse(JSON.stringify(this.props.config.hosts));
@@ -95,17 +97,23 @@ export class ReviewPage extends React.Component {
             <div id="review" className={this.props.className}>
                 <h3>5. Review</h3>
                 You are now ready to deploy your cluster.<br />
-                <div className="float-left">
+                <div className="display-inline-block">
                     <StaticTable title="Environment" data={this.environmentData} align="left" />
                     <div className="review-table-whitespace" />
                     <StaticTable title="Cluster" data={this.clusterData} align="right" />
                     <div className="review-table-whitespace" />
-                    <StaticTable title="Validation Summary" data={this.validationData} align="right" />
+                    <StaticTable title="Readiness Overview" data={this.validationData} align="right" />
                 </div>
-                <HostListing hosts={this.hostList} />
+                <div className="host-review">
+                    <HostListing
+                        hosts={this.hostList}
+                        clusterNetwork={this.clusterData['Cluster Network']}
+                        publicNetwork={this.clusterData['Public Network']}
+                        s3Network={this.clusterData['S3 Network']} />
+                </div>
                 <div className="nav-button-container">
-                    <UIButton primary btnLabel="Deploy" action={this.props.action} />
-                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                    <UIButton primary btnLabel="Deploy &rsaquo;" action={this.props.action} />
+                    <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
                 </div>
             </div>
         );
@@ -123,14 +131,17 @@ class StaticTable extends React.Component {
                         {
                             Object.keys(this.props.data).map((item, key) => {
                                 let align = "review-table-value align-" + this.props.align;
+                                let itemValue;
                                 let tab = (<div />);
                                 if (item.startsWith('-')) {
                                     tab = (<div className="tab" />);
                                 }
+                                itemValue = (this.props.data[item] === '') ? 'N/A' : this.props.data[item];
+
                                 return (
                                     <tr key={key}>
                                         <td className="review-table-label align-left">{tab}{item}</td>
-                                        <td className={align}>{this.props.data[item]}</td>
+                                        <td className={align}>{itemValue}</td>
                                     </tr>);
                             })
                         }
@@ -143,8 +154,43 @@ class StaticTable extends React.Component {
 
 class HostListing extends React.Component {
     render () {
+        console.log("in hostlisting render");
         return (
-            <div />
+            <div>
+                <div className="host-review-title">Hosts</div>
+                <table className="host-review-table">
+                    <tbody>
+                        { this.props.hosts.map((host, idx) => {
+                            let roles = buildRoles([host]).join(', ');
+                            let specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
+                            let specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
+                            console.log(JSON.stringify(host.subnet_details));
+                            console.log(this.props.clusterNetwork);
+                            console.log("net = " + JSON.stringify(host.subnet_details[this.props.clusterNetwork]));
+                            let clusterNetwork = host.subnet_details[this.props.clusterNetwork].addr + " | " + host.subnet_details[this.props.clusterNetwork].devices[0];
+                            let publicNetwork = host.subnet_details[this.props.publicNetwork].addr + " | " + host.subnet_details[this.props.publicNetwork].devices[0];
+                            let s3Network;
+                            if (this.props.s3Network && roles.includes('rgws')) {
+                                s3Network = host.subnet_details[this.props.s3Network].addr + " | " + host.subnet_details[this.props.s3Network].devices[0];
+                            } else {
+                                s3Network = 'N/A';
+                            }
+                            return (
+                                <tr key={idx}>
+                                    <td className="host-review-table-wide">
+                                        <strong>{host.hostname}</strong><br />
+                                        {host.vendor}&nbsp;{host.model}
+                                    </td>
+                                    <td className="host-review-table-std">{specL1}<br />{specL2}</td>
+                                    <td className="host-review-table-std">{roles}</td>
+                                    <td className="host-review-table-wide"><strong>Cluster Network</strong><br />{clusterNetwork}</td>
+                                    <td className="host-review-table-wide"><strong>Public Network</strong><br />{publicNetwork}</td>
+                                    <td className="host-review-table-wide"><strong>S3 Network</strong><br />{s3Network}</td>
+                                </tr>);
+                        })}
+                    </tbody>
+                </table>
+            </div>
         );
     }
 }
