@@ -10,10 +10,36 @@ tr {
 
 table {
   border-collapse: collapse;
-  table-layout: fixed; }
+  table-layout: fixed;
+  height: 380px;
+  display: block;
+  overflow-y: auto; }
+
+table thead {
+  position: fixed; }
+
+table th {
+  background-color: #f9f9f9;
+  font-size: 1.1em;
+  font-weight: bold;
+  height: 3em;
+  padding: 0 5px 0 5px;
+  border: 1px solid lightgrey; }
+
+table#probe-table thead {
+  position: fixed;
+  z-index: 2; }
+
+table#failures thead {
+  position: fixed;
+  z-index: 2; }
+
+.dummy-row {
+  height: 3em;
+  display: block; }
 
 .emptyTable {
-  width: 100%;
+  width: 756px;
   display: inline-block;
   text-align: center; }
 
@@ -50,7 +76,7 @@ table {
 
 .dropdown {
   min-width: 160px;
-  padding: 5px 0;
+  padding: 1px 0;
   margin: 2px 0 0;
   font-size: 12px;
   text-align: left;
@@ -93,41 +119,20 @@ table {
   align-items: center;
   border-radius: 3px; }
 
-.radio {
+.radio-common {
   margin-left: 20px;
   width: 150px;
   margin-top: 0px; }
-
-.radio-inline {
-  display: inline-block; }
-
-.radio-block {
-  display: block; }
-
-th {
-  background-color: #f9f9f9;
-  font-size: 1.1em; }
-
-tbody {
-  overflow-y: auto;
-  display: block; }
 
 .roleTable td {
   border-left: 1px solid lightgrey;
   border-right: 1px solid lightgrey;
   border-bottom: 1px solid lightgrey; }
 
-.roleTable th {
-  height: 30px;
-  border: 1px solid lightgrey; }
-
-.roleTable th {
-  height: 30px; }
-
-.roleTable tr:hover {
+.roleTable tbody:hover {
   background-color: #F8F9F9; }
 
-.roleTable tbody {
+.roleTable table {
   height: 380px; }
 
 .thHostInfo, .tdHostInfo {
@@ -138,18 +143,20 @@ tbody {
 
 .tdSelector {
   min-width: 35px;
-  text-align: center; }
+  text-align: center;
+  padding: 0px; }
 
 .page {
   width: 100%;
   height: 650px;
-  padding: 10px;
+  padding: 0 10px;
   background-color: white;
   z-index: 1;
   overflow-x: hidden; }
 
 .behind {
   position: absolute;
+  width: 0;
   top: 0px;
   left: 0px;
   z-index: -1; }
@@ -158,6 +165,16 @@ tbody {
   display: inline-block;
   position: absolute;
   right: 20px;
+  bottom: -10px; }
+
+.nav-button {
+  margin-right: 20px;
+  margin-bottom: 20px;
+  float: right; }
+
+.nav-button-container {
+  position: absolute;
+  width: 100%;
   bottom: -10px; }
 
 .indicator:before {
@@ -241,8 +258,11 @@ tbody {
 
 /* Create the checkmark/indicator (hidden when not checked) */
 .checkmark:after {
-  content: "";
+  content: "\2713";
   position: absolute;
+  color: white;
+  font-size: 1.8em;
+  margin: -5px 3px;
   display: none; }
 
 /* Show the checkmark when checked */
@@ -269,9 +289,7 @@ tbody {
   padding-right: 5px; }
 
 .hostMask {
-  width: 100%;
-  padding: 10px;
-  height: 60px; }
+  width: 100%; }
 
 .separatorLine {
   margin-bottom: 0;
@@ -321,6 +339,16 @@ tbody {
   color: blue;
   font-weight: bold; }
 
+.probe-result {
+  min-width: 90px;
+  padding-right: 40px; }
+
+.probe-detail {
+  border-bottom: 1px solid #eeeeee;
+  margin-bottom: 10px;
+  margin-left: 40px;
+  margin-right: 40px; }
+
 .scrollX {
   overflow-x: auto;
   width: 100%; }
@@ -340,12 +368,13 @@ tbody {
 
 .hiddenTable td {
   border: 0px;
-  min-width: 45px;
+  min-width: 80px;
   padding-left: 3px;
   padding-right: 3px; }
 
 .hiddenTable tr {
-  border-bottom: 1px solid #EEEEEE; }
+  border-bottom: 1px solid #EEEEEE;
+  margin-left: 60px; }
 
 .hiddenTable tbody {
   height: inherit; }
@@ -360,23 +389,14 @@ tbody {
   background-color: black;
   opacity: 0.7;
   color: #fff;
-  text-align: center;
+  text-align: left;
+  border-radius: 3px;
   padding: 5px 10px;
   position: absolute;
   z-index: 1;
   margin-left: 5px;
   top: -.4em;
   left: 110%; }
-
-.textInfo .tooltipContent::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 100%;
-  margin-top: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent black transparent transparent; }
 
 .textInfo:hover .tooltipContent {
   visibility: visible; }
@@ -393,16 +413,20 @@ tbody {
 
 .network-subnets {
   margin-left: 80px;
-  border-bottom: 2px solid white;
-  padding-bottom: 20px; }
+  border-top: 2px solid white;
+  margin-top: 20px;
+  width: 280px; }
 
 .network-subnets:hover {
-  border-bottom: 2px solid #39a5dc; }
+  border-top: 2px solid #39a5dc; }
 
 .network-msgs {
   width: 100%;
-  display: flex;
-  position: relative; }
+  display: block;
+  position: relative;
+  border-top: 1px solid lightgray;
+  margin-top: 20px;
+  padding: 10px 0px; }
 
 .btn-offset {
   margin-left: -30px; }
@@ -433,24 +457,25 @@ table.skinny-table td {
 table.playbook-table td {
   padding: 0px 5px 0px 5px; }
 
+table.playbook-table {
+  height: 60px; }
+
 .update-me {
   display: table-cell; }
 
 .float-left {
   float: left; }
 
+.float-right {
+  float: right; }
+
 .padding-sides {
   padding: 0px 5px 0px 5px; }
 
-#failures {
-  margin-top: 20px;
-  width: 100%;
-  height: 330px;
-  display: inline-flex; }
-
 .failure-table {
   display: inline-flex;
-  margin: 0 auto; }
+  height: 330px;
+  margin-top: 20px; }
 
 .fhost {
   width: 140px;
@@ -460,23 +485,30 @@ table.playbook-table td {
   width: 800px;
   min-width: 800px; }
 
-#failures tr td {
+table#failures tr td {
   padding: 10px 5px 10px 5px;
   border: 1px solid lightgrey; }
 
-#failures th {
+table#failures thead {
+  position: fixed; }
+
+table#failures th {
   border: 1px solid lightgrey;
   padding: 0px 5px 0px 5px;
-  border-bottom: 0px; }
+  height: 2em; }
 
-#failures tr:hover {
+.failures-dummy-row {
+  height: 2em;
+  display: block; }
+
+table#failures tr:hover {
   background-color: #F8F9F9; }
 
 .fbtn {
   min-width: 50px;
   text-align: center; }
 
-/* handle modal */
+/* handle simple modal */
 .modal {
   position: fixed;
   top: 0;
@@ -486,15 +518,14 @@ table.playbook-table td {
   background: rgba(0, 0, 0, 0.6); }
 
 .modal-main {
-  position: fixed;
+  position: relative;
   background: white;
-  border-radius: 5px;
-  padding: 10px;
   width: 60%;
   height: auto;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); }
+  margin: 25% auto; }
+
+.modal-inner {
+  padding: 10px; }
 
 .display-block {
   display: block; }
@@ -509,6 +540,7 @@ table.playbook-table td {
   display: block;
   position: relative;
   margin-left: 90%;
+  margin-top: 20px;
   bottom: -0px; }
 
 .code {
@@ -581,5 +613,188 @@ table.playbook-table td {
   display: flex;
   justify-content: center;
   align-content: start; }
+
+.full-width {
+  width: 100%; }
+
+.arrow-dummy {
+  display: inline-block;
+  width: 10px;
+  height: 5px;
+  top: -.2em; }
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  position: relative;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: all 0.1s 0.1s;
+  border-left: 5px solid darkgray;
+  margin-right: 5px;
+  top: -.2em; }
+
+.arrow-right:hover {
+  border-left: 5px solid black;
+  cursor: pointer; }
+
+.toggle-reset {
+  transform: rotate(0deg); }
+
+.toggle-down {
+  border-left: 5px solid black;
+  transform: rotate(90deg); }
+
+.sel-container-horizontal {
+  width: 200px; }
+
+.sel-container-vertical {
+  width: 400px;
+  margin: 10px; }
+
+.sel-label-vertical {
+  width: 190px;
+  margin-right: 40px;
+  text-align: right; }
+
+.sel-label-horizontal {
+  text-align: center; }
+
+.radio-label-horizontal {
+  width: 200px;
+  margin-right: 20px;
+  text-align: right;
+  vertical-align: top; }
+
+.radio-label-vertical {
+  position: relative; }
+
+.radio-info {
+  width: 600px;
+  margin-left: 20px;
+  display: inline-flex; }
+
+.radio-spacer {
+  background-color: black;
+  margin-left: 0px;
+  margin-top: 5px;
+  width: 0px;
+  content: ''; }
+
+.radio-container {
+  margin-top: 10px; }
+
+table.review-table {
+  height: auto; }
+
+.review-table-label {
+  width: 180px;
+  font-weight: bold; }
+
+.review-table td {
+  padding: 5px; }
+
+.review-table tr:nth-child(even) {
+  background-color: #f5f5f5; }
+
+table caption, .host-review-title {
+  font-size: 1.3em;
+  color: black; }
+
+.review-table tbody {
+  border: 1px solid darkgray; }
+
+.review-table-value {
+  width: 120px; }
+
+.review-table-container {
+  position: relative;
+  display: inline-block;
+  vertical-align: top; }
+
+.review-table-whitespace {
+  width: 50px;
+  display: inline-block; }
+
+.align-left {
+  text-align: left; }
+
+.align-right {
+  text-align: right; }
+
+.tab {
+  width: 20px;
+  display: inline-block; }
+
+.link {
+  color: blue; }
+
+.link:hover {
+  font-weight: bold;
+  cursor: pointer; }
+
+table#add-hosts {
+  height: 150px; }
+
+table#add-hosts td {
+  padding-left: 0px; }
+
+.notification {
+  width: 100%;
+  height: 60px;
+  display: block; }
+
+.modal-title-bar {
+  width: 100%;
+  background-color: whitesmoke;
+  height: 3em;
+  margin-bottom: 20px; }
+
+.modal-title {
+  font-size: 1.3em;
+  color: #1C2833;
+  padding-left: 10px;
+  padding-top: 5px; }
+
+.add-hosts-buttons {
+  height: 40px; }
+
+.close-symbol:after {
+  content: "\2716";
+  color: #1C2833;
+  margin-right: 10px;
+  font-size: 1.8em; }
+
+.close-symbol:hover:after {
+  cursor: pointer;
+  color: black; }
+
+.alert-space {
+  height: 64px;
+  width: 100%;
+  display: block; }
+
+.host-review {
+  margin-top: 10px;
+  height: 200px;
+  width: 1100px;
+  display: block; }
+
+table.host-review-table {
+  height: 150px;
+  margin-top: 10px; }
+
+.host-review-table tr {
+  border-top: 1px solid darkgray;
+  width: 1085px; }
+
+.host-review-table tr:hover {
+  background-color: #ebf8ff; }
+
+.host-review-table-wide {
+  width: 170px; }
+
+.host-review-table-std {
+  width: 150px; }
 
 /*# sourceMappingURL=index.css.map*/
