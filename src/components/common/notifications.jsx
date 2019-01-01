@@ -14,6 +14,7 @@ export class Notification extends React.Component {
     }
 
     render() {
+        console.log("rendering inline notification - " + this.props.msgText);
         let msgClass;
         let msgIcon;
         let notification;
