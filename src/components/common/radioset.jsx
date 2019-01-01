@@ -48,7 +48,7 @@ export class RadioSet extends React.Component {
             });
             toolTip = (
                 <div className="textInfo">
-                    &nbsp;<sup><span className="pficon-info" /></sup>
+                    &nbsp;<span className="pficon pficon-info" />
                     <span className="tooltipContent">{info}</span>
                 </div>
             );
