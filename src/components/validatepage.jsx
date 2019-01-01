@@ -1,7 +1,8 @@
 import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
+import { Notification } from './common/notifications.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
-import { GenericModal } from './common/modal.jsx';
+// import { GenericModal } from './common/modal.jsx';
 import { Arrow } from './common/arrow.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { toggleHostRole, buildRoles, checkPlaybook, countNICs, msgCount, sortByKey, collocationOK, getHost } from '../services/utils.js';
@@ -22,7 +23,9 @@ export class ValidatePage extends React.Component {
             hosts: [],
             probedCount: 0,
             pendingProbe: true,
-            probeStatusMsg: ''
+            probeStatusMsg: '',
+            msgLevel: 'info',
+            msgText: ''
         };
         this.probeSummary = '';
         this.eventLookup = {}; // lookup for probe results
@@ -82,6 +85,10 @@ export class ValidatePage extends React.Component {
         let hostCount = this.state.hosts.length;
 
         let processed = Object.keys(this.eventLookup).length;
+        this.setState({
+            msgLevel: 'info',
+            msgText: processed + "/" + hostCount + " probes complete"}
+        );
         this.setState({probeStatusMsg: processed + "/" + hostCount + " probes complete"});
 
         console.log("Progress " + eventCount + "/" + hostCount);
@@ -110,6 +117,8 @@ export class ValidatePage extends React.Component {
         this.setState({
             probeEnabled: true,
             ready: true,
+            msgLevel: 'success',
+            msgText: 'Probe scan is complete',
             probeStatusMsg: ''
         });
         this.eventLookup = {};
@@ -122,6 +131,8 @@ export class ValidatePage extends React.Component {
             pendingProbe: false,
             ready: false,
             probedCount: 0,
+            msgLevel: 'info',
+            msgText: "0/" + this.state.hosts.length + " probes complete",
             probeStatusMsg: "0/" + this.state.hosts.length + " probes complete"
         });
 
@@ -215,10 +226,14 @@ export class ValidatePage extends React.Component {
 
     toggleAllRows = (event) => {
         if (!this.state.ready) {
-            let errorMsg = (
-                <div>You can't select 'ALL' hosts until a probe has been performed</div>
-            );
-            this.showModal(errorMsg);
+            this.setState({
+                msgLevel: 'error',
+                msgText: "You can't select 'ALL' hosts until a probe has been performed"
+            });
+            // let errorMsg = (
+            //     <div>You can't select 'ALL' hosts until a probe has been performed</div>
+            // );
+            // this.showModal(errorMsg);
             return;
         }
 
@@ -238,10 +253,14 @@ export class ValidatePage extends React.Component {
                 hosts: hostsCopy
             });
         } else {
-            let errorMsg = (
-                <div>There aren't any usable hosts. All hosts have errors or warnings related to them</div>
-            );
-            this.showModal(errorMsg);
+            this.setState({
+                msgLevel: 'error',
+                msgText: "There aren't any usable hosts. All hosts have errors or warnings related to them"
+            });
+            // let errorMsg = (
+            //     <div>There aren't any usable hosts. All hosts have errors or warnings related to them</div>
+            // );
+            // this.showModal(errorMsg);
         }
     }
 
@@ -255,29 +274,33 @@ export class ValidatePage extends React.Component {
                     this.setState({hosts: hostsCopy});
                     break;
                 } else {
-                    let errorMsg = (
-                        <div>Only hosts with a status of 'OK' can be selected</div>
-                    );
-                    this.showModal(errorMsg);
+                    this.setState({
+                        msgLevel: 'error',
+                        msgText: "Only hosts with a status of 'OK' can be selected"
+                    });
+                    // let errorMsg = (
+                    //     <div>Only hosts with a status of 'OK' can be selected</div>
+                    // );
+                    // this.showModal(errorMsg);
                 }
                 break;
             }
         }
     }
 
-    hideModal = () => {
-        this.setState({modalVisible: false});
-    }
+    // hideModal = () => {
+    //     this.setState({modalVisible: false});
+    // }
 
-    showModal = (modalContent) => {
-        // handle the show and hide of the app level modal
-        console.log("content: ");
-        console.log(modalContent);
-        this.setState({
-            modalVisible: true,
-            modalContent: modalContent
-        });
-    }
+    // showModal = (modalContent) => {
+    //     // handle the show and hide of the app level modal
+    //     console.log("content: ");
+    //     console.log(modalContent);
+    //     this.setState({
+    //         modalVisible: true,
+    //         modalContent: modalContent
+    //     });
+    // }
 
     checkHostsReady = () => {
         // Need to have more than 3 hosts in a selected state
@@ -286,11 +309,15 @@ export class ValidatePage extends React.Component {
         let hostsToDelete = [];
         if (JSON.stringify(this.state.hosts) != this.probeSummary) {
             console.log("clicked next, but changes detected since last probe");
-            let errorMsg = (
-                <div>
-                    You have made role changes, so a further probe is required.
-                </div>);
-            this.showModal(errorMsg);
+            this.setState({
+                msgLevel: 'warning',
+                msgText: "You have made role changes, so a further probe is required."
+            });
+            // let errorMsg = (
+            //     <div>
+            //         You have made role changes, so a further probe is required.
+            //     </div>);
+            // this.showModal(errorMsg);
             return;
         }
 
@@ -357,7 +384,7 @@ export class ValidatePage extends React.Component {
     render() {
         console.log("rendering the validatepage");
 
-        var spinner;
+        // var spinner;
         var rows;
         var probeButtonClass;
         var nextButtonClass;
@@ -373,15 +400,15 @@ export class ValidatePage extends React.Component {
             rows = emptyRow();
         }
 
-        if (!this.state.probeEnabled) {
-            spinner = (
-                <div className="modifier">
-                    <div className="modifier spinner spinner-lg" >&nbsp;</div>
-                    <ProbeStatus msg={this.state.probeStatusMsg} />
-                </div>);
-        } else {
-            spinner = (<div style={{display: "inline-block", width: "40px"}} />);
-        }
+        // if (!this.state.probeEnabled) {
+        //     spinner = (
+        //         <div className="modifier">
+        //             <div className="modifier spinner spinner-lg" >&nbsp;</div>
+        //             <ProbeStatus msg={this.state.probeStatusMsg} />
+        //         </div>);
+        // } else {
+        //     spinner = (<div style={{display: "inline-block", width: "40px"}} />);
+        // }
 
         probeButtonClass = (this.state.pendingProbe) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
         nextButtonClass = (this.state.ready) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
@@ -393,16 +420,18 @@ export class ValidatePage extends React.Component {
                  probe the hosts to validate that their hardware configuration is compatible with
                  their intended Ceph role. Once the probe is complete you must select the hosts to
                  use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
-                <GenericModal
+                {/* <GenericModal
                     show={this.state.modalVisible}
                     content={this.state.modalContent}
-                    closeHandler={this.hideModal} />
-                <div className="spacer" />
-                <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
-                { spinner }
-                <div className="divCenter">
+                    closeHandler={this.hideModal} /> */}
+                {/* <div className="spacer" /> */}
+                <Notification msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+
+                {/* <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
+                { spinner } */}
+                {/* <div className="divCenter">
                     <div className="separatorLine" />
-                </div>
+                </div> */}
                 <div className="divCenter">
                     <div>
                         <table id="probe-table" className="roleTable" >
@@ -438,9 +467,9 @@ export class ValidatePage extends React.Component {
                     </div>
                 </div>
                 <div className="nav-button-container">
-                    <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network" action={this.checkHostsReady} />
-                    <UIButton btnClass={ probeButtonClass } btnLabel="Probe Hosts" action={this.probeHosts} />
-                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                    <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
+                    <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
+                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.props.prevPage} />
                 </div>
 
                 {/* <NextButton action={this.checkHostsReady} disabled={!this.state.ready} /> */}
@@ -614,15 +643,15 @@ class HostSelector extends React.Component {
     }
 }
 
-class ProbeStatus extends React.Component {
-    render () {
-        console.log("rendering probestatus message");
-        return (
-            <div className="modifier" >
-                <small>{ this.props.msg }</small>
-            </div>
-        );
-    }
-}
+// class ProbeStatus extends React.Component {
+//     render () {
+//         console.log("rendering probestatus message");
+//         return (
+//             <div className="modifier" >
+//                 <small>{ this.props.msg }</small>
+//             </div>
+//         );
+//     }
+// }
 
 export default ValidatePage;
