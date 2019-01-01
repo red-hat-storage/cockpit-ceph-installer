@@ -94,8 +94,8 @@ export class NetworkPage extends React.Component {
                         updateHandler={this.updateHandler} />
                 </div>
                 <div className="nav-button-container">
-                    <UIButton primary btnLabel="Review" action={this.updateParent} />
-                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                    <UIButton primary btnLabel="Review &rsaquo;" action={this.updateParent} />
+                    <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
                 </div>
             </div>
         );

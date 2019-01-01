@@ -134,7 +134,7 @@ export class EnvironmentPage extends React.Component {
                 <RadioSet config={this.osd_mode} callback={this.updateState} />
                 <RadioSet config={this.install_type} callback={this.updateState} />
                 <div className="nav-button-container">
-                    <UIButton primary btnLabel="Hosts" action={this.checkReady} />
+                    <UIButton primary btnLabel="Hosts &rsaquo;" action={this.checkReady} />
                 </div>
             </div>
         );
