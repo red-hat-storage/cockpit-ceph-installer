@@ -16,7 +16,17 @@ table {
     display:block;
     overflow-y:auto;
 }
+table thead {
+    position: fixed;
+  }
+  table th {
+    background-color: #f9f9f9;
+    font-size: 1.1em;
+    font-weight: bold;
+    height: 3em;
+    padding: 0 5px 0 5px;
   
+    border: 1px solid lightgrey; }
   
 table#probe-table thead {
     position: fixed;
@@ -32,7 +42,7 @@ table#failures thead {
     display: block; 
 }
 .emptyTable {
-    width: 100%;
+    width: 756px;
     display:inline-block;
     text-align:center;
 
@@ -127,10 +137,10 @@ table#failures thead {
 // .radio-block {
 //     display: block;
 // }
-th {
-    background-color: #f9f9f9;
-    font-size: 1.1em;
-}
+// th {
+//     background-color: #f9f9f9;
+//     font-size: 1.1em;
+// }
 // tbody {
 //     overflow-y: auto;
 //     display: block; 
@@ -140,13 +150,13 @@ th {
     border-right: 1px solid lightgrey;   
     border-bottom: 1px solid lightgrey;   
 }
-.roleTable th {
-    height: 30px;
-    border: 1px solid lightgrey; 
-}
-.roleTable th {
-    height: 30px;
-}
+// .roleTable th {
+//     height: 30px;
+//     border: 1px solid lightgrey; 
+// }
+// .roleTable th {
+//     height: 30px;
+// }
 .roleTable tbody:hover {
     background-color: #F8F9F9;
 }
@@ -169,7 +179,7 @@ th {
 .page {
     width:100%;
     height:650px;
-    padding: 10px;
+    padding: 0 10px;
     // border: 1px solid gray;
     background-color:white;
     z-index: 1;
@@ -190,6 +200,7 @@ th {
 }
 .nav-button {
     margin-right:20px;
+    margin-bottom:20px;
 float:right;
 }
 .nav-button-container {
@@ -283,10 +294,12 @@ float:right;
 
 /* Create the checkmark/indicator (hidden when not checked) */
 .checkmark:after {
-    content: "";
+    content: "\2713";
     position: absolute;
-    display: none;
-}
+    color: white;
+    font-size:1.8em;
+    margin:-5px 3px;;
+    display: none; }
 
 /* Show the checkmark when checked */
 .cbox input:checked ~ .checkmark:after {
@@ -313,8 +326,8 @@ float:right;
 } 
 .hostMask {
     width: 100%;
-    padding: 10px;
-    height: 60px;
+    // padding: 10px;
+    // height: 60px;
 } 
 .separatorLine {
     margin-bottom: 0;
@@ -510,6 +523,9 @@ table.playbook-table {
 .float-left {
     float: left;
 }
+.float-right {
+    float: right;
+}
 .padding-sides {
     padding: 0px 5px 0px 5px;
 }
@@ -565,21 +581,36 @@ table#failures tr:hover {
     position: fixed;
     top: 0;
     left: 0;
-    width:100%;
+    width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-}
+    background: rgba(0, 0, 0, 0.6); 
+    
+   
+    }
   
-.modal-main {
-    position: fixed;
-    background: white;
-    border-radius: 5px;
+    .modal-main {
+        position: relative;
+        background: white;
+        width: 60%;
+        height: auto;
+        margin: 25% auto;
+      
+        }
+    
+// .modal-main {
+//     position: fixed;
+//     background: white;
+//     // border-radius: 5px;
+//     width: 60%;
+//     height: auto;
+//     top: 50%;
+//     left: 50%;
+//     z-index: 5;
+//     transform: translate(-50%, -50%); }
+
+.modal-inner {
     padding: 10px;
-    width: 60%;
-    height: auto;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); }
+}
 
 .display-block {
 display: block;
@@ -597,6 +628,7 @@ display: none;
     display: block;
     position: relative;
     margin-left: 90%;
+    margin-top:20px;
     bottom: -0px;
 }
 
@@ -743,7 +775,9 @@ display: none;
       
 .radio-container {
     margin-top:10px; }
-
+table.review-table {
+        height:auto;
+}
 .review-table-label {
     width: 180px;
     font-weight: bold; }
@@ -754,7 +788,7 @@ display: none;
 .review-table tr:nth-child(even) {
     background-color: #f5f5f5; }
       
-.review-table caption {
+table caption, .host-review-title {
     font-size: 1.3em;
     color: black; }
       
@@ -767,6 +801,7 @@ display: none;
 .review-table-container {
     position: relative;
     display:inline-block ;
+    vertical-align:top; 
 }
 .review-table-whitespace {
     width:50px;
@@ -789,3 +824,68 @@ display: none;
     font-weight:bold;
     cursor: pointer;
 }
+table#add-hosts {
+    height: 150px; 
+  }
+  table#add-hosts td {
+    padding-left:0px;
+  }
+
+.notification {
+    width:100%;
+    height: 60px;
+    display: block;
+}
+.modal-title-bar {
+    width: 100%;
+    background-color: whitesmoke;
+    height: 3em; 
+    margin-bottom: 20px;}
+.modal-title {
+    font-size: 1.3em;
+    color: #1C2833;
+    padding-left: 10px;
+    padding-top:5px;
+}
+.add-hosts-buttons {
+   height:40px;
+
+}
+.close-symbol:after {
+    content: "\2716";
+    color: #1C2833;;
+  margin-right:10px;
+  font-size:1.8em;
+  
+    }
+   .close-symbol:hover:after {
+     cursor:pointer;
+     color:black;
+   }
+.alert-space {
+    height: 64px;
+    width: 100%;
+    display: block;
+}
+.host-review {
+    margin-top: 10px;
+    height: 200px;
+    width: 1100px;
+    display: block; }
+  
+  table.host-review-table {
+    height: 150px;
+    margin-top: 10px; }
+  
+  .host-review-table tr {
+    border-top: 1px solid darkgray;
+    width: 1085px; }
+  
+  .host-review-table tr:hover {
+    background-color: #ebf8ff; }
+
+.host-review-table-wide {
+    width: 170px; }
+      
+.host-review-table-std {
+    width: 150px; }
