@@ -3,7 +3,8 @@ import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
-import { GenericModal } from './common/modal.jsx';
+import { Notification } from './common/notifications.jsx';
+import { GenericModal, WindowTitle } from './common/modal.jsx';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
 import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost } from '../services/utils.js';
@@ -16,6 +17,7 @@ export class HostsPage extends React.Component {
         this.state = {
             modalVisible: false,
             modalContent: '',
+            modalTitle:'',
             hosts: [],
             ready: false,
             addHostsVisible: false
@@ -24,6 +26,7 @@ export class HostsPage extends React.Component {
         this.cache = {
             roles: []
         };
+        // this.hostMaskInput = React.createRef();
     }
 
     // TODO: need to consider the hosts as a json object key=hostname to cut down on
@@ -59,7 +62,7 @@ export class HostsPage extends React.Component {
 
     addHostsToTable = (stateObject) => {
         console.log("received mask information " + JSON.stringify(stateObject));
-
+        this.setState({addHostsVisible: false});
         // before we do anything, we need to look at the mask to ensure that it will
         // resolve to new hosts. If not, this is a no-op.
         if (this.expandHosts(stateObject.hostmask).length == 0) {
@@ -360,6 +363,16 @@ export class HostsPage extends React.Component {
         });
     }
 
+    showAddHosts = () => {
+        console.log("Show add hosts modal");
+        this.setState({addHostsVisible: true});
+        // this.hostMaskInput.current.focus();
+    }
+
+    hideAddHosts = () => {
+        this.setState({addHostsVisible: false});
+    }
+
     render() {
         var rows;
         if (this.state.hosts.length > 0) {
@@ -384,15 +397,23 @@ export class HostsPage extends React.Component {
                  resolve the issue and remove/re-add the host.
                 <GenericModal
                     show={this.state.modalVisible}
+                    title={this.state.modalTitle}
                     content={this.state.modalContent}
                     closeHandler={this.hideModal} />
-                <div className="divCenter">
-                    <div>
-                        <HostMask callback={this.addHostsToTable} clusterType={this.props.clusterType} installType={this.props.installType} />
-                    </div>
-                </div>
+                <HostMask
+                    show={this.state.addHostsVisible}
+                    callback={this.addHostsToTable}
+                    clusterType={this.props.clusterType}
+                    closeHandler={this.hideAddHosts}
+                    // input={this.hostMaskInput}
+                    installType={this.props.installType} />
                 <div className="divCenter">
                     <div className="separatorLine" />
+                </div>
+                <div className="divCenter">
+                    <div style={{width: "754px", marginBottom: "10px"}}>
+                        <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
+                    </div>
                 </div>
                 <div className="divCenter">
                     <div >
@@ -410,13 +431,16 @@ export class HostsPage extends React.Component {
                                     <th className="tdDeleteBtn" />
                                 </tr>
                             </thead>
+                            <tbody>
+                                <tr className="dummy-row" />
+                            </tbody>
                             { rows }
                         </table>
                     </div>
                 </div>
                 <div className="nav-button-container">
-                    <UIButton primary disabled={!this.state.ready} btnLabel="Validate" action={this.nextAction} />
-                    <UIButton btnLabel="< Back" action={this.props.prevPage} />
+                    <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
+                    <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
                 </div>
                 {/* <NextButton disabled={!this.state.ready} action={this.nextAction} /> */}
             </div>
@@ -498,6 +522,7 @@ class HostInputMask extends React.Component {
             valid: true,
             class: 'textinput textinput-nofocus'
         };
+        // this.hostInput = React.createRef();
     }
 
     validateMaskHandler = (event) => {
@@ -556,10 +581,36 @@ class HostInputMask extends React.Component {
         this.props.callback(text, isValid); /* update the hostmask property of the parent */
     }
 
+    // componentWillReceiveProps(props) {
+    //     console.log("hostmaskinput " + JSON.stringify(props));
+    //     if (props.visible) {
+    //         console.log("setting focus to input element");
+    //         this.hostInput.current.focus();
+    //     }
+    // }
+
+    componentDidUpdate(prevProps, prevState) {
+        console.log("hostmask input component update");
+        if (!prevProps.visible) {
+            this.refs.hostInputField.focus();
+            console.log("with props " + JSON.stringify(prevProps));
+        }
+    }
+
+    // setFocus() {
+    //     this.refs.hostInputField.focus();
+    // }
+
+    // shouldComponentUpdate = () => {
+    //     return false;
+    // }
+
     render () {
         return (
             <div style={{display: "inline-block"}}>
-                <input type="text" rows="1"
+                <input type="text" id="hostMask" rows="1"
+                ref="hostInputField"
+                autoFocus
                 className={this.state.class}
                 value={this.props.content}
                 onChange={this.validateMaskHandler} />
@@ -578,7 +629,9 @@ class HostMask extends React.Component {
             rgw: false,
             iscsi: false,
             hostmask: '',
-            hostmaskOK: false
+            hostmaskOK: false,
+            msgLevel: 'info',
+            msgText: ''
         };
     }
 
@@ -591,7 +644,9 @@ class HostMask extends React.Component {
             rgw: false,
             iscsi: false,
             hostmask: '',
-            hostmaskOK: false
+            hostmaskOK: false,
+            msgLevel: 'info',
+            msgText: ''
         });
     }
 
@@ -609,6 +664,11 @@ class HostMask extends React.Component {
             });
             console.log("current roles from mask are " + currentRoles);
             if (!collocationOK(currentRoles, roleName, this.props.installType, this.props.clusterType)) {
+                console.log("invalid roles - violates collocation rules");
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: 'Collocation of ' + currentRoles.join(', ') + " is not allowed "
+                });
                 return;
             }
         }
@@ -632,10 +692,18 @@ class HostMask extends React.Component {
         // check that at least one role is selected and we have a hostmask
         if (!this.state.hostmaskOK) {
             console.log("hostname is invalid");
+            this.setState({
+                msgLevel: "error",
+                msgText:"Invalid hostname/mask. Use aplhanumeric, '-' characters. A numeric range suffix uses the syntax [x-y]"
+            });
             return;
         }
         if (!this.state.hostmask) {
             console.log("clicked add, but the hostmask is invalid/empty");
+            this.setState({
+                msgLevel: 'info',
+                msgText: "You must provide a hostname/mask"
+            });
             return;
         }
 
@@ -656,34 +724,104 @@ class HostMask extends React.Component {
             console.log("Ok to expand and populate the table");
             this.reset();
             this.props.callback(this.state);
-            // add the table row
-            // reset the mask entry fields
         } else {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "At least one role is required"
+            });
             console.log("Need to specify at least one role per hostname mask");
         }
     }
 
+    closeHandler = () => {
+        this.reset();
+        this.props.closeHandler();
+    }
+
+    // componentWillReceiveProps(props) {
+    //     console.log("HostMask component received " + JSON.stringify(props));
+    //     if (props.show) {
+    //         console.log("revealed add hosts and set focus");
+    //         this.refs.hostInput.setFocus();
+    //     }
+    // }
+
     render() {
+        let showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
         return (
-            <div className="hostMask">
-                <span style={{marginRight:"10px"}}>Hostname/Mask</span>
-                <div style={{display:"inline-block"}}>
-                    <HostInputMask callback={this.updateHost} content={this.state.hostmask} />
+            <div className={showHideClass}>
+                <div className="hostMask modal-main">
+                    <WindowTitle title="Add Hosts" closeHandler={this.closeHandler} />
+                    <div className="modal-inner">
+                        Hosts may be added by hostname or a mask. Select the Ceph roles that should be applied
+                        to the new hosts.<p>&nbsp;</p>
+                        <div>
+                            <div className="display-inline-block sel-label-vertical"><b>Hostname/Mask</b></div>
+                            <div className="display-inline-block">
+                                <HostInputMask ref="hostInput" callback={this.updateHost} content={this.state.hostmask} visible={this.props.show} />
+                            </div>
+                        </div>
+                        <div style={{marginTop:"15px"}}>
+                            <div className="display-inline-block sel-label-vertical"><b>Roles</b></div>
+                            <div style={{display:"inline-flex"}}>
+
+                                <div className="display-inline-block">
+                                    <table id="add-hosts" >
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <RoleCheckbox role='mon' checked={this.state.mon} callback={this.updateRole} />
+                                                </td>
+                                                <td style={{minWidth: "60px"}}>mon</td>
+                                                <td>
+                                                    <RoleCheckbox role='mds' checked={this.state.mds} callback={this.updateRole} />
+                                                </td>
+                                                <td style={{minWidth: "60px"}}>mds</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <RoleCheckbox role='osd' checked={this.state.osd} callback={this.updateRole} />
+                                                </td>
+                                                <td style={{minWidth: "60px"}}>osd</td>
+                                                <td>
+                                                    <RoleCheckbox role='iscsi' checked={this.state.iscsi} callback={this.updateRole} />
+                                                </td>
+                                                <td style={{minWidth: "60px"}}>iscsi</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <RoleCheckbox role='rgw' checked={this.state.rgw} callback={this.updateRole} />
+                                                </td>
+                                                <td style={{minWidth: "60px"}}>rgw</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <Notification msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+                        {/* <span style={{marginLeft: "10px", marginRight:"5px"}}>mon</span>
+                        <RoleCheckbox role='mon' checked={this.state.mon} callback={this.updateRole} />
+                        <span style={{marginLeft: "10px", marginRight:"5px"}}>mds</span>
+                        <RoleCheckbox role='mds' checked={this.state.mds} callback={this.updateRole} />
+                        <span style={{marginLeft: "10px", marginRight:"5px"}}>osd</span>
+                        <RoleCheckbox role='osd' checked={this.state.osd} callback={this.updateRole} />
+                        <span style={{marginLeft: "10px", marginRight:"5px"}}>rgw</span>
+                        <RoleCheckbox role='rgw' checked={this.state.rgw} callback={this.updateRole} />
+                        <span style={{marginLeft: "10px", marginRight:"5px"}}>iscsi</span>
+                        <RoleCheckbox role='iscsi' checked={this.state.iscsi} callback={this.updateRole} /> */}
+                        <div className="add-hosts-buttons">
+                            <UIButton
+                                btnClass="nav-button btn btn-primary btn-lg"
+                                action={this.checkMaskValid}
+                                btnLabel="Add" />
+                            <UIButton
+                                btnClass="nav-button btn btn-lg"
+                                action={this.closeHandler}
+                                btnLabel="Cancel" />
+                        </div>
+                    </div>
                 </div>
-                <span style={{marginLeft: "10px", marginRight:"5px"}}>mon</span>
-                <RoleCheckbox role='mon' checked={this.state.mon} callback={this.updateRole} />
-                <span style={{marginLeft: "10px", marginRight:"5px"}}>mds</span>
-                <RoleCheckbox role='mds' checked={this.state.mds} callback={this.updateRole} />
-                <span style={{marginLeft: "10px", marginRight:"5px"}}>osd</span>
-                <RoleCheckbox role='osd' checked={this.state.osd} callback={this.updateRole} />
-                <span style={{marginLeft: "10px", marginRight:"5px"}}>rgw</span>
-                <RoleCheckbox role='rgw' checked={this.state.rgw} callback={this.updateRole} />
-                <span style={{marginLeft: "10px", marginRight:"5px"}}>iscsi</span>
-                <RoleCheckbox role='iscsi' checked={this.state.iscsi} callback={this.updateRole} />
-                <button style={{marginLeft:"20px"}}
-                    className="btn btn-primary btn-lg"
-                    onClick={this.checkMaskValid} >
-                    Add</button>
             </div>
         );
     }
