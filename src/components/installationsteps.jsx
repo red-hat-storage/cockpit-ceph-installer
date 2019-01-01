@@ -14,7 +14,7 @@ export class InstallationSteps extends React.Component {
     constructor(props) {
         super(props);
         this.nextHandler = this.nextHandler.bind(this);
-        this.jumpToPageHandler = this.jumpToPageHandler.bind(this);
+        // this.jumpToPageHandler = this.jumpToPageHandler.bind(this);
         this.state = {
             pageNum: 0,
             lastPage: 0,
@@ -129,26 +129,26 @@ export class InstallationSteps extends React.Component {
         });
     }
 
-    jumpToPageHandler (param) {
-        if (!this.state.deployStarted) {
-            if (this.visited.includes(param)) {
-                console.log("jump to already visited page " + param + " requested");
-                let current = this.state.pageNum;
-                if (param < current) {
-                    this.setState({
-                        pageNum: param,
-                        lastPage: current
-                    });
-                } else {
-                    console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
-                }
-            } else {
-                console.log("jump to page " + param + " denied - not been there yet!");
-            }
-        } else {
-            console.log("attempt to navigate back is blocked while a deployment has started/is running");
-        }
-    }
+    // jumpToPageHandler (param) {
+    //     if (!this.state.deployStarted) {
+    //         if (this.visited.includes(param)) {
+    //             console.log("jump to already visited page " + param + " requested");
+    //             let current = this.state.pageNum;
+    //             if (param < current) {
+    //                 this.setState({
+    //                     pageNum: param,
+    //                     lastPage: current
+    //                 });
+    //             } else {
+    //                 console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
+    //             }
+    //         } else {
+    //             console.log("jump to page " + param + " denied - not been there yet!");
+    //         }
+    //     } else {
+    //         console.log("attempt to navigate back is blocked while a deployment has started/is running");
+    //     }
+    // }
 
     render() {
         console.log("rendering installationpage: state - " + JSON.stringify(this.state));
@@ -165,8 +165,8 @@ export class InstallationSteps extends React.Component {
         return (
             <div>
                 <ProgressTracker
-                    pageNum={this.state.pageNum}
-                    pageSwitcher={this.jumpToPageHandler} />
+                    pageNum={this.state.pageNum} />
+                {/* pageSwitcher={this.jumpToPageHandler} /> */}
                 <div id="installPages">
                     <WelcomePage
                         className={this.page['welcome']}
