@@ -12,7 +12,8 @@ export class GenericModal extends React.Component {
         return (
             <div className={showHideClass}>
                 <section className="modal-main">
-                    <div>
+                    <WindowTitle title={this.props.title} closeHandler={this.props.closeHandler} />
+                    <div className="modal-inner">
                         { this.props.content }
                         <br />
                         <button
@@ -22,6 +23,17 @@ export class GenericModal extends React.Component {
                         </button>
                     </div>
                 </section>
+            </div>
+        );
+    }
+}
+
+export class WindowTitle extends React.Component {
+    render () {
+        return (
+            <div className="modal-title-bar">
+                <div className="float-left modal-title">{this.props.title}</div>
+                <div className="float-right close-symbol" onClick={() => { this.props.closeHandler() }} />
             </div>
         );
     }

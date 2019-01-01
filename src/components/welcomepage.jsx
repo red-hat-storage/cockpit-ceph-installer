@@ -9,6 +9,7 @@ export class WelcomePage extends React.Component {
         super(props);
         this.state = {
             modalVisible: false,
+            modalTitle: '',
             modalContent: '',
             className: this.props.className
         };
@@ -34,7 +35,8 @@ export class WelcomePage extends React.Component {
                     let errMsg = "Unable to access the ansible-runner-service API. Please check that the service is started, and retry.";
                     this.setState({
                         modalVisible: true,
-                        modalContent: errMsg
+                        modalContent: errMsg,
+                        modalTitle: "Environment Error"
                     });
                 }
                 );
@@ -54,6 +56,7 @@ export class WelcomePage extends React.Component {
                 <GenericModal
                     show={this.state.modalVisible}
                     content={this.state.modalContent}
+                    title={this.state.modalTitle}
                     closeHandler={this.hideModal} />
                 The information below describes the installation steps;<br />
                 <table >
@@ -91,9 +94,10 @@ export class WelcomePage extends React.Component {
                 </table>
 
                 <div className="nav-button-container">
-                    <UIButton primary btnLabel="Environment" action={this.checkRunnerAvailable} />
+                    <UIButton primary btnLabel="Environment &rsaquo;" action={this.checkRunnerAvailable} />
                 </div>
             </div>
+            //   &#x41;
         );
     }
 }
