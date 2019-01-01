@@ -64,11 +64,23 @@ export class ValidatePage extends React.Component {
                 console.log("updating state");
                 Object.assign(host, obj);
                 localState[i] = host;
-                let currentCount = this.state.probedCount;
+                let currentCount = this.state.probedCount + 1;
+                // let processed = Object.keys(this.eventLookup).length;
+                let level = (currentCount === localState.length) ? "success" : "info";
+
                 this.setState({
                     hosts: localState,
-                    probeCount: currentCount + 1
+                    probedCount: currentCount,
+                    msgLevel: level,
+                    msgText: currentCount + "/" + localState.length + " probes complete",
+                    probeStatusMsg: currentCount + "/" + localState.length + " probes complete"
                 });
+                console.log("updating notification message " + currentCount);
+
+                // let processed = Object.keys(this.eventLookup).length;
+                // this.setState({
+
+                // });
 
                 break;
             }
@@ -84,13 +96,13 @@ export class ValidatePage extends React.Component {
         let eventCount = eventIDs.length;
         let hostCount = this.state.hosts.length;
 
-        let processed = Object.keys(this.eventLookup).length;
-        this.setState({
-            msgLevel: 'info',
-            msgText: processed + "/" + hostCount + " probes complete"}
-        );
-        this.setState({probeStatusMsg: processed + "/" + hostCount + " probes complete"});
-
+        // let processed = Object.keys(this.eventLookup).length;
+        // this.setState({
+        //     msgLevel: 'info',
+        //     msgText: processed + "/" + hostCount + " probes complete",
+        //     probeStatusMsg: processed + "/" + hostCount + " probes complete"
+        // });
+        // this.refs.validationMessage.forceUpdateHandler();
         console.log("Progress " + eventCount + "/" + hostCount);
         eventIDs.forEach((eventID, idx, ary) => {
             if (this.eventLookup.hasOwnProperty(eventID)) {
@@ -98,6 +110,7 @@ export class ValidatePage extends React.Component {
             } else {
                 this.eventLookup[eventID] = "";
                 console.log("processing " + eventID);
+                // this.refs.validationMessage.forceUpdateHandler();
                 getJobEvent(playUUID, eventID, this.props.svctoken)
                         .then((resp) => {
                             let event = JSON.parse(resp);
@@ -117,8 +130,8 @@ export class ValidatePage extends React.Component {
         this.setState({
             probeEnabled: true,
             ready: true,
-            msgLevel: 'success',
-            msgText: 'Probe scan is complete',
+            // msgLevel: 'success',
+            // msgText: 'Probe scan is complete',
             probeStatusMsg: ''
         });
         this.eventLookup = {};
@@ -425,7 +438,7 @@ export class ValidatePage extends React.Component {
                     content={this.state.modalContent}
                     closeHandler={this.hideModal} /> */}
                 {/* <div className="spacer" /> */}
-                <Notification msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+                <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
 
                 {/* <button className="btn btn-primary btn-lg btn-offset" disabled={!this.state.probeEnabled} onClick={this.probeHosts}>Probe</button>
                 { spinner } */}
