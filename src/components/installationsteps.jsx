@@ -75,8 +75,10 @@ export class InstallationSteps extends React.Component {
         this.setState({deployStarted: true});
     }
 
-    nextHandler (param) {
+    updateState = (param) => {
         let ignoredKeys = ['className', 'modalVisible', 'modalContent'];
+
+        console.log("Updating state");
         if (param !== undefined) {
             if (param.constructor === {}.constructor) {
                 // this is a json object
@@ -103,6 +105,11 @@ export class InstallationSteps extends React.Component {
                 console.log("installation state updated with: " + JSON.stringify(stateObject));
             }
         }
+    }
+
+    nextHandler (param) {
+        this.updateState(param);
+
         let current = this.state.pageNum;
         let newPage = current + 1;
         if (current < 6) {
@@ -120,8 +127,13 @@ export class InstallationSteps extends React.Component {
         }
     }
 
-    prevPageHandler = () => {
+    prevPageHandler = (param) => {
         console.log("return to prior page");
+        if (param.constructor === {}.constructor) {
+            console.log("received " + JSON.stringify(param));
+        }
+
+        this.updateState(param);
         let current = this.state.pageNum;
         this.setState({
             pageNum: current - 1,
