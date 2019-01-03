@@ -20,7 +20,9 @@ export class HostsPage extends React.Component {
             modalTitle:'',
             hosts: [],
             ready: false,
-            addHostsVisible: false
+            addHostsVisible: false,
+            msgLevel: 'info',
+            msgText: ''
         };
         this.config = {};
         this.cache = {
@@ -251,8 +253,18 @@ export class HostsPage extends React.Component {
             let currentRoles = buildRoles([hostObject]);
             if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
                 console.log("current hosts are: " + JSON.stringify(localState));
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: "Adding " + role + " role to " + hostname + " would violate supported collocation rules"
+                });
                 this.updateState(localState);
                 return;
+            } else {
+                console.log("should turn of any collocation error message");
+                // this.setState({
+                //     msgLevel: 'info',
+                //     msgText: ''
+                // });
             }
         }
 
@@ -373,6 +385,20 @@ export class HostsPage extends React.Component {
         this.setState({addHostsVisible: false});
     }
 
+    prevPageHandler = () => {
+        if (this.state.hosts) {
+            // pass back the current hosts to the parent
+            console.log("sending host state back to parent");
+            let savedHostState = {
+                hosts: this.state.hosts
+            };
+            this.props.prevPage(savedHostState);
+        } else {
+            console.log('Passing back to parent, no hosts to save');
+            this.props.prevPage();
+        }
+    }
+
     render() {
         var rows;
         if (this.state.hosts.length > 0) {
@@ -391,10 +417,11 @@ export class HostsPage extends React.Component {
         return (
             <div id="hosts" className={this.props.className}>
                 <h3>2. Host Definition</h3>
-                Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be
+                <p>Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be
                  expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless
                  SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to
-                 resolve the issue and remove/re-add the host.
+                 resolve the issue and remove/re-add the host.</p>
+                <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
                 <GenericModal
                     show={this.state.modalVisible}
                     title={this.state.modalTitle}
@@ -407,9 +434,9 @@ export class HostsPage extends React.Component {
                     closeHandler={this.hideAddHosts}
                     // input={this.hostMaskInput}
                     installType={this.props.installType} />
-                <div className="divCenter">
+                {/* <div className="divCenter">
                     <div className="separatorLine" />
-                </div>
+                </div> */}
                 <div className="divCenter">
                     <div style={{width: "754px", marginBottom: "10px"}}>
                         <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
@@ -440,7 +467,7 @@ export class HostsPage extends React.Component {
                 </div>
                 <div className="nav-button-container">
                     <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
-                    <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
+                    <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
                 </div>
                 {/* <NextButton disabled={!this.state.ready} action={this.nextAction} /> */}
             </div>
