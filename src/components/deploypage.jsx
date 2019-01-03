@@ -446,24 +446,24 @@ export class DeployPage extends React.Component {
 
     render() {
         console.log("in deploypage render method");
-        var spinner;
+        // var spinner;
 
-        if (this.state.deployActive) {
-            spinner = (
-                <div className="modifier deploy-summary">
-                    <div className="modifier spinner spinner-lg">&nbsp;</div>
-                    <RuntimeSummary callback={this.storeRuntime} />
-                </div>
-            );
-        } else {
-            spinner = (<div className="modifier deploy-summary" />);
-        }
+        // if (this.state.deployActive) {
+        //     spinner = (
+        //         <div className="modifier deploy-summary">
+        //             <div className="modifier spinner spinner-lg">&nbsp;</div>
+        //             <RuntimeSummary callback={this.storeRuntime} />
+        //         </div>
+        //     );
+        // } else {
+        //     spinner = (<div className="modifier deploy-summary" />);
+        // }
 
         var deployBtnClass;
         switch (this.state.deployBtnText) {
         case "Failed":
         case "Retry":
-            deployBtnClass = "nav-button btn btn-danger btn-lg";
+            deployBtnClass = "nav-button btn btn-primary btn-lg";
             break;
         case "Complete":
             deployBtnClass = "nav-button btn btn-success btn-lg";
@@ -482,12 +482,12 @@ export class DeployPage extends React.Component {
                 You are now ready to start the deployment process. <br />
                 All the options you've chosen will be saved to disk, and the deployment engine (Ansible) invoked
                  to configure your hosts. Deployment progress will be shown below.<br />
-                <div className="spacer" />
+                {/* <div className="spacer" />
                 <button className={deployBtnClass} disabled={!this.state.deployEnabled} onClick={this.deployBtnHandler}>{this.state.deployBtnText}</button>
                 { spinner }
                 <div className="divCenter">
                     <div className="separatorLine" />
-                </div>
+                </div> */}
                 {/* { breadcrumbs } */}
                 <div className="div-center">
                     <BreadCrumbStatus runStatus={this.state.status.status} roleState={this.state.roleState} />
@@ -627,12 +627,14 @@ export class FailureSummary extends React.Component {
         super(props);
         this.state = {
             modalVisible: false,
-            modalContent: ''
+            modalContent: '',
+            modalTitle: ''
         };
     }
 
-    showModal = (content) => {
+    showModal = (title, content) => {
         this.setState({
+            modalTitle: title,
             modalVisible: true,
             modalContent: content
         });
@@ -640,6 +642,7 @@ export class FailureSummary extends React.Component {
 
     hideModal = () => {
         this.setState({
+            modalTitle: '',
             modalVisible: false,
             modalContent: ''
         });
@@ -683,6 +686,7 @@ export class FailureSummary extends React.Component {
         return (
             <div>
                 <GenericModal
+                    title={this.state.modalTitle}
                     show={this.state.modalVisible}
                     content={this.state.modalContent}
                     closeHandler={this.hideModal} />
@@ -718,7 +722,7 @@ export class FailureDetail extends React.Component {
                 errorDetail = (
                     <span>{results.stderr.slice(0, 100)}
                         <span className="link" onClick={() => {
-                            this.props.modalHandler(results.stderr);
+                            this.props.modalHandler("<host> Failure Details ", results.stderr);
                         }}><i>&nbsp;...more</i></span>
                     </span>);
             } else {
