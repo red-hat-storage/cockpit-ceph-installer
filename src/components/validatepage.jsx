@@ -226,7 +226,17 @@ export class ValidatePage extends React.Component {
             if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
                 console.log("current hosts are: " + JSON.stringify(localState));
                 this.updateState(localState);
+                this.setState({
+                    msgLevel: "error",
+                    msgText: "Adding " + role + " role to " + hostname + " would violate supported collocation rules"
+                });
                 return;
+            } else {
+                console.log("collocation is OK");
+                // this.setState({
+                //     msgLevel: 'info',
+                //     msgText: ''
+                // });
             }
         }
 
