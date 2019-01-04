@@ -23,7 +23,6 @@ export class ReviewPage extends React.Component {
         this.environmentData = {};
         this.clusterData = {};
         this.validationData = {
-            Critical: 0,
             Error: 0,
             Warning: 0,
             Info: 0
