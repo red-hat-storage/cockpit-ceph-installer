@@ -612,7 +612,8 @@ class HostStatus extends React.Component {
         var msgSummary = msgCount(this.props.msgs);
         var msgTypes = Object.keys(msgSummary);
         var summary = msgTypes.map((mtype, i) => {
-            return (<span key={i} className={mtype}><b>{msgSummary[mtype]}</b>&nbsp;{mtype}</span>);
+            let classes = "status-msg " + mtype;
+            return (<span key={i} className={classes}><b>{msgSummary[mtype]}</b>&nbsp;{mtype}</span>);
         });
         if (msgTypes.length > 0) {
             return (<span><b>{status}</b>&nbsp;{ summary }</span>);

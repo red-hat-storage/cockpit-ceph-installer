@@ -345,38 +345,38 @@ float:right;
     text-align: center;
     line-height: 1.4;
 }
-.critical {
-    background-color: #D50000;
-    color: white;
+.status-msg {
     padding-left:3px;
     padding-right:3px;
     border-radius: 3px;
+    margin-left:5px;
 }
-.criticalText {
+.error {
+    background-color: #D50000;
+    color: white;
+}
+.errorText {
     color: #D50000;
     font-weight: bold;
 }
-.error {
+.warning {
     background-color: orange;
     color: black;
-    padding-left:3px;
-    padding-right:3px;
-    border-radius: 3px;
 }
-.errorText {
+.warningText {
     color: #F57C00;
     font-weight: bold;
 }
-.warning {
-    background-color: blue;
-    color: white;
-    padding-left:3px;
-    padding-right:3px;
-}
-.warningText {
-    color: blue;
-    font-weight: bold;
-}
+// .warning {
+//     background-color: blue;
+//     color: white;
+//     padding-left:3px;
+//     padding-right:3px;
+// }
+// .warningText {
+//     color: blue;
+//     font-weight: bold;
+// }
 .probe-result {
  
     min-width: 90px;
