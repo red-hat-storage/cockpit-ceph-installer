@@ -101,7 +101,7 @@ export class ReviewPage extends React.Component {
                     <div className="review-table-whitespace" />
                     <StaticTable title="Cluster" data={this.clusterData} align="right" />
                     <div className="review-table-whitespace" />
-                    <StaticTable title="Readiness Overview" data={this.validationData} align="right" />
+                    <StaticTable title="Cluster Readiness" data={this.validationData} align="right" />
                 </div>
                 <div className="host-review">
                     <HostListing
