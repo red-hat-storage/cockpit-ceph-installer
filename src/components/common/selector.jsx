@@ -19,17 +19,22 @@ export class Selector extends React.Component {
         let labelStyle;
         if (this.props.horizontal) {
             divStyle = "display-inline-block sel-container-horizontal";
-            labelStyle = "display-block sel-label-horizontal";
-        } else {
+            labelStyle = "display-block sel-label-horizontal bold-text";
+        }
+        if (this.props.vertical) {
             divStyle = "display-block sel-container-vertical";
-            labelStyle = "display-inline-block sel-label-vertical";
+            labelStyle = "display-inline-block sel-label-vertical bold-text";
+        }
+        if (this.props.noformat) {
+            divStyle = "display-block";
+            labelStyle = "display-inline-block";
         }
         var options = this.props.options.map(function(opt, item) {
             return <option key={ item } value={ opt }>{ opt }</option>;
         });
         return (
             <div className={divStyle}>
-                <div className={labelStyle}><b>{this.props.labelName}</b></div>
+                <div className={labelStyle}>{this.props.labelName}</div>
                 <select className="dropdown" value={this.props.value} onChange={this.selectorChanged}>
                     { options }
                 </select>
