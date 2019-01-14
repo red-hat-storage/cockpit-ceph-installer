@@ -436,6 +436,7 @@ export function buildSubnetLookup(hostArray) {
 }
 
 export function currentTime() {
+    /* return current time in 24hr format */
     let d = new Date();
-    return d.toISOString().substr(11, 8);
+    return d.toLocaleTimeString('en-GB');
 }
