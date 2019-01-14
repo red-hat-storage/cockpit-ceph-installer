@@ -59,7 +59,7 @@ export class InstallationSteps extends React.Component {
                 " the back button to return to prior pages to change your selections.",
             "When you click 'Deploy', the Ansible settings will be committed to disk using standard" +
                 " Ansible formats. This allows you to refer to or modify these settings at a later date" +
-                " if you decide to manage your cluster with Ansible."
+                " if you decide to directly manage your cluster with Ansible."
         ];
         this.visited = [];
     }

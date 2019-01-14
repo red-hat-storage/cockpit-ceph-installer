@@ -639,7 +639,7 @@ class HostMsgs extends React.Component {
 
         var msgLines = this.props.msgs.map((m, i) => {
             var [mType, mDesc] = m.split(':');
-            var highlight = "display-inline-block hiddenTable " + mType + "Text probe-result";
+            var highlight = "display-inline-block hiddenTable " + mType + "Text bold-text probe-result";
             return (
                 <div key={i} className="probe-detail">
                     <span className={highlight}>{mType}</span>
