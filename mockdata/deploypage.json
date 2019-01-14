@@ -1,0 +1,97 @@
+{       
+  "mockEvents": [
+            {"msg": "running", "data": {
+                "role": "ceph-common",
+                "task": "doing pre-req stuff",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 10,
+                "ok": 5, "skipped": 2, "failed": 0, "failures": {}
+            }},
+            {"msg": "running", "data": {
+                "role": "ceph-mon",
+                "task": "fetching keys",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 20,
+                "ok": 15, "skipped": 10, "failed": 0, "failures": {}
+            }},
+            {"msg": "running", "data": {
+                "role": "ceph-common",
+                "task": "doing pre-req stuff",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 23,
+                "ok": 17, "skipped": 11, "failed": 0, "failures": {}
+            }},
+            {"msg": "running", "data": {
+                "role": "ceph-mgr",
+                "task": "fetching image",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 30,
+                "ok": 20, "skipped": 20, "failed": 0, "failures": {}
+            }},
+            {"msg": "running", "data": {
+                "role": "ceph-validate",
+                "task": "doing pre-req stuff",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 33,
+                "ok": 22, "skipped": 21, "failed": 0, "failures": {}
+            }},
+            {"msg": "running", "data": {
+                "role": "ceph-osd",
+                "task": "formatting devices",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 45,
+                "ok": 25, "skipped": 30, "failed": 0, "failures": {}
+            }},
+            {"msg": "running", "data": {
+                "role": "ceph-osd",
+                "task": "updating systemd",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 80,
+                "ok": 30, "skipped": 45, "failed": 16, "failures": {
+                    "ceph-1": {"event_data": {"host": "ceph-1", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-2": {"event_data": {"host": "ceph-2", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened on a big scale with lots of small gremlins released into the wild running riot. bad things happened on a big scale with lots of small gremlins released into the wild running riot!"}], "msg":"bad stuff happened"}}},
+                    "ceph-3": {"event_data": {"host": "ceph-3", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-4": {"event_data": {"host": "ceph-4", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-5": {"event_data": {"host": "ceph-5", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-6": {"event_data": {"host": "ceph-6", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-7": {"event_data": {"host": "ceph-7", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-8": {"event_data": {"host": "ceph-8", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-9": {"event_data": {"host": "ceph-9", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-10": {"event_data": {"host": "ceph-10", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}}
+            }}},
+            {"msg": "failed", "data": {
+                "role": "ceph-osd",
+                "task": "checking osd state",
+                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
+                "last_task_num": 99,
+                "ok": 35, "skipped": 55, "failed": 16, "failures": {
+                    "ceph-1": {"event_data": {"host": "ceph-1", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-2": {"event_data": {"host": "ceph-2", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened on a big scale with lots of small gremlins released into the wild running riot. bad things happened on a big scale with lots of small gremlins released into the wild running riot!"}], "msg":"bad stuff happened"}}},
+                    "ceph-3": {"event_data": {"host": "ceph-3", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-4": {"event_data": {"host": "ceph-4", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-5": {"event_data": {"host": "ceph-5", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-6": {"event_data": {"host": "ceph-6", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-7": {"event_data": {"host": "ceph-7", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-8": {"event_data": {"host": "ceph-8", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-9": {"event_data": {"host": "ceph-9", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
+                    "ceph-10": {"event_data": {"host": "ceph-10", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}}
+            }}}
+        ],
+    "mockCephOutput": [
+            "  cluster:",
+            "    id:     1b04e377-6d86-447e-929d-c4e5880fcf02",
+            "    health: HEALTH_OK",
+            " ",
+            "  services:",
+            "    mon: 3 daemons, quorum ceph-1,ceph-2,ceph-3",
+            "    mgr: ceph-1(active), standbys: ceph-2, ceph-3",
+            "    osd: 0 osds: 0 up, 0 in",
+            " ",
+            "  data:",
+            "    pools:   0 pools, 0 pgs",
+            "    objects: 0  objects, 0 B",
+            "    usage:   0 B used, 0 B / 0 B avail",
+            "    pgs:     ",
+            " "
+        ]
+}
