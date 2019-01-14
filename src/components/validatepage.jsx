@@ -5,7 +5,16 @@ import { RoleCheckbox } from './common/rolecheckbox.jsx';
 // import { GenericModal } from './common/modal.jsx';
 import { Arrow } from './common/arrow.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
-import { toggleHostRole, buildRoles, checkPlaybook, countNICs, msgCount, sortByKey, collocationOK, getHost } from '../services/utils.js';
+import {
+    toggleHostRole,
+    buildRoles,
+    checkPlaybook,
+    countNICs,
+    msgCount,
+    sortByKey,
+    collocationOK,
+    getHost,
+    hostsWithRoleCount } from '../services/utils.js';
 import { runPlaybook, getJobEvent, deleteHost } from '../services/apicalls.js';
 
 import '../app.scss';
@@ -29,7 +38,7 @@ export class ValidatePage extends React.Component {
         };
         this.probeSummary = '';
         this.eventLookup = {}; // lookup for probe results
-        this.skipChecks = true;
+        this.skipChecks = false;
     }
 
     processEventData = (eventData) => {
@@ -364,8 +373,18 @@ export class ValidatePage extends React.Component {
         // }
 
         // TODO: this is mickey-mouse for testing ONLY
-        if (candidateHosts.length < 1) {
-            console.log("Not enough hosts with a selected state");
+        if (candidateHosts.length < 3) {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "To proceed you need to select at least 3 hosts in an 'OK' state"
+            });
+            return;
+        }
+        if (![3, 5].includes(hostsWithRoleCount(candidateHosts, 'mon'))) {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "You need either 3 or 5 mons to continue"
+            });
             return;
         }
 
