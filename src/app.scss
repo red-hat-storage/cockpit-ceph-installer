@@ -587,10 +587,12 @@ table.failure-table tbody tr:hover {
         position: relative;
         background: white;
         width: 60%;
-        height: auto;
-        margin: 25% auto;
-      
-        }
+        top:50%;
+        left:0;
+        margin: 0 auto;
+        transform:translateY(-50%);
+      /*   height: auto; */
+         }
     
 // .modal-main {
 //     position: fixed;
