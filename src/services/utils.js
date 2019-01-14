@@ -90,6 +90,16 @@ export function activeRoles(host) {
     console.log("active roles for " + host.hostname + " " + rolesActive);
     return rolesActive;
 }
+export function allRoles(hosts) {
+    // generate a long list of the roles defined within the cluster
+    // to detect when a role change is made
+    let roleList = [];
+    for (let host of hosts) {
+        let hostRoles = activeRoles(host);
+        roleList.push(...hostRoles);
+    }
+    return roleList;
+}
 
 export function hostsWithRoleCount(hosts, role) {
     /* return a count of the number of hosts that have the given role active */

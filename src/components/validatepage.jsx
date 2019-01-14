@@ -7,6 +7,7 @@ import { Arrow } from './common/arrow.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import {
     toggleHostRole,
+    allRoles,
     buildRoles,
     checkPlaybook,
     countNICs,
@@ -14,7 +15,7 @@ import {
     sortByKey,
     collocationOK,
     getHost,
-    hostsWithRoleCount } from '../services/utils.js';
+    hostsWithRoleCount} from '../services/utils.js';
 import { runPlaybook, getJobEvent, deleteHost } from '../services/apicalls.js';
 
 import '../app.scss';
@@ -37,6 +38,7 @@ export class ValidatePage extends React.Component {
             msgText: ''
         };
         this.probeSummary = '';
+        this.roleSummary = '';
         this.eventLookup = {}; // lookup for probe results
         this.skipChecks = false;
     }
@@ -94,7 +96,9 @@ export class ValidatePage extends React.Component {
                 break;
             }
         }
-        this.probeSummary = JSON.stringify(this.state.hosts);
+
+        this.roleSummary = JSON.stringify(allRoles(this.state.hosts));
+        // this.probeSummary = JSON.stringify(this.state.hosts);
     }
 
     updateProbeStatus = (response, playUUID) => {
@@ -339,8 +343,8 @@ export class ValidatePage extends React.Component {
         // all selected hosts must have a status of OK
         let candidateHosts = [];
         let hostsToDelete = [];
-        if (JSON.stringify(this.state.hosts) != this.probeSummary) {
-            console.log("clicked next, but changes detected since last probe");
+        if (JSON.stringify(allRoles(this.state.hosts)) != this.roleSummary) {
+            console.log("clicked next, but role changes detected since last probe");
             this.setState({
                 msgLevel: 'warning',
                 msgText: "You have made role changes, so a further probe is required."
