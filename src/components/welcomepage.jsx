@@ -64,7 +64,7 @@ export class WelcomePage extends React.Component {
                         <tr>
                             <td className="tdTitles" >Environment</td>
                             <td>The target environment defines the high level scope of the installation. Within this
-                            option you delcare items such as;
+                            option you declare items such as;
                             <ul>
                                 <li>installation source</li>
                                 <li>OSD type <i>(e.g 'legacy' filestore or bluestore)</i></li>
@@ -85,6 +85,10 @@ export class WelcomePage extends React.Component {
                         <tr>
                             <td className="tdTitles">Network</td>
                             <td>Network subnet declaration for the front end (client) and backend (ceph) networks</td>
+                        </tr>
+                        <tr>
+                            <td className="tdTitles">Review</td>
+                            <td>Review the configuration settings made prior to installation</td>
                         </tr>
                         <tr>
                             <td className="tdTitles">Deploy</td>
