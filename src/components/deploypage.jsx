@@ -36,6 +36,8 @@ export class DeployPage extends React.Component {
                     task_metadata: {
                         created: '',
                         task_action: '',
+                        task_path: '',
+                        play_pattern: ''
                     }
                 }
             }
@@ -498,7 +500,7 @@ export class DeployPage extends React.Component {
                         <tr>
                             <td className="runtime-table-label">Run Time</td>
                             <td className="runtime-table-value align-left">
-                                <ElapsedTime active={this.state.deployActive} callback={this.storeRuntime} />
+                                <ElapsedTime ref="timer" active={this.state.deployActive} callback={this.storeRuntime} />
                             </td>
                             <td className="runtime-table-spacer">&nbsp;</td>
                             <td className="runtime-table-label">Failures</td>
@@ -536,10 +538,16 @@ export class TaskStatus extends React.Component {
         if (this.props.status.msg.startsWith('Waiting')) {
             taskStatus = (<div />);
         } else {
+            let taskInfo;
+            if (this.props.status.data.role) {
+                taskInfo = '[ ' + this.props.status.data.role + ' ] ' + this.props.status.data.task;
+            } else {
+                taskInfo = this.props.status.data.task;
+            }
             taskStatus = (
                 <div>
                     <div>
-                        <span className="task-label bold-text">Task Name:</span><span>[{this.props.status.data.role}]&nbsp;{this.props.status.data.task}</span>
+                        <span className="task-label bold-text">Task Name:</span><span>{taskInfo}</span>
                     </div>
                     <div>
                         <span className="task-label bold-text">Started:</span><span>{this.props.status.data.task_metadata.created}</span>
