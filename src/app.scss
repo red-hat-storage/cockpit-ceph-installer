@@ -32,10 +32,6 @@ table#probe-table thead {
     position: fixed;
     z-index: 2; 
 }
-table#failures thead {
-    position: fixed;
-    z-index: 2; 
-}
   
 .dummy-row {
     height: 3em;
@@ -357,7 +353,6 @@ float:right;
 }
 .errorText {
     color: #D50000;
-    font-weight: bold;
 }
 .warning {
     background-color: orange;
@@ -365,7 +360,6 @@ float:right;
 }
 .warningText {
     color: #F57C00;
-    font-weight: bold;
 }
 // .warning {
 //     background-color: blue;
@@ -503,7 +497,7 @@ table.skinny-table {
     min-width: 120px;
 }
 .task-data {
-    min-width: 40px;
+    min-width: 60px;
 }
 .aligned-right {
     text-align: right;
@@ -512,11 +506,12 @@ table.skinny-table {
     vertical-align: top;
 }
 table.playbook-table td {
-    padding: 0px 5px 0px 5px;
-}
-table.playbook-table {
-    height:60px;
+    padding: 0px 5px 0px 5px; }
+  table.playbook-table tr {
+    margin-top: 10px;
   }
+  table.playbook-table {
+    height: 140px; }
 .update-me {
     display: table-cell;
 }
@@ -536,41 +531,41 @@ table.playbook-table {
 // }
   
 .failure-table {
-    display:inline-flex;
-    height:330px;
-    margin-top:20px;
+    position:relative;
+  }
+table.failure-table thead,th tr {
+    display:block;
+    position: relative;
 }
+table.failure-table th {
+    border-left:none;
+    border-top: none;
+}
+table.failure-table tbody {
+    display:block;
+    height: 278px;
+    overflow-y: auto;
+}
+table.failure-table tbody tr {
+    border-bottom: 1px solid lightgrey;
+}
+table.failure-table tbody td {
+    border-right: 1px solid lightgrey;
+}
+table.failure-table tbody tr:hover {
+    background-color: #ebf8ff;;
+}
+  
 .fhost {
     width: 140px;
     min-width:140px 
 }
  
 .fdetail {
-    width: 800px;
-    min-width:800px; 
+    width: 100%;
 }
-table#failures tr td {
-    padding: 10px 5px 10px 5px;
-    border: 1px solid lightgrey; }
   
-  table#failures thead {
-    position: fixed;
-   }
   
-  table#failures th {
-    border: 1px solid lightgrey;
-    padding: 0px 5px 0px 5px;
-    height: 2em;
-  }
-  
-  .failures-dummy-row {
-    height: 2em;
-    display: block; }
-    
-table#failures tr:hover {
-    background-color: #F8F9F9; 
-}
-    
 .fbtn {
     min-width: 50px;
     text-align: center; 
@@ -889,3 +884,53 @@ table#add-hosts {
       
 .host-review-table-std {
     width: 150px; }
+.clear {
+    clear: both;
+}
+table.runtime-table {
+    margin-top: 10px;
+    height: 110px; }
+  
+  table.runtime-table td {
+    padding: 5px;
+  }
+  .runtime-table-spacer {
+    width: 90px;
+    display: block; }
+  
+  .runtime-table-label {
+    width: 110px; }
+  
+  .runtime-table-value {
+    width: 120px; }
+  
+  .runtime-table-nbr {
+    width: 30px; }
+.bold-text {
+    font-weight: bold;
+}
+
+#deploy-container {
+    width: 100%;
+    height:320px;
+    margin-top:10px;
+    overflow-y: hidden;
+    border: 1px solid lightgrey;
+     }
+.deploy-status {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.task-label {
+    display: inline-block;
+    width: 120px;
+    padding-left: 20px;
+    padding-right: 20px;
+    text-align: right;
+    margin-bottom: 5px; 
+    margin-top:5px;
+}
+.success {
+    color: green;
+}
