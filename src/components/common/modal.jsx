@@ -16,12 +16,11 @@ export class GenericModal extends React.Component {
                     <div className="modal-inner">
                         { this.props.content }
                         <br />
-                        <button
-                            className="modal-close btn btn-primary btn-lg"
-                            onClick={this.props.closeHandler}>
-                            Close
-                        </button>
                     </div>
+                    <button className="modal-close btn btn-primary btn-lg"
+                        onClick={this.props.closeHandler}>
+                        Close
+                    </button>
                 </section>
             </div>
         );
