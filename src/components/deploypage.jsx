@@ -165,8 +165,6 @@ export class DeployPage extends React.Component {
         });
         return (
             <div>
-                <h2>Ceph Cluster Status</h2>
-                <p>&nbsp;</p>
                 { cmdOutput }
             </div>
         );
@@ -200,7 +198,7 @@ export class DeployPage extends React.Component {
                                         let response = JSON.parse(resp);
                                         let output = response.data.event_data.res.msg;
                                         let content = this.formattedOutput(output);
-                                        this.props.modalHandler(content);
+                                        this.props.modalHandler("Ceph Cluster Status", content);
                                     })
                                     .catch(e => {
                                         console.error("Error fetching job event: " + e.message);
