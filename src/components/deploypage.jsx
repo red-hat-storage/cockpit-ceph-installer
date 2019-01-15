@@ -537,10 +537,19 @@ export class TaskStatus extends React.Component {
             taskStatus = (<div />);
         } else {
             let taskInfo;
+            let timeStamp;
             if (this.props.status.data.role) {
                 taskInfo = '[ ' + this.props.status.data.role + ' ] ' + this.props.status.data.task;
             } else {
                 taskInfo = this.props.status.data.task;
+            }
+            if (this.props.status.data.task_metadata.created) {
+                let t = new Date(this.props.status.data.task_metadata.created);
+                let offset = t.getTimezoneOffset() / 60;
+                t.setHours(t.getHours() - offset);
+                timeStamp = t.toLocaleTimeString('en-GB');
+            } else {
+                timeStamp = '';
             }
             taskStatus = (
                 <div>
@@ -548,7 +557,7 @@ export class TaskStatus extends React.Component {
                         <span className="task-label bold-text">Task Name:</span><span>{taskInfo}</span>
                     </div>
                     <div>
-                        <span className="task-label bold-text">Started:</span><span>{this.props.status.data.task_metadata.created}</span>
+                        <span className="task-label bold-text">Started:</span><span>{timeStamp}</span>
                     </div>
                     <div>
                         <span className="task-label bold-text">Role:</span><span>{this.props.status.data.role}</span>
