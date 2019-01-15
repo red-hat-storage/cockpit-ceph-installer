@@ -35,7 +35,8 @@ export class Application extends React.Component {
             'hostname': _("Unknown"),
             "svctoken": null,
             modalVisible: false,
-            modalContent: ''
+            modalContent: '',
+            modalTitle: ''
         };
     }
 
@@ -52,13 +53,14 @@ export class Application extends React.Component {
         this.setState({modalVisible: false});
     }
 
-    showModal = (modalContent) => {
+    showModal = (title, modalContent) => {
         // handle the show and hide of the app level modal
         console.log("content: ");
         console.log(modalContent);
         this.setState({
             modalVisible: true,
-            modalContent: modalContent
+            modalContent: modalContent,
+            modalTitle: title
         });
     }
 
@@ -70,6 +72,7 @@ export class Application extends React.Component {
             <div className="container-fluid">
                 <GenericModal
                     show={this.state.modalVisible}
+                    title={this.state.modalTitle}
                     content={this.state.modalContent}
                     closeHandler={this.hideModal} />
                 <h2><b>Ceph Installer</b></h2>
