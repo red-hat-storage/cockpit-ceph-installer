@@ -423,18 +423,6 @@ export class DeployPage extends React.Component {
 
     render() {
         console.log("in deploypage render method");
-        // var spinner;
-
-        // if (this.state.deployActive) {
-        //     spinner = (
-        //         <div className="modifier deploy-summary">
-        //             <div className="modifier spinner spinner-lg">&nbsp;</div>
-        //             <RuntimeSummary callback={this.storeRuntime} />
-        //         </div>
-        //     );
-        // } else {
-        //     spinner = (<div className="modifier deploy-summary" />);
-        // }
 
         var deployBtnClass;
         var msgClass;
@@ -469,16 +457,6 @@ export class DeployPage extends React.Component {
 
                 <h3>6. Deploy the Cluster</h3>
                 You are now ready to start the deployment process. <br />
-                {/* All the options you've chosen will be saved to disk, and the deployment engine (Ansible) invoked
-                 to configure your hosts. Deployment progress will be shown below.<br /> */}
-                {/* <div className="spacer" />
-                <button className={deployBtnClass} disabled={!this.state.deployEnabled} onClick={this.deployBtnHandler}>{this.state.deployBtnText}</button>
-                { spinner }
-                <div className="divCenter">
-                    <div className="separatorLine" />
-                </div> */}
-                {/* { breadcrumbs } */}
-                {/* <div className="div-center"> */}
                 <table className="runtime-table">
                     <tbody>
                         <tr>
@@ -506,8 +484,6 @@ export class DeployPage extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                {/* <ExecutionProgress active={this.state.deployActive} status={this.state.status} runtime={this.state.runTime} callback={this.storeRuntime} /> */}
-                {/* <div className="clear" /> */}
                 <BreadCrumbStatus runStatus={this.state.status.status} roleState={this.state.roleState} />
                 <div>
                     <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
@@ -516,10 +492,6 @@ export class DeployPage extends React.Component {
                     <TaskStatus visible={this.state.showTaskStatus} status={this.state.status} />
                     <FailureSummary visible={!this.state.showTaskStatus} status={this.state.status} />
                 </div>
-                {/* </div> */}
-
-                {/* <FailureSummary status={this.state.status} failures={this.state.status.data.failed} /> */}
-                {/* <NextButton btnText="Finish" disabled={!this.state.finished} action={this.props.action} /> */}
                 <div className="nav-button-container">
                     <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
                     <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.deployEnabled} action={this.props.prevPage} />
@@ -582,140 +554,6 @@ export class TaskStatus extends React.Component {
         );
     }
 }
-
-// export class FailureInfo extends React.Component {
-//     render() {
-//         let visible = (this.props.visible) ? "deploy-status display-block" : "deploy-status hidden";
-//         return (
-//             <div className={visible} >&nbsp;
-//             </div>
-//         );
-//     }
-// }
-
-// export class RuntimeSummary extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//             now: ''
-//         };
-//     }
-
-//     componentDidMount(props) {
-//         let now = new Date();
-//         this.setState({now: now.toLocaleString().substr(11)});
-//     }
-
-//     componentWillUnmount(props) {
-//         console.log("Unmounting the RuntimeSummary component");
-//     }
-
-//     render() {
-//         return (
-//             <div className="modifier deploy-summary">
-//                 <table className="skinny-table">
-//                     <tbody>
-//                         <tr>
-//                             <td className="aligned-right">Start time:&nbsp;</td>
-//                             <td>{this.state.now}</td>
-//                         </tr>
-//                         <tr>
-//                             <td className="aligned-right">Run time:&nbsp;</td>
-//                             <td><ElapsedTime callback={this.props.callback} /></td>
-//                         </tr>
-//                     </tbody>
-//                 </table>
-//             </div>
-//         );
-//     }
-// }
-
-// export class ExecutionProgress extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//         };
-//     }
-
-//     render() {
-//         var progress;
-//         var status;
-//         var taskInfo;
-//         var taskLabel;
-//         progress = (<div />);
-
-//         if (this.props.status.status != '') {
-//             status = this.props.status;
-//             console.log("rendering playbook run details");
-//             console.log(JSON.stringify(status));
-//             if (status.data.role != '') {
-//                 taskInfo = "[" + status.data.role + "] " + status.data.task;
-//             } else {
-//                 taskInfo = status.data.task;
-//             }
-//             switch (status.msg.toUpperCase()) {
-//             case "FAILED":
-//                 taskLabel = (<span style={{color: "red"}}>FAILED</span>);
-//                 taskInfo = '';
-//                 break;
-//             case "SUCCESSFUL":
-//                 taskLabel = "Deployment Successful ";
-//                 if (this.props.runtime > 0) {
-//                     let date = new Date(null);
-//                     date.setSeconds(this.props.runtime);
-//                     taskLabel += "(run time: " + date.toISOString().substr(11, 8) + ")";
-//                 }
-//                 taskInfo = '';
-//                 break;
-//             default:
-//                 taskLabel = "Task:";
-//             }
-
-//             progress = (
-//                 <div>
-//                     <div className="float-left">
-//                         <table className="playbook-table">
-//                             <tbody>
-//                                 <tr>
-//                                     <td className="task-title">Completed Tasks</td>
-//                                     <td className="task-data aligned-right">{ status.data.ok }</td>
-//                                 </tr>
-//                                 <tr>
-//                                     <td className="task-title">Skipped</td>
-//                                     <td className="task-data aligned-right">{ status.data.skipped }</td>
-//                                 </tr>
-//                                 <tr>
-//                                     <td className="task-title">Task Failures</td>
-//                                     <td className="task-data aligned-right">{ status.data.failed }</td>
-//                                 </tr>
-//                                 <tr>
-//                                     <td className="task-title">Run time</td>
-//                                     <td className="task-data aligned-right">
-//                                         <ElapsedTime active={this.props.active} callback={this.props.callback} />
-//                                     </td>
-//                                 </tr>
-//                             </tbody>
-//                         </table>
-//                     </div>
-//                     <div className="float-left" style={{width: "40px", minWidth: "40px"}} >&nbsp;</div>
-//                     <div className="float-left padding-sides" >
-//                         { taskLabel }
-//                     </div>
-//                     <div className="float-left padding-sides" >
-//                         { taskInfo }
-//                     </div>
-//                 </div>
-//             );
-//         }
-//         // tried using rowSpan, but it doesn't render correctly, so switched to
-//         // multiple side-by-side divs
-//         return (
-//             <div>
-//                 { progress }
-//             </div>
-//         );
-//     }
-// }
 
 export class FailureSummary extends React.Component {
     constructor(props) {
