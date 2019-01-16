@@ -4,7 +4,7 @@ import { Notification } from './common/notifications.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 // import { GenericModal } from './common/modal.jsx';
 import { Arrow } from './common/arrow.jsx';
-import { emptyRow } from './common/emptyrow.jsx';
+// import { emptyRow } from './common/emptyrow.jsx';
 import {
     toggleHostRole,
     allRoles,
@@ -443,7 +443,7 @@ export class ValidatePage extends React.Component {
                             callback={this.toggleSingleRow} />;
             });
         } else {
-            rows = emptyRow();
+            rows = (<tbody />); // emptyRow();
         }
 
         // if (!this.state.probeEnabled) {
@@ -480,7 +480,7 @@ export class ValidatePage extends React.Component {
                 </div> */}
                 <div className="divCenter">
                     <div>
-                        <table id="probe-table" className="roleTable" >
+                        <table id="probe-table" className="probe-table" >
                             <thead>
                                 <tr>
                                     <th className="tdSelector">

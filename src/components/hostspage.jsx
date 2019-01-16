@@ -459,9 +459,8 @@ export class HostsPage extends React.Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="dummy-row" />
+                                { rows }
                             </tbody>
-                            { rows }
                         </table>
                     </div>
                 </div>
@@ -507,37 +506,35 @@ class HostDataRow extends React.Component {
 
     render() {
         return (
-            <tbody>
-                <tr>
-                    <td className="thHostname" >
-                        { this.colorify(this.state.host.hostname) }
-                    </td>
-                    <td className="thRoleWidth">
-                        <RoleCheckbox role="mon" checked={this.state.host.mon} callback={this.hostRoleChange} />
-                    </td>
-                    <td className="thRoleWidth">
-                        <RoleCheckbox role="mds" checked={this.state.host.mds} callback={this.hostRoleChange} />
-                    </td>
-                    <td className="thRoleWidth">
-                        <RoleCheckbox role="osd" checked={this.state.host.osd} callback={this.hostRoleChange} />
-                    </td>
-                    <td className="thRoleWidth">
-                        <RoleCheckbox role="rgw" checked={this.state.host.rgw} callback={this.hostRoleChange} />
-                    </td>
-                    <td className="thRoleWidth">
-                        <RoleCheckbox role="iscsi" checked={this.state.host.iscsi} callback={this.hostRoleChange} />
-                    </td>
-                    <td className="textCenter hostStatusCell">
-                        { this.colorify(this.state.host.status) }
-                    </td>
-                    <td className="tdHostInfo">
-                        <HostInfo hostname={this.state.host.hostname} info={this.state.host.info} modal={this.props.modal} />
-                    </td>
-                    <td className="tdDeleteBtn">
-                        <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} />
-                    </td>
-                </tr>
-            </tbody>
+            <tr>
+                <td className="thHostname" >
+                    { this.colorify(this.state.host.hostname) }
+                </td>
+                <td className="thRoleWidth">
+                    <RoleCheckbox role="mon" checked={this.state.host.mon} callback={this.hostRoleChange} />
+                </td>
+                <td className="thRoleWidth">
+                    <RoleCheckbox role="mds" checked={this.state.host.mds} callback={this.hostRoleChange} />
+                </td>
+                <td className="thRoleWidth">
+                    <RoleCheckbox role="osd" checked={this.state.host.osd} callback={this.hostRoleChange} />
+                </td>
+                <td className="thRoleWidth">
+                    <RoleCheckbox role="rgw" checked={this.state.host.rgw} callback={this.hostRoleChange} />
+                </td>
+                <td className="thRoleWidth">
+                    <RoleCheckbox role="iscsi" checked={this.state.host.iscsi} callback={this.hostRoleChange} />
+                </td>
+                <td className="textCenter hostStatusCell">
+                    { this.colorify(this.state.host.status) }
+                </td>
+                <td className="tdHostInfo">
+                    <HostInfo hostname={this.state.host.hostname} info={this.state.host.info} modal={this.props.modal} />
+                </td>
+                <td className="tdDeleteBtn">
+                    <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} />
+                </td>
+            </tr>
         );
     }
 }

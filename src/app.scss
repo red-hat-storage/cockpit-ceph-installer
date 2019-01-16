@@ -127,38 +127,31 @@ table#probe-table thead {
     width: 150px;
     margin-top: 0px; 
 }
-// .radio-inline-block {
-//     display: inline-block;
-// }
-// .radio-block {
-//     display: block;
-// }
-// th {
-//     background-color: #f9f9f9;
-//     font-size: 1.1em;
-// }
-// tbody {
-//     overflow-y: auto;
-//     display: block; 
-// }
+
+.roleTable {
+    position: relative; }
+  
+table.roleTable thead, tr {
+    position: relative; }
+  
+table.roleTable tbody {
+    height: 337px;
+    display: block;
+    overflow-y: auto; }
+  
 .roleTable td {
-    border-left: 1px solid lightgrey;   
-    border-right: 1px solid lightgrey;   
-    border-bottom: 1px solid lightgrey;   
-}
-// .roleTable th {
-//     height: 30px;
-//     border: 1px solid lightgrey; 
-// }
-// .roleTable th {
-//     height: 30px;
-// }
-.roleTable tbody:hover {
-    background-color: #F8F9F9;
-}
-.roleTable table {
-    height: 380px;
-}
+    border-left: 1px solid lightgrey;
+    border-right: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey; }
+.probe-table td {
+    border-left: 1px solid lightgrey;
+    border-right: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey; }
+.roleTable tbody tr:hover {
+    background-color: #ebf8ff; }
+.probe-table tbody:hover {
+    background-color: #ebf8ff; }
+
 .thHostInfo, .tdHostInfo  {
     width: 250px;
 }
@@ -855,7 +848,7 @@ table#add-hosts {
     display: block; }
   
   table.host-review-table {
-    height: 200px;
+    height: 195px;
     margin-top: 10px; }
   
   .host-review-table tr {
