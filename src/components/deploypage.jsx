@@ -427,14 +427,16 @@ export class DeployPage extends React.Component {
         var deployBtnClass;
         var msgClass;
         var msgText;
+        msgText = this.state.status.msg.charAt(0).toUpperCase() + this.state.status.msg.slice(1);
         switch (this.state.status.msg) {
         case "failed":
             msgClass = "runtime-table-value align-left errorText";
-            msgText = 'FAILED';
+            break;
+        case "successful":
+            msgClass = "runtime-table-value align-left success";
             break;
         default:
             msgClass = "runtime-table-value align-left";
-            msgText = this.state.status.msg;
         }
 
         switch (this.state.deployBtnText) {
@@ -449,7 +451,7 @@ export class DeployPage extends React.Component {
             deployBtnClass = "nav-button btn btn-primary btn-lg";
             break;
         }
-        console.log("btn class string is " + deployBtnClass);
+        // console.log("btn class string is " + deployBtnClass);
 
         return (
 
