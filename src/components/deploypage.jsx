@@ -119,7 +119,7 @@ export class DeployPage extends React.Component {
                 changesMade = true;
                 break;
             } else {
-                if (eventRoleName != "") {
+                if (eventRoleName) {
                     // console.log("current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
 
                     // if the event role is not in the list AND we have seen the role-active name
