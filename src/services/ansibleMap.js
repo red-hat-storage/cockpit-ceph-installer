@@ -91,17 +91,23 @@ export function allVars (vars) {
     }
     if (vars.installType == "Container") {
         forYML.containerized_deployment = true;
+        forYML.docker_pull_timeout = "600s"; // workaround for local network wet string
+        if (vars.sourceType === "Red Hat") {
+            forYML.ceph_docker_registry = 'registry.access.redhat.com/rhceph';
+            forYML.ceph_docker_image = 'rhceph-3-rhel7';
+        }
+    } else {
+        forYML.ceph_origin = 'repository';
     }
     if (vars.rgwNetwork != '') {
         forYML.radosgw_address_block = vars.rgwNetwork;
     }
-    forYML.ceph_origin = 'repository';
+
     forYML.public_network = vars.publicNetwork;
     forYML.cluster_network = vars.clusterNetwork;
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
     forYML.disk_list = {rc: 0}; // workaround for osd_run_sh template error?
-    forYML.docker_pull_timeout = "600s"; // workaround for local network wet string
 
     return forYML;
 }
