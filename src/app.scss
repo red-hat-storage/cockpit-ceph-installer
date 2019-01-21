@@ -571,41 +571,49 @@ table.failure-table tbody tr:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6); 
-}
+    background: rgba(0, 0, 0, 0.6); }
   
-.modal-main {
+  .modal-main {
     position: relative;
     background: white;
     width: 60%;
-    max-height: 600px;
+      max-height: 600px;
     top: 50%;
     left: 0;
     margin: 0 auto;
-    transform: translateY(-50%);
-}
-      
-.modal-inner {
-    margin-top: 20px;
-    padding: 10px;
-    max-height: 500px;
-    overflow-y: auto; }
-      
-.display-block {
+    overflow-y: hidden;
+    transform: translateY(-50%); }
+  .modal-content-container {
+  padding: 10px;
+  
+   
+  }
+  .modal-inner {
+    margin: 0px 10px 0px 10px;
+      overflow-y: auto;
+      max-height: 470px;
+      border: 1px solid lightgrey;
+  /*     border: 1px solid lightgrey; */
+  }
+  
+  .display-block {
     display: block; }
-      
-.display-inline-block {
+  
+  .display-inline-block {
     display: inline-block; }
-      
-.display-none {
+  
+  .display-none {
     display: none; }
-      
-.modal-close {
-    position:relative;
-    margin-left: 90%;
+  
+  .modal-close {
+    float: right;
+    margin-right: 20px;
     margin-top: 20px;
-    bottom: 10px;}
-
+    margin-bottom: 20px; }
+  pre {
+    margin: 0; border: none;
+    padding: 0;
+  }
 .code {
     white-space: pre;
     font-family: monospace;
