@@ -42,41 +42,466 @@
                 "last_task_num": 45,
                 "ok": 25, "skipped": 30, "failed": 0, "failures": {}
             }},
-            {"msg": "running", "data": {
+            {"msg": "failed", "data": {
                 "role": "ceph-osd",
                 "task": "updating systemd",
                 "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
                 "last_task_num": 80,
-                "ok": 30, "skipped": 45, "failed": 16, "failures": {
-                    "ceph-1": {"event_data": {"host": "ceph-1", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-2": {"event_data": {"host": "ceph-2", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened on a big scale with lots of small gremlins released into the wild running riot. bad things happened on a big scale with lots of small gremlins released into the wild running riot!"}], "msg":"bad stuff happened"}}},
-                    "ceph-3": {"event_data": {"host": "ceph-3", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-4": {"event_data": {"host": "ceph-4", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-5": {"event_data": {"host": "ceph-5", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-6": {"event_data": {"host": "ceph-6", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-7": {"event_data": {"host": "ceph-7", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-8": {"event_data": {"host": "ceph-8", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-9": {"event_data": {"host": "ceph-9", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-10": {"event_data": {"host": "ceph-10", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}}
-            }}},
-            {"msg": "failed", "data": {
-                "role": "ceph-osd",
-                "task": "checking osd state",
-                "task_metadata": {"created":"2019-01-06T05:35:15.554849", "task_action": "lvs", "play_pattern": "mons", "task_path": "/some/path/play.yml:99"},
-                "last_task_num": 99,
-                "ok": 35, "skipped": 55, "failed": 16, "failures": {
-                    "ceph-1": {"event_data": {"host": "ceph-1", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-2": {"event_data": {"host": "ceph-2", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened on a big scale with lots of small gremlins released into the wild running riot. bad things happened on a big scale with lots of small gremlins released into the wild running riot!"}], "msg":"bad stuff happened"}}},
-                    "ceph-3": {"event_data": {"host": "ceph-3", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-4": {"event_data": {"host": "ceph-4", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-5": {"event_data": {"host": "ceph-5", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-6": {"event_data": {"host": "ceph-6", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-7": {"event_data": {"host": "ceph-7", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-8": {"event_data": {"host": "ceph-8", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-9": {"event_data": {"host": "ceph-9", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}},
-                    "ceph-10": {"event_data": {"host": "ceph-10", "task": "checking osd state", "res": {"results": [{"stderr": "bad things happened"}], "msg":"bad stuff happened"}}}
-            }}}
-        ],
+                "ok": 30, "skipped": 45, "failed": 1, "failures": {
+                    "rhs-cli-06": {
+                        "uuid": "b8296009-9cdd-49d4-acfa-47611e6a5137",
+                        "stdout": "",
+                        "counter": 2815,
+                        "pid": 53612,
+                        "event_data": {
+                            "play_pattern": "mons",
+                            "play": "mons",
+                            "event_loop": ["{{ ceph_config_keys }}", "{{ statconfig.results }}"],
+                            "task_args": "dest={{ fetch_directory }}/{{ fsid }}/{{ item.0 }}, src={{ item.0 }}, fail_on_missing={{ 'no' if rolling_update else 'yes' }}, flat=True",
+                            "remote_addr": "rhs-cli-06",
+                            "res": {
+                                "msg": "All items completed",
+                                "changed": true,
+                                "results": [{
+                                    "_ansible_parsed": true,
+                                    "changed": false,
+                                    "_ansible_no_log": false,
+                                    "failed": true,
+                                    "_ansible_item_result": true,
+                                    "item": ["/etc/ceph/ceph.client.admin.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "_ansible_item_result": true,
+                                        "_ansible_item_label": "/etc/ceph/ceph.client.admin.keyring",
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "changed": false,
+                                        "failed": false,
+                                        "item": "/etc/ceph/ceph.client.admin.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//etc/ceph/ceph.client.admin.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_no_log": false
+                                    }],
+                                    "invocation": {
+                                        "module_args": {
+                                            "src": "/etc/ceph/ceph.client.admin.keyring"
+                                        }
+                                    },
+                                    "msg": "file not found: /etc/ceph/ceph.client.admin.keyring",
+                                    "_ansible_item_label": ["/etc/ceph/ceph.client.admin.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "changed": false,
+                                        "_ansible_no_log": false,
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "_ansible_item_result": true,
+                                        "failed": false,
+                                        "item": "/etc/ceph/ceph.client.admin.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//etc/ceph/ceph.client.admin.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_item_label": "/etc/ceph/ceph.client.admin.keyring"
+                                    }]
+                                }, {
+                                    "_ansible_parsed": true,
+                                    "changed": false,
+                                    "_ansible_no_log": false,
+                                    "failed": true,
+                                    "_ansible_item_result": true,
+                                    "item": ["/etc/ceph/ceph.mon.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "_ansible_item_result": true,
+                                        "_ansible_item_label": "/etc/ceph/ceph.mon.keyring",
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "changed": false,
+                                        "failed": false,
+                                        "item": "/etc/ceph/ceph.mon.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//etc/ceph/ceph.mon.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_no_log": false
+                                    }],
+                                    "invocation": {
+                                        "module_args": {
+                                            "src": "/etc/ceph/ceph.mon.keyring"
+                                        }
+                                    },
+                                    "msg": "file not found: /etc/ceph/ceph.mon.keyring",
+                                    "_ansible_item_label": ["/etc/ceph/ceph.mon.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "changed": false,
+                                        "_ansible_no_log": false,
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "_ansible_item_result": true,
+                                        "failed": false,
+                                        "item": "/etc/ceph/ceph.mon.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//etc/ceph/ceph.mon.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_item_label": "/etc/ceph/ceph.mon.keyring"
+                                    }]
+                                }, {
+                                    "md5sum": "18184f0544edc7ce08d82e7d4fee6f02",
+                                    "_ansible_no_log": false,
+                                    "remote_md5sum": null,
+                                    "failed": false,
+                                    "dest": "/usr/share/ceph-ansible/fetch/410a3de4-acee-4745-aa68-af24f8546e36/var/lib/ceph/bootstrap-osd/ceph.keyring",
+                                    "checksum": "51a570b2c645db8764d5d29797ff59351cf46b72",
+                                    "_ansible_item_result": true,
+                                    "item": ["/var/lib/ceph/bootstrap-osd/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "_ansible_item_result": true,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-osd/ceph.keyring",
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "changed": false,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-osd/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-osd/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_no_log": false
+                                    }],
+                                    "changed": true,
+                                    "remote_checksum": "51a570b2c645db8764d5d29797ff59351cf46b72",
+                                    "_ansible_ignore_errors": null,
+                                    "_ansible_item_label": ["/var/lib/ceph/bootstrap-osd/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "changed": false,
+                                        "_ansible_no_log": false,
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "_ansible_item_result": true,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-osd/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-osd/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-osd/ceph.keyring"
+                                    }]
+                                }, {
+                                    "md5sum": "bd3cf2d66d72f6ba3831560b754b403e",
+                                    "_ansible_no_log": false,
+                                    "remote_md5sum": null,
+                                    "failed": false,
+                                    "dest": "/usr/share/ceph-ansible/fetch/410a3de4-acee-4745-aa68-af24f8546e36/var/lib/ceph/bootstrap-rgw/ceph.keyring",
+                                    "checksum": "ac1ee809cc78da50f5c0941047c403c6a9d335b0",
+                                    "_ansible_item_result": true,
+                                    "item": ["/var/lib/ceph/bootstrap-rgw/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "_ansible_item_result": true,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-rgw/ceph.keyring",
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "changed": false,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-rgw/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-rgw/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_no_log": false
+                                    }],
+                                    "changed": true,
+                                    "remote_checksum": "ac1ee809cc78da50f5c0941047c403c6a9d335b0",
+                                    "_ansible_ignore_errors": null,
+                                    "_ansible_item_label": ["/var/lib/ceph/bootstrap-rgw/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "changed": false,
+                                        "_ansible_no_log": false,
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "_ansible_item_result": true,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-rgw/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-rgw/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-rgw/ceph.keyring"
+                                    }]
+                                }, {
+                                    "md5sum": "d44ccf85d7b081dfa4b6fb004e73fec2",
+                                    "_ansible_no_log": false,
+                                    "remote_md5sum": null,
+                                    "failed": false,
+                                    "dest": "/usr/share/ceph-ansible/fetch/410a3de4-acee-4745-aa68-af24f8546e36/var/lib/ceph/bootstrap-mds/ceph.keyring",
+                                    "checksum": "825fde9d67c2d99b3608591bb849e088f58b8e66",
+                                    "_ansible_item_result": true,
+                                    "item": ["/var/lib/ceph/bootstrap-mds/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "_ansible_item_result": true,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-mds/ceph.keyring",
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "changed": false,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-mds/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-mds/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_no_log": false
+                                    }],
+                                    "changed": true,
+                                    "remote_checksum": "825fde9d67c2d99b3608591bb849e088f58b8e66",
+                                    "_ansible_ignore_errors": null,
+                                    "_ansible_item_label": ["/var/lib/ceph/bootstrap-mds/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "changed": false,
+                                        "_ansible_no_log": false,
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "_ansible_item_result": true,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-mds/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-mds/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-mds/ceph.keyring"
+                                    }]
+                                }, {
+                                    "md5sum": "6d7414bc3f94e94774e5c70b441ae15f",
+                                    "_ansible_no_log": false,
+                                    "remote_md5sum": null,
+                                    "failed": false,
+                                    "dest": "/usr/share/ceph-ansible/fetch/410a3de4-acee-4745-aa68-af24f8546e36/var/lib/ceph/bootstrap-rbd/ceph.keyring",
+                                    "checksum": "9fb955f60d9a978df993c3c4bf65b064e5f923b9",
+                                    "_ansible_item_result": true,
+                                    "item": ["/var/lib/ceph/bootstrap-rbd/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "_ansible_item_result": true,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-rbd/ceph.keyring",
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "changed": false,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-rbd/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-rbd/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_no_log": false
+                                    }],
+                                    "changed": true,
+                                    "remote_checksum": "9fb955f60d9a978df993c3c4bf65b064e5f923b9",
+                                    "_ansible_ignore_errors": null,
+                                    "_ansible_item_label": ["/var/lib/ceph/bootstrap-rbd/ceph.keyring", {
+                                        "_ansible_parsed": true,
+                                        "stat": {
+                                            "exists": false
+                                        },
+                                        "changed": false,
+                                        "_ansible_no_log": false,
+                                        "_ansible_delegated_vars": {
+                                            "ansible_delegated_host": "localhost",
+                                            "ansible_host": "localhost"
+                                        },
+                                        "_ansible_item_result": true,
+                                        "failed": false,
+                                        "item": "/var/lib/ceph/bootstrap-rbd/ceph.keyring",
+                                        "invocation": {
+                                            "module_args": {
+                                                "checksum_algorithm": "sha1",
+                                                "get_checksum": true,
+                                                "follow": false,
+                                                "path": "fetch//410a3de4-acee-4745-aa68-af24f8546e36//var/lib/ceph/bootstrap-rbd/ceph.keyring",
+                                                "get_md5": null,
+                                                "get_mime": true,
+                                                "get_attributes": true
+                                            }
+                                        },
+                                        "failed_when_result": false,
+                                        "_ansible_ignore_errors": null,
+                                        "_ansible_item_label": "/var/lib/ceph/bootstrap-rbd/ceph.keyring"
+                                    }]
+                                }]
+                            },
+                            "pid": 53612,
+                            "play_uuid": "44a84209-e5d3-b87d-63f2-000000000085",
+                            "task_uuid": "44a84209-e5d3-b87d-63f2-000000003de4",
+                            "task": "push ceph files to the ansible server",
+                            "playbook_uuid": "a5152147-c3b7-4856-a30e-c284e1e632bd",
+                            "playbook": "site-container.yml",
+                            "task_action": "fetch",
+                            "host": "rhs-cli-06",
+                            "ignore_errors": null,
+                            "role": "ceph-mon",
+                            "task_path": "/usr/share/ceph-ansible/roles/ceph-mon/tasks/docker/fetch_configs.yml:2"
+                        },
+                        "end_line": 2977,
+                        "created": "2019-01-18T05:26:39.145695",
+                        "runner_ident": "469ded2a-1ae0-11e9-a887-44a84209e5d3",
+                        "start_line": 2977,
+                        "event": "runner_on_failed"
+                    }
+                }
+                }
+                }
+        ],                
     "mockCephOutput": [
             "  cluster:",
             "    id:     1b04e377-6d86-447e-929d-c4e5880fcf02",
