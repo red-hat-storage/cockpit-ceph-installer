@@ -183,16 +183,17 @@ export class DeployPage extends React.Component {
             getEvents(this.playbookUUID, this.props.svctoken)
                     .then((resp) => {
                         let response = JSON.parse(resp);
-                        let foundEvent = '';
+                        let foundEvent;
                         let evtIDs = Object.keys(response.data.events).reverse();
                         for (let evt of evtIDs) {
                             let thisEvent = response.data.events[evt];
-                            if (thisEvent['event'] == 'runner_on_ok' && thisEvent['task'].startsWith('show ceph status for')) {
+                            if (thisEvent['event'] === 'runner_on_ok' && thisEvent['task'].startsWith('show ceph status for')) {
+                                console.log("ceph status event " + JSON.stringify(thisEvent));
                                 foundEvent = evt;
                                 break;
                             }
                         }
-                        if (foundEvent != '') {
+                        if (foundEvent) {
                             getJobEvent(this.playbookUUID, foundEvent, this.props.svctoken)
                                     .then((resp) => {
                                         let response = JSON.parse(resp);
@@ -652,35 +653,68 @@ export class FailureDetail extends React.Component {
     // }
 
     render() {
+        let errorText;
         let errorDetail;
+        let errors = [];
+
         if (this.props.errorEvent.res.results) {
-            // try to use stderr
-            let results = this.props.errorEvent.res.results[0];
-            if (results.stderr.length > 100) {
-                errorDetail = (
-                    <span>{results.stderr.slice(0, 100)}
-                        <span className="link" onClick={() => {
-                            let title = this.props.hostname + " Failure Details";
-                            this.props.modalHandler(title, results.stderr);
-                        }}><i>&nbsp;...more</i></span>
-                    </span>);
-            } else {
-                errorDetail = (<span>{results.stderr}</span>);
+            console.log("errorEvent: has results array");
+            let results = this.props.errorEvent.res.results;
+            for (let e of results) {
+                if (e.failed) {
+                    if (e.hasOwnProperty('msg')) {
+                        console.log("errorEvent - using msg");
+                        errors.push(e.msg);
+                        continue;
+                    }
+                    if (e.hasOwnProperty('stderr')) {
+                        errors.push(e.stderr);
+                        console.log("errorEvent - using stderr");
+                        continue;
+                    }
+                } else {
+                    console.log("errorEvent processing skipping entry - failed is FALSE");
+                }
             }
         } else {
-            errorDetail = (<span>{this.props.errorEvent.res.msg}</span>);
+            try {
+                errors.push(this.props.errorEvent.res.msg);
+            } catch (err) {
+                console.log("errorEvent unable to extract a 'msg' field from the event data, trying stderr");
+                try {
+                    errors.push(this.props.errorEvent.res.stderr);
+                } catch (err) {
+                    console.log("errorEvent unable to find stderr field");
+                }
+            }
         }
+        console.log("errorEvent has " + errors.length + " items");
+        if (errors.length === 0) {
+            // if ee don't have any errors there is a parsing problem, so just flag the issue and allow the UI to link
+            // out to the raw ansible output.
+            errors.push("Unable to interpret the ansible error. Use the link to see actual task output");
+        }
+
+        errorText = errors.map((e, idx) => {
+            return <span key={idx}>-&nbsp;{e}<br /></span>;
+        });
+
+        errorDetail = (
+            <span>{errorText}...
+                <span className="link" onClick={() => {
+                    let title = "Host " + this.props.hostname + " Failure Details";
+                    let content = (<pre>{JSON.stringify(this.props.errorEvent, null, 2)}</pre>);
+                    this.props.modalHandler(title, content);
+                }}><i>&nbsp;more</i></span>
+            </span>);
 
         return (
             <tr>
                 <td className="fhost">{this.props.hostname}</td>
                 <td className="fdetail">
-                    {this.props.errorEvent['task']}<br />
+                    Task:&nbsp;{this.props.errorEvent['task']}<br />
                     { errorDetail }
                 </td>
-                {/* <td className="fbtn">
-                    <button className="pficon-export" onClick={this.clipboardCopy} />
-                </td> */}
             </tr>
         );
     }
@@ -695,7 +729,9 @@ export class BreadCrumbStatus extends React.Component {
     }
 
     componentWillReceiveProps (props) {
-        this.setState({roles: Object.keys(props.roleState)});
+        if (this.state.roles.length === 0) {
+            this.setState({roles: Object.keys(props.roleState)});
+        }
     }
 
     render () {
