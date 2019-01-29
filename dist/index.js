@@ -23102,7 +23102,7 @@ function (_React$Component) {
       }, "Failures"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("td", {
         className: "runtime-table-nbr align-right"
       }, this.state.status.data.failed)))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(BreadCrumbStatus, {
-        runStatus: this.state.status.status,
+        runStatus: this.state.status.msg,
         roleState: this.state.roleState
       }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_common_selector_jsx__WEBPACK_IMPORTED_MODULE_7__["Selector"], {
         labelName: "Filter by:\xA0\xA0",
@@ -23416,10 +23416,13 @@ function (_React$Component5) {
   _createClass(BreadCrumbStatus, [{
     key: "componentWillReceiveProps",
     value: function componentWillReceiveProps(props) {
-      if (this.state.roles.length === 0) {
-        this.setState({
-          roles: Object.keys(props.roleState)
-        });
+      // console.log("DEBUG: " + JSON.stringify(props));
+      if (props.runStatus) {
+        if (props.runStatus.toLowerCase() === 'running') {
+          this.setState({
+            roles: Object.keys(props.roleState)
+          });
+        }
       }
     }
   }, {
@@ -23427,7 +23430,7 @@ function (_React$Component5) {
     value: function render() {
       var _this8 = this;
 
-      console.log("render all breadcrumbs - " + JSON.stringify(this.props.roleState));
+      console.log("render all breadcrumbs - " + JSON.stringify(this.state.roles));
       var breadcrumbs;
 
       if (this.props.runStatus != '') {
