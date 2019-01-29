@@ -1,3 +1,4 @@
+import {hostsWithRole} from './utils.js';
 
 export function hostVars(hostMetadata, flashUsage) {
     // gets run once per host to generate the hostvars variables
@@ -108,6 +109,23 @@ export function allVars (vars) {
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
     forYML.disk_list = {rc: 0}; // workaround for osd_run_sh template error?
+    let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
+    if (rgwHostIdx.length > 0) {
+        // Additional OSD tuning for Object workloads
+        forYML.ceph_conf_overrides = {
+            "objecter_inflight_op_bytes": 1048576000,
+            "objecter_inflight_ops": 102400
+        };
+
+        // Additional radosgw variables
+        for (let idx of rgwHostIdx) {
+            let hostName = vars.hosts[idx].hostname;
+            forYML.ceph_conf_overrides["client.rgw." + hostName] = {
+                "rgw_ops_log_rados": false,
+                "rgw_dynamic_resharding": false
+            };
+        }
+    }
 
     return forYML;
 }
@@ -145,6 +163,27 @@ export function mgrsVars (vars) {
     default:
         forYML.ceph_mgr_modules = ["status", "prometheus"];
     }
+
+    return forYML;
+}
+
+export function rgwsVars(vars) {
+    // RGW settings based on a high performance object workload, which is a typical
+    // target for Ceph
+
+    // TODO: this currently uses static pgnum assignments
+
+    let forYML = {};
+
+    forYML.radosgw_address_block = vars.rgwNetwork;
+    forYML.radosgw_frontend_type = "civetweb";
+    forYML.radosgw_frontend_port = "8080";
+    forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
+    forYML.rgw_override_bucket_index_max_shards = 1;
+    forYML.rgw_create_pools = {
+        "defaults.rgw.buckets.data": { "pgnum": 16 },
+        "defaults.rgw.buckets.index": { "pgnum": 32 }
+    };
 
     return forYML;
 }
