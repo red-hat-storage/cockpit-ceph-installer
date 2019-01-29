@@ -489,7 +489,7 @@ export class DeployPage extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                <BreadCrumbStatus runStatus={this.state.status.status} roleState={this.state.roleState} />
+                <BreadCrumbStatus runStatus={this.state.status.msg} roleState={this.state.roleState} />
                 <div>
                     <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
                 </div>
@@ -731,13 +731,16 @@ export class BreadCrumbStatus extends React.Component {
     }
 
     componentWillReceiveProps (props) {
-        if (this.state.roles.length === 0) {
-            this.setState({roles: Object.keys(props.roleState)});
+        // console.log("DEBUG: " + JSON.stringify(props));
+        if (props.runStatus) {
+            if (props.runStatus.toLowerCase() === 'running') {
+                this.setState({roles: Object.keys(props.roleState)});
+            }
         }
     }
 
     render () {
-        console.log("render all breadcrumbs - " + JSON.stringify(this.props.roleState));
+        console.log("render all breadcrumbs - " + JSON.stringify(this.state.roles));
         var breadcrumbs;
         if (this.props.runStatus != '') {
             breadcrumbs = this.state.roles.map(role => {
