@@ -30,10 +30,6 @@ table#probe-table thead {
   position: fixed;
   z-index: 2; }
 
-table#failures thead {
-  position: fixed;
-  z-index: 2; }
-
 .dummy-row {
   height: 3em;
   display: block; }
@@ -124,16 +120,32 @@ table#failures thead {
   width: 150px;
   margin-top: 0px; }
 
+.roleTable {
+  position: relative; }
+
+table.roleTable thead, tr {
+  position: relative; }
+
+table.roleTable tbody {
+  height: 337px;
+  display: block;
+  overflow-y: auto; }
+
 .roleTable td {
   border-left: 1px solid lightgrey;
   border-right: 1px solid lightgrey;
   border-bottom: 1px solid lightgrey; }
 
-.roleTable tbody:hover {
-  background-color: #F8F9F9; }
+.probe-table td {
+  border-left: 1px solid lightgrey;
+  border-right: 1px solid lightgrey;
+  border-bottom: 1px solid lightgrey; }
 
-.roleTable table {
-  height: 380px; }
+.roleTable tbody tr:hover {
+  background-color: #ebf8ff; }
+
+.probe-table tbody:hover {
+  background-color: #ebf8ff; }
 
 .thHostInfo, .tdHostInfo {
   width: 250px; }
@@ -307,37 +319,25 @@ table#failures thead {
   text-align: center;
   line-height: 1.4; }
 
-.critical {
-  background-color: #D50000;
-  color: white;
+.status-msg {
   padding-left: 3px;
   padding-right: 3px;
-  border-radius: 3px; }
-
-.criticalText {
-  color: #D50000;
-  font-weight: bold; }
+  border-radius: 3px;
+  margin-left: 5px; }
 
 .error {
-  background-color: orange;
-  color: black;
-  padding-left: 3px;
-  padding-right: 3px;
-  border-radius: 3px; }
+  background-color: #D50000;
+  color: white; }
 
 .errorText {
-  color: #F57C00;
-  font-weight: bold; }
+  color: #D50000; }
 
 .warning {
-  background-color: blue;
-  color: white;
-  padding-left: 3px;
-  padding-right: 3px; }
+  background-color: orange;
+  color: black; }
 
 .warningText {
-  color: blue;
-  font-weight: bold; }
+  color: #F57C00; }
 
 .probe-result {
   min-width: 90px;
@@ -446,7 +446,7 @@ table.skinny-table td {
   min-width: 120px; }
 
 .task-data {
-  min-width: 40px; }
+  min-width: 60px; }
 
 .aligned-right {
   text-align: right; }
@@ -457,8 +457,11 @@ table.skinny-table td {
 table.playbook-table td {
   padding: 0px 5px 0px 5px; }
 
+table.playbook-table tr {
+  margin-top: 10px; }
+
 table.playbook-table {
-  height: 60px; }
+  height: 140px; }
 
 .update-me {
   display: table-cell; }
@@ -473,36 +476,36 @@ table.playbook-table {
   padding: 0px 5px 0px 5px; }
 
 .failure-table {
-  display: inline-flex;
-  height: 330px;
-  margin-top: 20px; }
+  position: relative; }
+
+table.failure-table thead, th tr {
+  display: block;
+  position: relative; }
+
+table.failure-table th {
+  border-left: none;
+  border-top: none; }
+
+table.failure-table tbody {
+  display: block;
+  height: 278px;
+  overflow-y: auto; }
+
+table.failure-table tbody tr {
+  border-bottom: 1px solid lightgrey; }
+
+table.failure-table tbody td {
+  border-right: 1px solid lightgrey; }
+
+table.failure-table tbody tr:hover {
+  background-color: #ebf8ff; }
 
 .fhost {
   width: 140px;
   min-width: 140px; }
 
 .fdetail {
-  width: 800px;
-  min-width: 800px; }
-
-table#failures tr td {
-  padding: 10px 5px 10px 5px;
-  border: 1px solid lightgrey; }
-
-table#failures thead {
-  position: fixed; }
-
-table#failures th {
-  border: 1px solid lightgrey;
-  padding: 0px 5px 0px 5px;
-  height: 2em; }
-
-.failures-dummy-row {
-  height: 2em;
-  display: block; }
-
-table#failures tr:hover {
-  background-color: #F8F9F9; }
+  width: 100%; }
 
 .fbtn {
   min-width: 50px;
@@ -521,11 +524,20 @@ table#failures tr:hover {
   position: relative;
   background: white;
   width: 60%;
-  height: auto;
-  margin: 25% auto; }
+  max-height: 600px;
+  top: 50%;
+  left: 0;
+  margin: 0 auto;
+  overflow-y: hidden;
+  transform: translateY(-50%); }
+
+.modal-content-container {
+  padding: 10px; }
 
 .modal-inner {
-  padding: 10px; }
+  margin: 0px 10px 0px 10px;
+  overflow-y: auto;
+  max-height: 470px; }
 
 .display-block {
   display: block; }
@@ -537,11 +549,15 @@ table#failures tr:hover {
   display: none; }
 
 .modal-close {
-  display: block;
-  position: relative;
-  margin-left: 90%;
+  float: right;
+  margin-right: 20px;
   margin-top: 20px;
-  bottom: -0px; }
+  margin-bottom: 20px; }
+
+pre {
+  margin: 0;
+  border: none;
+  padding: 0; }
 
 .code {
   white-space: pre;
@@ -781,7 +797,7 @@ table#add-hosts td {
   display: block; }
 
 table.host-review-table {
-  height: 150px;
+  height: 195px;
   margin-top: 10px; }
 
 .host-review-table tr {
@@ -796,5 +812,55 @@ table.host-review-table {
 
 .host-review-table-std {
   width: 150px; }
+
+.clear {
+  clear: both; }
+
+table.runtime-table {
+  margin-top: 10px;
+  height: 110px; }
+
+table.runtime-table td {
+  padding: 5px; }
+
+.runtime-table-spacer {
+  width: 90px;
+  display: block; }
+
+.runtime-table-label {
+  width: 110px; }
+
+.runtime-table-value {
+  width: 120px; }
+
+.runtime-table-nbr {
+  width: 60px; }
+
+.bold-text {
+  font-weight: bold; }
+
+#deploy-container {
+  width: 100%;
+  height: 320px;
+  margin-top: 10px;
+  overflow-y: hidden;
+  border: 1px solid lightgrey; }
+
+.deploy-status {
+  position: relative;
+  width: 100%;
+  height: 100%; }
+
+.task-label {
+  display: inline-block;
+  width: 120px;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: right;
+  margin-bottom: 5px;
+  margin-top: 5px; }
+
+.success {
+  color: green; }
 
 /*# sourceMappingURL=index.css.map*/
