@@ -733,7 +733,8 @@ export class BreadCrumbStatus extends React.Component {
     componentWillReceiveProps (props) {
         // console.log("DEBUG: " + JSON.stringify(props));
         if (props.runStatus) {
-            if (props.runStatus.toLowerCase() === 'running') {
+            if (props.runStatus.toLowerCase() === 'running' && this.state.roles.length === 0) {
+                // only set the roles when we first see the playbook running
                 this.setState({roles: Object.keys(props.roleState)});
             }
         }
