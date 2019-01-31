@@ -23418,7 +23418,8 @@ function (_React$Component5) {
     value: function componentWillReceiveProps(props) {
       // console.log("DEBUG: " + JSON.stringify(props));
       if (props.runStatus) {
-        if (props.runStatus.toLowerCase() === 'running') {
+        if (props.runStatus.toLowerCase() === 'running' && this.state.roles.length === 0) {
+          // only set the roles when we first see the playbook running
           this.setState({
             roles: Object.keys(props.roleState)
           });
@@ -26993,8 +26994,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mgrsVars", function() { return mgrsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgwsVars", function() { return rgwsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cephAnsibleSequence", function() { return cephAnsibleSequence; });
-/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils.js */ "./src/services/utils.js");
-
 function hostVars(hostMetadata, flashUsage) {
   // gets run once per host to generate the hostvars variables
   console.log("hostvars called with " + JSON.stringify(hostMetadata));
@@ -27067,7 +27066,7 @@ function osdsVars(vars) {
       var host = _step.value;
 
       if (host.osd) {
-        if (host.hdd_devices && host.ssd_devices) {
+        if (host.hdd_devices.length > 0 && host.ssd_devices.length > 0) {
           mixed = true;
           break;
         }
@@ -27136,44 +27135,23 @@ function allVars(vars) {
   forYML.disk_list = {
     rc: 0
   }; // workaround for osd_run_sh template error?
-
-  var rgwHostIdx = Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["hostsWithRole"])(vars.hosts, 'rgw');
-
-  if (rgwHostIdx.length > 0) {
-    // Additional OSD tuning for Object workloads
-    forYML.ceph_conf_overrides = {
-      "objecter_inflight_op_bytes": 1048576000,
-      "objecter_inflight_ops": 102400
-    }; // Additional radosgw variables
-
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
-
-    try {
-      for (var _iterator2 = rgwHostIdx[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var idx = _step2.value;
-        var hostName = vars.hosts[idx].hostname;
-        forYML.ceph_conf_overrides["client.rgw." + hostName] = {
-          "rgw_ops_log_rados": false,
-          "rgw_dynamic_resharding": false
-        };
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
-      }
-    }
-  }
+  // wishlist for a simplified rgw install
+  // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
+  // if (rgwHostIdx.length > 0) {
+  //     // Additional OSD tuning for Object workloads
+  //     forYML.ceph_conf_overrides = {
+  //         "objecter_inflight_op_bytes": 1048576000,
+  //         "objecter_inflight_ops": 102400
+  //     };
+  //     // Additional radosgw variables
+  //     for (let idx of rgwHostIdx) {
+  //         let hostName = vars.hosts[idx].hostname;
+  //         forYML.ceph_conf_overrides["client.rgw." + hostName] = {
+  //             "rgw_ops_log_rados": false,
+  //             "rgw_dynamic_resharding": false
+  //         };
+  //     }
+  // }
 
   return forYML;
 }
@@ -27238,26 +27216,26 @@ function cephAnsibleSequence(roles) {
   // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
   // FIXME: iscsi is not included at the moment
   var rolesIn = [];
-  var _iteratorNormalCompletion3 = true;
-  var _didIteratorError3 = false;
-  var _iteratorError3 = undefined;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
 
   try {
-    for (var _iterator3 = roles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-      var r = _step3.value;
+    for (var _iterator2 = roles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var r = _step2.value;
       rolesIn.push(r.slice(0, -1)); // drop the last char
     }
   } catch (err) {
-    _didIteratorError3 = true;
-    _iteratorError3 = err;
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-        _iterator3.return();
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
       }
     } finally {
-      if (_didIteratorError3) {
-        throw _iteratorError3;
+      if (_didIteratorError2) {
+        throw _iteratorError2;
       }
     }
   }
