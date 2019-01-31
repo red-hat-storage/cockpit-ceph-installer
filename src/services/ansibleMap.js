@@ -1,4 +1,3 @@
-import {hostsWithRole} from './utils.js';
 
 export function hostVars(hostMetadata, flashUsage) {
     // gets run once per host to generate the hostvars variables
@@ -61,7 +60,7 @@ export function osdsVars (vars) {
     let mixed = false;
     for (let host of hosts) {
         if (host.osd) {
-            if (host.hdd_devices && host.ssd_devices) {
+            if (host.hdd_devices.length > 0 && host.ssd_devices.length > 0) {
                 mixed = true;
                 break;
             }
@@ -109,23 +108,25 @@ export function allVars (vars) {
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
     forYML.disk_list = {rc: 0}; // workaround for osd_run_sh template error?
-    let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
-    if (rgwHostIdx.length > 0) {
-        // Additional OSD tuning for Object workloads
-        forYML.ceph_conf_overrides = {
-            "objecter_inflight_op_bytes": 1048576000,
-            "objecter_inflight_ops": 102400
-        };
 
-        // Additional radosgw variables
-        for (let idx of rgwHostIdx) {
-            let hostName = vars.hosts[idx].hostname;
-            forYML.ceph_conf_overrides["client.rgw." + hostName] = {
-                "rgw_ops_log_rados": false,
-                "rgw_dynamic_resharding": false
-            };
-        }
-    }
+    // wishlist for a simplified rgw install
+    // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
+    // if (rgwHostIdx.length > 0) {
+    //     // Additional OSD tuning for Object workloads
+    //     forYML.ceph_conf_overrides = {
+    //         "objecter_inflight_op_bytes": 1048576000,
+    //         "objecter_inflight_ops": 102400
+    //     };
+
+    //     // Additional radosgw variables
+    //     for (let idx of rgwHostIdx) {
+    //         let hostName = vars.hosts[idx].hostname;
+    //         forYML.ceph_conf_overrides["client.rgw." + hostName] = {
+    //             "rgw_ops_log_rados": false,
+    //             "rgw_dynamic_resharding": false
+    //         };
+    //     }
+    // }
 
     return forYML;
 }
