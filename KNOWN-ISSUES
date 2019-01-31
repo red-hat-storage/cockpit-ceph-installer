@@ -39,3 +39,11 @@ validatepage.jsx
 networkpage.jsx
     NIC bandwidth is reported as unknown, when ansible returns a speed of 0.
         this happens on some interfaces; docker bridge, libvirt bridge or when the target machine is a VM
+
+ansibleMap.js
+    - allVsars() : for rgw use case there are a number of settings that would be beneficial, but adding them
+      requires changes to the jinja2 template for ceph.conf first
+      - "objecter_inflight_op_bytes": 1048576000,
+      - "objecter_inflight_ops": 102400
+      - "rgw_ops_log_rados": false,
+      - "rgw_dynamic_resharding": false
