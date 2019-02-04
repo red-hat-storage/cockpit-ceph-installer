@@ -9,7 +9,7 @@ import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
 import { GenericModal } from './common/modal.jsx';
 // import { buildRoles, copyToClipboard, currentTime } from '../services/utils.js';
-import { buildRoles, currentTime } from '../services/utils.js';
+import { buildRoles, currentTime, convertRole } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     constructor(props) {
@@ -489,7 +489,7 @@ export class DeployPage extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                <BreadCrumbStatus runStatus={this.state.status.msg} roleState={this.state.roleState} />
+                <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.roleSequence } />
                 <div>
                     <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
                 </div>
@@ -735,7 +735,8 @@ export class BreadCrumbStatus extends React.Component {
         if (props.runStatus) {
             if (props.runStatus.toLowerCase() === 'running' && this.state.roles.length === 0) {
                 // only set the roles when we first see the playbook running
-                this.setState({roles: Object.keys(props.roleState)});
+                let converted = props.sequence.map((role, i) => { return convertRole(role) });
+                this.setState({roles: converted});
             }
         }
     }
@@ -744,9 +745,9 @@ export class BreadCrumbStatus extends React.Component {
         console.log("render all breadcrumbs - " + JSON.stringify(this.state.roles));
         var breadcrumbs;
         if (this.props.runStatus != '') {
-            breadcrumbs = this.state.roles.map(role => {
+            breadcrumbs = this.state.roles.map((role, i) => {
                 return <Breadcrumb
-                            key={role}
+                            key={i}
                             label={role}
                             state={this.props.roleState[role]} />;
             });
