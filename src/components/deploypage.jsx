@@ -160,8 +160,8 @@ export class DeployPage extends React.Component {
     }
 
     formattedOutput = (output) => {
-        var cmdOutput = output.map(textLine => {
-            return (<div className="code">{textLine}</div>);
+        var cmdOutput = output.map((textLine, idx) => {
+            return (<div key={idx} className="code">{textLine}</div>);
         });
         return (
             <div>
