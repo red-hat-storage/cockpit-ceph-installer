@@ -223,7 +223,8 @@ export class ValidatePage extends React.Component {
         console.log("updating state with " + JSON.stringify(updatedHosts));
         this.setState({
             hosts: updatedHosts,
-            pendingProbe: true
+            pendingProbe: true,
+            ready: false
         });
     }
 
@@ -427,6 +428,20 @@ export class ValidatePage extends React.Component {
         }
     }
 
+    prevPageHandler = () => {
+        if (this.state.hosts) {
+            // pass back the current hosts to the parent
+            console.log("sending host state back to parent");
+            let savedHostState = {
+                hosts: this.state.hosts
+            };
+            this.props.prevPage(savedHostState);
+        } else {
+            console.log('Passing back to parent, no hosts to save');
+            this.props.prevPage();
+        }
+    }
+
     render() {
         console.log("rendering the validatepage");
 
@@ -515,7 +530,7 @@ export class ValidatePage extends React.Component {
                 <div className="nav-button-container">
                     <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
                     <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
-                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.props.prevPage} />
+                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.prevPageHandler} />
                 </div>
 
                 {/* <NextButton action={this.checkHostsReady} disabled={!this.state.ready} /> */}
