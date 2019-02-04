@@ -28,7 +28,10 @@ export class EnvironmentPage extends React.Component {
             "Community": ["13 (Mimic)", "12 (Luminous)", "14 (Nautilus)"]
         };
 
-        this.clusterTypes = ["Production", "Development/POC"];
+        this.clusterTypes = {
+            options : ["Production", "Development/POC"],
+            tooltip : "Production mode applies strict configuration rules. To relax rules for\na developer or POC, use Development/POC mode"
+        };
 
         // TODO: These settings should come from the parent, which in turn should be
         // the result of a cockpit.file read request, so the config is editable from
@@ -126,7 +129,7 @@ export class EnvironmentPage extends React.Component {
                 <div >
                     <Selector labelName="Installation Source" vertical options={Object.keys(this.installSource)} callback={this.installChange} />
                     <Selector labelName="Target Version" vertical value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
-                    <Selector labelName="Cluster Type" vertical options={this.clusterTypes} callback={this.clusterTypeChange} />
+                    <Selector labelName="Cluster Type" vertical options={this.clusterTypes.options} tooltip={this.clusterTypes.tooltip} callback={this.clusterTypeChange} />
                 </div>
                 <RadioSet config={this.network_type} callback={this.updateState} />
                 <RadioSet config={this.osd_type} callback={this.updateState} />
