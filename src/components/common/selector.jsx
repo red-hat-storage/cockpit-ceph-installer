@@ -17,6 +17,22 @@ export class Selector extends React.Component {
         console.log("rendering selector");
         let divStyle;
         let labelStyle;
+        let toolTip;
+        if (this.props.tooltip) {
+            let info = this.props.tooltip.split('\n').map((text, key) => {
+                return <div key={key}>{text}</div>;
+            });
+            toolTip = (
+                <div className="textInfo">
+                    &nbsp;<span className="pficon pficon-info" />
+                    <span className="tooltipContent">{info}</span>
+                </div>
+            );
+        } else {
+            toolTip = (
+                <span />
+            );
+        }
         if (this.props.horizontal) {
             divStyle = "display-inline-block sel-container-horizontal";
             labelStyle = "display-block sel-label-horizontal bold-text";
@@ -34,7 +50,7 @@ export class Selector extends React.Component {
         });
         return (
             <div className={divStyle}>
-                <div className={labelStyle}>{this.props.labelName}</div>
+                <div className={labelStyle}>{ this.props.labelName }{ toolTip }</div>
                 <select className="dropdown" value={this.props.value} onChange={this.selectorChanged}>
                     { options }
                 </select>
