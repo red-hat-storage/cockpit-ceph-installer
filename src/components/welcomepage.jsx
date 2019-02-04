@@ -67,7 +67,7 @@ export class WelcomePage extends React.Component {
                             option you declare items such as;
                             <ul>
                                 <li>installation source</li>
-                                <li>OSD type <i>(e.g 'legacy' filestore or bluestore)</i></li>
+                                <li>OSD type <i>(e.g &apos;legacy&apos; filestore or bluestore)</i></li>
                                 <li>data security features <i>(e.g. encryption)</i></li>
                             </ul>
                             </td>
