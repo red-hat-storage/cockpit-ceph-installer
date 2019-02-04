@@ -35,6 +35,7 @@ export class HostsPage extends React.Component {
     // screen updates?
 
     nextAction = (event) => {
+        let usable = true;
         if (this.state.hosts.length > 0) {
             // we must have hosts to process before moving on to validation
             var hostOKCount = 0;
@@ -44,20 +45,58 @@ export class HostsPage extends React.Component {
                 }
             });
             if (hostOKCount != this.state.hosts.length) {
-                let errorMsg = (
-                    <div>Can't continue with {this.state.hosts.length - hostOKCount} host(s) in a 'NOTOK' state</div>
-                );
-                this.showModal(errorMsg);
-                return;
+                usable = false;
+                this.setState({
+                    msgLevel: "error",
+                    msgText: "All hosts must be in an OK state prior to Validation"
+                });
+                // return;
             }
 
-            console.log("TODO: check we have minimum config size of mons and osds");
-            let usable = true;
+            let monCount = hostsWithRoleCount(this.state.hosts, 'mon');
+            let osdCount = hostsWithRoleCount(this.state.hosts, 'osd');
+            let errMsgs = [];
+            switch (true) {
+            case (monCount === 0):
+                errMsgs.push("You must have a mon role defined");
+                break;
+            case (monCount === 1 && this.props.clusterType.toLowerCase() === 'production'):
+                errMsgs.push("Too few mons for production. You must have 3 or 5 mons defined");
+                break;
+            case (monCount % 2 == 0):
+                errMsgs.push("You can't have an even number of mons");
+                break;
+            }
+
+            switch (true) {
+            case (osdCount == 0):
+                errMsgs.push("OSD hosts are required");
+                break;
+            case (osdCount < 3):
+                errMsgs.push("A minimum of 3 OSD hosts are needed");
+                break;
+            }
+
+            if (errMsgs.length > 0) {
+                this.setState({
+                    msgLevel: "error",
+                    msgText: errMsgs.join(',')
+                });
+                usable = false;
+            }
 
             if (usable) {
+                this.setState({
+                    msgLevel: "",
+                    msgText: ""
+                });
                 this.props.action(this.state);
             }
         } else {
+            this.setState({
+                msgLevel: "error",
+                msgText: "You needs hosts in an OK state to continue"
+            });
             console.log("You haven't got any hosts - can't continue");
         }
     }
@@ -269,6 +308,7 @@ export class HostsPage extends React.Component {
         }
 
         toggleHostRole(localState, this.updateState, hostname, role, checked, this.props.svctoken);
+        
     }
 
     deleteHostEntry = (idx) => {
