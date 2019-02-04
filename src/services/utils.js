@@ -155,9 +155,12 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
     groups.push(convertRole(role));
     if (role == 'mon') { groups.push(convertRole('mgr')) }
 
-    for (var groupName of groups) {
-        groupChain = groupChain.then(() => addGroup(groupName, svctoken));
+    if (!groupRemoval) {
+        for (let g = 0; g < groups.length; g++) {
+            groupChain = groupChain.then(() => addGroup(groups[g], svctoken));
+        }
     }
+    console.log("DEBUG CHANGEHOST - groups are" + JSON.stringify(groups));
     groupChain
             .then(() => {
                 changeHost(hostname, ansibleRole, checked, svctoken)
@@ -165,7 +168,7 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
                             console.log("changeHost call completed, updating internal host information");
                             // console.log("Updated host entry in inventory");
                             // console.log("BEFORE hosts look like this " + JSON.stringify(hosts));
-                            for (let i in hosts) {
+                            for (let i = 0; i < hosts.length; i++) {
                                 let thishost = hosts[i];
                                 console.log("comparing host *" + thishost.hostname + "*, compared to *" + hostname + "*");
                                 if (thishost.hostname == hostname) {
@@ -184,13 +187,19 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
                                 var groups = [];
                                 groups.push(convertRole(role));
                                 if (role == 'mon') { groups.push(convertRole('mgr')) }
-
+                                console.log("changeHost - groups being removed " + JSON.stringify(groups));
                                 let chain = Promise.resolve();
-                                for (var groupName of groups) {
-                                    chain = chain.then(() => deleteGroup(groupName, svctoken));
+                                for (let i = 0; i < groups.length; i++) {
+                                    console.log("Issuing delete for group " + groups[i]);
+                                    chain = chain.then(() => deleteGroup(groups[i], svctoken))
+                                            .then(() => {});
                                 }
+                                chain.then(() => {
+                                    console.log("cleanup after group removal");
+                                    // callback(hosts);
+                                });
                                 chain.catch(err => {
-                                    console.log("failed to remove " + groupName + ": " + err);
+                                    console.log("failed to remove group: " + err);
                                 });
                             }
                         });
