@@ -17,7 +17,7 @@ export function addGroup(groupName, svcToken) {
 }
 
 export function deleteGroup(groupName, svcToken) {
-    console.log("attemting to remove " + groupName + "from the inventory");
+    console.log("attempting to remove " + groupName + " from the inventory");
     let url = "/api/v1/groups/" + groupName;
     return http.request({
         path: url,
