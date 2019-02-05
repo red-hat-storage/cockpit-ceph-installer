@@ -7,7 +7,7 @@ import { Notification } from './common/notifications.jsx';
 import { GenericModal, WindowTitle } from './common/modal.jsx';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
-import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost } from '../services/utils.js';
+import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard } from '../services/utils.js';
 /* eslint-enable */
 import '../app.scss';
 
@@ -194,7 +194,7 @@ export class HostsPage extends React.Component {
                                                             Msg: {err.message }<br />
                                                         </div>
                                                     );
-                                                    this.showModal(modalMsg);
+                                                    this.showModal("Unexpected Error", modalMsg);
                                                     console.error("Unknown response to add host request: " + err.status + " / " + err.message);
                                                 }
                                             })
@@ -269,7 +269,7 @@ export class HostsPage extends React.Component {
             let errorMsg = (
                 <div>{ pfx } { hostErrors.join(',') } already defined. To add a role, simply update an existing entry</div>
             );
-            this.showModal(errorMsg);
+            this.showModal("Hostname Duplicate", errorMsg);
         }
 
         return hosts;
@@ -401,16 +401,19 @@ export class HostsPage extends React.Component {
     hideModal = () => {
         this.setState({
             modalVisible: false,
-            modalContent: ''
+            modalContent: "",
+            modalTitle: ""
+
         });
     }
 
-    showModal = (modalContent) => {
+    showModal = (title, modalContent) => {
         // handle the show and hide of the app level modal
         console.log("content: ");
         console.log(modalContent);
         this.setState({
             modalVisible: true,
+            modalTitle: title,
             modalContent: modalContent
         });
     }
@@ -864,16 +867,6 @@ class HostMask extends React.Component {
                             </div>
                         </div>
                         <Notification msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
-                        {/* <span style={{marginLeft: "10px", marginRight:"5px"}}>mon</span>
-                        <RoleCheckbox role='mon' checked={this.state.mon} callback={this.updateRole} />
-                        <span style={{marginLeft: "10px", marginRight:"5px"}}>mds</span>
-                        <RoleCheckbox role='mds' checked={this.state.mds} callback={this.updateRole} />
-                        <span style={{marginLeft: "10px", marginRight:"5px"}}>osd</span>
-                        <RoleCheckbox role='osd' checked={this.state.osd} callback={this.updateRole} />
-                        <span style={{marginLeft: "10px", marginRight:"5px"}}>rgw</span>
-                        <RoleCheckbox role='rgw' checked={this.state.rgw} callback={this.updateRole} />
-                        <span style={{marginLeft: "10px", marginRight:"5px"}}>iscsi</span>
-                        <RoleCheckbox role='iscsi' checked={this.state.iscsi} callback={this.updateRole} /> */}
                         <div className="add-hosts-buttons">
                             <UIButton
                                 btnClass="nav-button btn btn-primary btn-lg"
@@ -892,19 +885,30 @@ class HostMask extends React.Component {
 }
 
 export class HostInfo extends React.Component {
+    // clipboardCopy = () => {
+    //     let errorText;
+    //     errorText = this.props.hostname + " failed in role '";
+    //     errorText += this.props.errorEvent['role'] + "', task '";
+    //     errorText += this.props.errorEvent['task'] + "'. Error msg - ";
+    //     errorText += this.props.errorEvent['res']['msg'];
+    //     copyToClipboard(errorText);
+    // }
+
     render () {
         var helper = (<div />);
         if (this.props.info.startsWith('SSH')) {
+            let fixMe = "ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub root@" + this.props.hostname;
             let helperMsg = (
                 <div>
                     You need to copy the ssh public key from this host to {this.props.hostname}<br /><br />
-                    <pre>
-                        ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub root@{this.props.hostname}
+                    <pre className="display-inline-block">
+                        { fixMe }
                     </pre>
+                    <button className="btn fa fa-clipboard clippy" onClick={() => { copyToClipboard(fixMe) }} />
                 </div>
             );
             helper = (
-                <a className="pficon-help" onClick={(e) => { this.props.modal(helperMsg) }} />
+                <a className="pficon-help" onClick={(e) => { this.props.modal("SSH Authentication Error", helperMsg) }} />
             );
         }
 
