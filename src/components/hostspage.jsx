@@ -160,7 +160,6 @@ export class HostsPage extends React.Component {
                                 var ctr = 0;
                                 var hostStatus = 'Unknown';
                                 var hostInfo = '';
-                                var modalMsg;
 
                                 // run the add hosts serially - avoids inventory update conflicts/retries
                                 var sequence = Promise.resolve();
@@ -171,7 +170,7 @@ export class HostsPage extends React.Component {
                                         console.log(resp);
                                         let r = JSON.parse(resp);
                                         console.log("host is " + hostName);
-                                        hostInfo = '';
+                                        hostInfo = 'Connectivity verified, added to the inventory';
                                         hostStatus = r.status;
                                     })
                                             .catch((err) => {
@@ -186,16 +185,20 @@ export class HostsPage extends React.Component {
                                                     hostStatus = "NOTOK";
                                                     hostInfo = "Host not found (DNS issue?)";
                                                     break;
+                                                case 500:
+                                                    console.error("error returned from the ansible-runner-service");
+                                                    hostStatus = "NOTOK";
+                                                    hostInfo = "Failed request in 'ansible-runner-service'. Please check logs";
+                                                    break;
+                                                case 504:
+                                                    console.error("Timed out waiting for ssh response");
+                                                    hostStatus = "NOTOK";
+                                                    hostInfo = "SSH connection failed with a timeout error";
+                                                    break;
                                                 default:
-                                                    modalMsg = (
-                                                        <div>
-                                                            Unexpected response when attempting to add '{ hostName }'<br />
-                                                            Status: { err.status }<br />
-                                                            Msg: {err.message }<br />
-                                                        </div>
-                                                    );
-                                                    this.showModal("Unexpected Error", modalMsg);
-                                                    console.error("Unknown response to add host request: " + err.status + " / " + err.message);
+                                                    console.error("Unknown error condition");
+                                                    hostStatus = 'NOTOK';
+                                                    hostInfo = "Unknown error (" + err.status + "), please check ansible-runner-service logs";
                                                 }
                                             })
                                             .finally(() => {
@@ -308,7 +311,6 @@ export class HostsPage extends React.Component {
         }
 
         toggleHostRole(localState, this.updateState, hostname, role, checked, this.props.svctoken);
-        
     }
 
     deleteHostEntry = (idx) => {
@@ -475,11 +477,7 @@ export class HostsPage extends React.Component {
                     callback={this.addHostsToTable}
                     clusterType={this.props.clusterType}
                     closeHandler={this.hideAddHosts}
-                    // input={this.hostMaskInput}
                     installType={this.props.installType} />
-                {/* <div className="divCenter">
-                    <div className="separatorLine" />
-                </div> */}
                 <div className="divCenter">
                     <div style={{width: "754px", marginBottom: "10px"}}>
                         <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
