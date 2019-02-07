@@ -82,23 +82,34 @@ export function allVars (vars) {
     switch (vars.sourceType) {
     case "Community":
         forYML.ceph_repository = "community";
+        forYML.ceph_origin = "repository";
         forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
+        forYML.ceph_origin = "repository";
         forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
         break;
+    case "Distribution":
+        forYML.ceph_origin = "distro";
     }
-    if (vars.installType == "Container") {
+
+    switch (vars.installType) {
+    case "Container":
         forYML.containerized_deployment = true;
-        forYML.docker_pull_timeout = "600s"; // workaround for local network wet string
+        forYML.docker_pull_timeout = "600s"; // workaround for slow networks
         if (vars.sourceType === "Red Hat") {
             forYML.ceph_docker_registry = 'registry.access.redhat.com/rhceph';
             forYML.ceph_docker_image = 'rhceph-3-rhel7';
         }
-    } else {
-        forYML.ceph_origin = 'repository';
+        break;
+    default:
+        // RPM deployment
+        if (forYML.ceph_repository === "rhcs") {
+            forYML.ceph_repository_type = "cdn";
+        }
     }
+
     if (vars.rgwNetwork != '') {
         forYML.radosgw_address_block = vars.rgwNetwork;
     }
