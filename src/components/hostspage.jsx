@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { UIButton } from './common/nextbutton.jsx';
+import { Kebab } from './common/kebab.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { Notification } from './common/notifications.jsx';
@@ -80,7 +81,7 @@ export class HostsPage extends React.Component {
             if (errMsgs.length > 0) {
                 this.setState({
                     msgLevel: "error",
-                    msgText: errMsgs.join(',')
+                    msgText: errMsgs.join('. ')
                 });
                 usable = false;
             }
@@ -342,11 +343,10 @@ export class HostsPage extends React.Component {
         });
     }
 
-    deleteHost = (event) => {
+    deleteHost = (hostname) => {
         // delete a host from the state
-        console.log("You clicked to delete host - " + event.target.value);
+        console.log("You clicked to delete host - " + hostname);
 
-        var hostname = event.target.value;
         var localState = JSON.parse(JSON.stringify(this.state.hosts));
 
         for (var idx in localState) {
@@ -479,7 +479,7 @@ export class HostsPage extends React.Component {
                     closeHandler={this.hideAddHosts}
                     installType={this.props.installType} />
                 <div className="divCenter">
-                    <div style={{width: "754px", marginBottom: "10px"}}>
+                    <div className="add-hosts-offset" >
                         <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
                     </div>
                 </div>
@@ -573,7 +573,8 @@ class HostDataRow extends React.Component {
                     <HostInfo hostname={this.state.host.hostname} info={this.state.host.info} modal={this.props.modal} />
                 </td>
                 <td className="tdDeleteBtn">
-                    <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} />
+                    <Kebab value={this.state.host.hostname} actions={[{action: "Delete", callback: this.props.deleteRow}]} />
+                    {/* <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} /> */}
                 </td>
             </tr>
         );
