@@ -51,7 +51,7 @@ export class Selector extends React.Component {
         return (
             <div className={divStyle}>
                 <div className={labelStyle}>{ this.props.labelName }{ toolTip }</div>
-                <select className="dropdown" value={this.props.value} onChange={this.selectorChanged}>
+                <select className="dropdown-box" value={this.props.value} onChange={this.selectorChanged}>
                     { options }
                 </select>
             </div>
