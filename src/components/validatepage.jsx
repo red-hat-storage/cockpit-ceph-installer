@@ -429,12 +429,22 @@ export class ValidatePage extends React.Component {
     }
 
     prevPageHandler = () => {
+        // reset any prior messages held by the 'page'
+        this.setState({
+            msgLevel: "info",
+            msgText: "",
+            ready: false,
+            probeEnabled: true,
+            pendingProbe: true
+        });
+
         if (this.state.hosts) {
             // pass back the current hosts to the parent
             console.log("sending host state back to parent");
             let savedHostState = {
                 hosts: this.state.hosts
             };
+
             this.props.prevPage(savedHostState);
         } else {
             console.log('Passing back to parent, no hosts to save');
@@ -495,36 +505,40 @@ export class ValidatePage extends React.Component {
                 </div> */}
                 <div className="divCenter">
                     <div>
-                        <table id="probe-table" className="probe-table" >
-                            <thead>
-                                <tr>
-                                    <th className="tdSelector">
-                                        <div className="arrow-dummy" />
-                                        <HostSelector
-                                            name="*ALL*"
-                                            selected={this.state.selectAll}
-                                            callback={this.toggleAllRows} />
-                                    </th>
-                                    <th className="thHostname">Hostname</th>
-                                    <th className="textCenter thRoleWidth">mon</th>
-                                    <th className="textCenter thRoleWidth">mds</th>
-                                    <th className="textCenter thRoleWidth">osd</th>
-                                    <th className="textCenter thRoleWidth">rgw</th>
-                                    <th className="textCenter thRoleWidth">iscsi</th>
-                                    <th className="textCenter fact">CPU</th>
-                                    <th className="textCenter fact">RAM</th>
-                                    <th className="textCenter fact">NIC</th>
-                                    <th className="textCenter fact">HDD</th>
-                                    <th className="textCenter fact">SSD</th>
-                                    <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
-                                    <th className="leftAligned thHostInfo">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="dummy-row" />
-                            </tbody>
-                            {rows}
-                        </table>
+                        <div className="proby">
+                            <table id="probe-headings" className="probe-headings">
+                                <thead>
+                                    <tr>
+                                        <th className="tdSelector">
+                                            <div className="arrow-dummy" />
+                                            <HostSelector
+                                                name="*ALL*"
+                                                selected={this.state.selectAll}
+                                                callback={this.toggleAllRows} />
+                                        </th>
+                                        <th className="thHostname">Hostname</th>
+                                        <th className="textCenter thRoleWidth">mon</th>
+                                        <th className="textCenter thRoleWidth">mds</th>
+                                        <th className="textCenter thRoleWidth">osd</th>
+                                        <th className="textCenter thRoleWidth">rgw</th>
+                                        <th className="textCenter thRoleWidth">iscsi</th>
+                                        <th className="textCenter fact">CPU</th>
+                                        <th className="textCenter fact">RAM</th>
+                                        <th className="textCenter fact">NIC</th>
+                                        <th className="textCenter fact">HDD</th>
+                                        <th className="textCenter fact">SSD</th>
+                                        <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
+                                        <th className="leftAligned thHostInfo">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody />
+                            </table>
+                        </div>
+                        <div className="probe-container">
+                            <table id="probe-table" className="probe-table" >
+                                {rows}
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div className="nav-button-container">
