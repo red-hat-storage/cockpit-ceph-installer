@@ -9,6 +9,13 @@ td {
 tr {
     display: table;
 }
+a { 
+    cursor: pointer;
+}
+.add-hosts-offset {
+    width: 712px;
+    margin-bottom: 10px;
+}
 table {
     border-collapse: collapse;
     table-layout: fixed; 
@@ -16,9 +23,20 @@ table {
     display:block;
     overflow-y:auto;
 }
-table thead {
-    position: fixed;
-  }
+table#probe-headings {
+    height:3.4em;
+    overflow: hidden;
+}
+.probe-container {
+    height: 430px;
+    overflow-y: auto;
+}
+table#probe-table.probe-table {
+    height: auto;
+}
+// table thead {
+//     position: fixed;
+//   }
   table th {
     background-color: #f9f9f9;
     font-size: 1.1em;
@@ -29,7 +47,7 @@ table thead {
     border: 1px solid lightgrey; }
   
 table#probe-table thead {
-    position: fixed;
+    position: relative;
     z-index: 2; 
 }
   
@@ -38,7 +56,7 @@ table#probe-table thead {
     display: block; 
 }
 .emptyTable {
-    width: 756px;
+    width: 758px;
     display:inline-block;
     text-align:center;
 
@@ -74,7 +92,7 @@ table#probe-table thead {
     outline-color: red;
     outline-width: 5px;
 }
-.dropdown {
+.dropdown-box {
     min-width: 160px;
     padding: 1px 0;
     margin: 2px 0 0;
@@ -85,11 +103,11 @@ table#probe-table thead {
     border-radius: 1px;
 
 }
-.dropdown:focus {
+.dropdown-box:focus {
     box-shadow: 0 6px 12px rgba(0,0,0,.175);
     background-clip: padding-box;
 }
-.dropdown:hover {
+.dropdown-box:hover {
     border: 1px solid blue;
     cursor: pointer;
 }
@@ -136,6 +154,7 @@ table.roleTable thead, tr {
   
 table.roleTable tbody {
     height: 337px;
+    width: 805px;
     display: block;
     overflow-y: auto; }
   
@@ -153,11 +172,11 @@ table.roleTable tbody {
     background-color: #ebf8ff; }
 
 .thHostInfo, .tdHostInfo  {
-    width: 250px;
+    min-width: 275px;
 }
 
 .tdDeleteBtn {
-    min-width: 50px;
+    min-width: 27px;
 }
 .tdSelector {
     min-width: 35px; 
