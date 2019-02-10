@@ -350,11 +350,7 @@ export class ValidatePage extends React.Component {
                 msgLevel: 'warning',
                 msgText: "You have made role changes, so a further probe is required."
             });
-            // let errorMsg = (
-            //     <div>
-            //         You have made role changes, so a further probe is required.
-            //     </div>);
-            // this.showModal(errorMsg);
+
             return;
         }
 
