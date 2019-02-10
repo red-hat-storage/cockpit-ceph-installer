@@ -6,6 +6,7 @@ import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { Notification } from './common/notifications.jsx';
 import { GenericModal, WindowTitle } from './common/modal.jsx';
+import { decodeAddError } from '../services/errorHandlers.js';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
 import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard } from '../services/utils.js';
@@ -175,32 +176,9 @@ export class HostsPage extends React.Component {
                                         hostStatus = r.status;
                                     })
                                             .catch((err) => {
-                                                switch (err.status) {
-                                                case 401:
-                                                    console.log("SSH key problem with " + hostName);
-                                                    hostStatus = "NOTOK";
-                                                    hostInfo = "SSH Auth failure to " + hostName;
-                                                    break;
-                                                case 404:
-                                                    console.log("Server " + hostName + " not found");
-                                                    hostStatus = "NOTOK";
-                                                    hostInfo = "Host not found (DNS issue?)";
-                                                    break;
-                                                case 500:
-                                                    console.error("error returned from the ansible-runner-service");
-                                                    hostStatus = "NOTOK";
-                                                    hostInfo = "Failed request in 'ansible-runner-service'. Please check logs";
-                                                    break;
-                                                case 504:
-                                                    console.error("Timed out waiting for ssh response");
-                                                    hostStatus = "NOTOK";
-                                                    hostInfo = "SSH connection failed with a timeout error";
-                                                    break;
-                                                default:
-                                                    console.error("Unknown error condition");
-                                                    hostStatus = 'NOTOK';
-                                                    hostInfo = "Unknown error (" + err.status + "), please check ansible-runner-service logs";
-                                                }
+                                                let result = decodeAddError(hostName, err);
+                                                hostStatus = result.statusText;
+                                                hostInfo = result.statusDescription;
                                             })
                                             .finally(() => {
                                                 console.log("running code regardless of success/fail state");
@@ -234,6 +212,52 @@ export class HostsPage extends React.Component {
                             .catch(err => console.error("create groups problem :" + err + ", " + err.message));
                 })
                 .fail(error => console.error('Problem fetching group list' + error));
+    }
+
+    retryHost = (hostName) => {
+        // host already in the hosts array, so no need to check presence
+        // get the roles from the existing entry
+        var hostInfo, hostStatus;
+        var currentHosts = this.state.hosts.slice(0);
+        let ptr;
+        for (let i = 0; i < currentHosts.length; i++) {
+            if (currentHosts[i].hostname === hostName) {
+                currentHosts[i].status = 'RETRY';
+                ptr = i;
+                break;
+            }
+        }
+
+        this.setState({hosts: currentHosts}); // update the table to show the retry action
+
+        var that = this;
+        var tokenString = this.props.svctoken;
+        var roleList = buildRoles([currentHosts[ptr]]);
+        if (roleList.includes('mons')) {
+            console.log("adding mgrs to role list since we have a mon");
+            roleList.push('mgrs');
+        }
+
+        addHost(hostName, roleList.join(','), tokenString)
+                .then((resp) => {
+                    console.log("Add OK");
+                    let r = JSON.parse(resp);
+                    hostStatus = r.status;
+                    hostInfo = 'Connectivity verified, added to the inventory';
+                })
+                .catch((err) => {
+                    console.error("Unable to add host: " + JSON.stringify(err));
+                    let result = decodeAddError(hostName, err);
+                    hostStatus = result.statusText;
+                    hostInfo = result.statusDescription;
+                })
+                .finally(() => {
+                    console.log("tidy up");
+                    currentHosts[ptr].info = hostInfo;
+                    currentHosts[ptr].status = hostStatus;
+                    that.setState({hosts: currentHosts});
+                    that.config[hostName] = currentHosts[ptr];
+                });
     }
 
     expandHosts (hostMask) {
@@ -453,6 +477,7 @@ export class HostsPage extends React.Component {
                             hostData={host}
                             roleChange={this.updateHost}
                             deleteRow={this.deleteHost}
+                            retryHost={this.retryHost}
                             modal={this.showModal} />;
             });
         } else {
@@ -484,7 +509,7 @@ export class HostsPage extends React.Component {
                     </div>
                 </div>
                 <div className="divCenter">
-                    <div >
+                    <div className="host-container">
                         <table className="roleTable">
                             <thead>
                                 <tr>
@@ -521,6 +546,7 @@ class HostDataRow extends React.Component {
         this.state = {
             host: this.props.hostData
         };
+        this.actions = [];
     }
 
     hostRoleChange = (role, checked) => {
@@ -542,7 +568,15 @@ class HostDataRow extends React.Component {
         const { hostData } = this.state.host;
         if (props.hostData != hostData) {
             this.setState({host: props.hostData});
+            this.actions = [{action: "Delete", callback: this.props.deleteRow}];
+            if (props.hostData.status === 'NOTOK') {
+                this.actions.push({action:"Retry", callback:this.props.retryHost});
+            }
         }
+    }
+
+    dummy = () => {
+        console.log("Dummy function for a retry request");
     }
 
     render() {
@@ -573,7 +607,7 @@ class HostDataRow extends React.Component {
                     <HostInfo hostname={this.state.host.hostname} info={this.state.host.info} modal={this.props.modal} />
                 </td>
                 <td className="tdDeleteBtn">
-                    <Kebab value={this.state.host.hostname} actions={[{action: "Delete", callback: this.props.deleteRow}]} />
+                    <Kebab value={this.state.host.hostname} actions={this.actions} />
                     {/* <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} /> */}
                 </td>
             </tr>
