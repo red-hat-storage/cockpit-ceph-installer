@@ -1,6 +1,6 @@
 import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
-import { buildRoles, hostsWithRoleCount, msgCount } from '../services/utils.js';
+import { buildRoles, hostsWithRoleCount, msgCount, osdCount } from '../services/utils.js';
 import '../app.scss';
 
 export class ReviewPage extends React.Component {
@@ -54,16 +54,8 @@ export class ReviewPage extends React.Component {
                 }
                 this.clusterData["- " + role] = hostsWithRoleCount(props.config.hosts, roleName);
             }
-            let osdCount = 0;
 
             for (let host of props.config.hosts) {
-                switch (props.config.flashUsage) {
-                case "OSD Data":
-                    osdCount += host.ssd;
-                    break;
-                default:
-                    osdCount += host.hdd;
-                }
                 let msgStats = msgCount(host.msgs);
                 for (let mType of Object.keys(msgStats)) {
                     let mTypeKey = mType.charAt(0).toUpperCase() + mType.slice(1);
@@ -76,7 +68,7 @@ export class ReviewPage extends React.Component {
                 }
                 console.log(JSON.stringify(msgStats));
             }
-            this.clusterData['OSD devices'] = osdCount;
+            this.clusterData['OSD devices'] = osdCount(props.config.hosts, props.config.flashUsage);
             this.clusterData['Public Network'] = props.config.publicNetwork;
             this.clusterData['Cluster Network'] = props.config.clusterNetwork;
             if (props.config.rgwNetwork) {
