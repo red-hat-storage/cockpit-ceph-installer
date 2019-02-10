@@ -13,7 +13,7 @@ a {
     cursor: pointer;
 }
 .add-hosts-offset {
-    width: 712px;
+    width: 742px;
     margin-bottom: 10px;
 }
 table {
@@ -61,6 +61,18 @@ table#probe-table thead {
     text-align:center;
 
 }
+.dropdown-menu-tbl-right {
+    margin-left:-28px;
+    top:16px;
+    min-width:60px;
+}
+ul.dropdown-menu-tbl-right::before {
+    content:none !important;
+}
+ul.dropdown-menu-tbl-right::after {
+    content:none !important;
+}
+
 .thRoleWidth {
     min-width: 45px;
 }
@@ -145,7 +157,9 @@ table#probe-table thead {
     width: 150px;
     margin-top: 0px; 
 }
-
+.host-container {
+    height: 470px;
+  }
 .roleTable {
     position: relative; }
   
@@ -153,11 +167,13 @@ table.roleTable thead, tr {
     position: relative; }
   
 table.roleTable tbody {
-    height: 337px;
-    width: 805px;
+    height: 410px;
+    width: 773px;
     display: block;
     overflow-y: auto; }
-  
+table.roleTable {
+        height: auto;
+}  
 .roleTable td {
     border-left: 1px solid lightgrey;
     border-right: 1px solid lightgrey;

@@ -5,18 +5,18 @@ export class Kebab extends React.Component {
     constructor (props) {
         super(props);
         this.state = {
-            menu: "dropdown-menu hidden"
+            menu: "dropdown-menu hidden dropdown-menu-tbl-right"
         };
     }
 
     toggle = () => {
-        if (this.state.menu === "dropdown-menu hidden") {
+        if (this.state.menu === "dropdown-menu hidden dropdown-menu-tbl-right") {
             this.setState({
-                menu: "dropdown-menu visible"
+                menu: "dropdown-menu visible dropdown-menu-tbl-right"
             });
         } else {
             this.setState({
-                menu: "dropdown-menu hidden"
+                menu: "dropdown-menu hidden dropdown-menu-tbl-right"
             });
         }
     }
@@ -24,11 +24,9 @@ export class Kebab extends React.Component {
     clickHandler = (value, callback) => {
         // e.preventDefault();
         // event.preventDefault();
-        console.log("you clicked an option " + value);
         this.setState({
-            menu: "dropdown-menu hidden"
+            menu: "dropdown-menu hidden dropdown-menu-tbl-right"
         });
-        console.log(callback);
         callback(value);
     }
 
@@ -48,11 +46,11 @@ export class Kebab extends React.Component {
             <div className="dropdown  dropdown-kebab-pf" >
                 <button className="btn btn-link dropdown-toggle"
                         type="button"
-                        onBlur={() => { this.setState({menu:"dropdown-menu hidden"}) }}
+                        onBlur={() => { this.setState({menu:"dropdown-menu hidden dropdown-menu-tbl-right"}) }}
                         onClick={this.toggle} >
                     <span className="fa fa-ellipsis-v" />
                 </button>
-                <ul className={this.state.menu} style={{ minWidth:"60px" }} >
+                <ul className={this.state.menu} >
                     { actions }
                 </ul>
             </div>
