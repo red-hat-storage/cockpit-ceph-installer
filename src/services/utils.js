@@ -459,3 +459,19 @@ export function currentTime() {
     let d = new Date();
     return d.toLocaleTimeString('en-GB');
 }
+
+export function osdCount(hosts, flashUsage) {
+    // return the number of OSD devices from the hosts array
+    let ctr = 0;
+    for (let host of hosts) {
+        switch (flashUsage) {
+        case "OSD Data":
+            ctr += host.ssd;
+            break;
+        default:
+            ctr += host.hdd;
+        }
+    }
+    console.log("detected " + ctr + "candidate disks for OSDs");
+    return ctr;
+}
