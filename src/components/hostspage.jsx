@@ -33,11 +33,10 @@ export class HostsPage extends React.Component {
         // this.hostMaskInput = React.createRef();
     }
 
-    // TODO: need to consider the hosts as a json object key=hostname to cut down on
-    // screen updates?
-
     nextAction = (event) => {
         let usable = true;
+        let errMsgs = [];
+
         if (this.state.hosts.length > 0) {
             // we must have hosts to process before moving on to validation
             var hostOKCount = 0;
@@ -47,17 +46,12 @@ export class HostsPage extends React.Component {
                 }
             });
             if (hostOKCount != this.state.hosts.length) {
-                usable = false;
-                this.setState({
-                    msgLevel: "error",
-                    msgText: "All hosts must be in an OK state prior to Validation"
-                });
-                // return;
+                errMsgs.push("Hosts must be in an 'OK' state to continue");
             }
 
             let monCount = hostsWithRoleCount(this.state.hosts, 'mon');
-            let osdCount = hostsWithRoleCount(this.state.hosts, 'osd');
-            let errMsgs = [];
+            let osdHostCount = hostsWithRoleCount(this.state.hosts, 'osd');
+
             switch (true) {
             case (monCount === 0):
                 errMsgs.push("You must have a mon role defined");
@@ -70,13 +64,8 @@ export class HostsPage extends React.Component {
                 break;
             }
 
-            switch (true) {
-            case (osdCount == 0):
+            if (osdHostCount === 0) {
                 errMsgs.push("OSD hosts are required");
-                break;
-            case (osdCount < 3):
-                errMsgs.push("A minimum of 3 OSD hosts are needed");
-                break;
             }
 
             if (errMsgs.length > 0) {
@@ -97,7 +86,7 @@ export class HostsPage extends React.Component {
         } else {
             this.setState({
                 msgLevel: "error",
-                msgText: "You needs hosts in an OK state to continue"
+                msgText: "You need hosts in an OK state to continue"
             });
             console.log("You haven't got any hosts - can't continue");
         }
@@ -356,14 +345,11 @@ export class HostsPage extends React.Component {
     }
 
     deleteGroups = (groupsToRemove) => {
-        console.log("We need to delete the following groups: " + groupsToRemove.join(','));
+        console.log("We need to remove the following groups: " + groupsToRemove.join(',') + " - " + JSON.stringify(groupsToRemove));
         var delChain = Promise.resolve();
-        for (var g of groupsToRemove) {
-            console.log("Removing " + g + "from the inventory");
-            delChain = delChain.then(() => deleteGroup(g, this.props.svctoken));
-        }
+        groupsToRemove.forEach(group => delChain.then(() => deleteGroup(group, this.props.svctoken)));
         delChain.catch(err => {
-            console.log("Failed to remove " + g + ": " + err);
+            console.error("Failed to remove group. Error: " + JSON.stringify(err));
         });
     }
 
@@ -385,6 +371,9 @@ export class HostsPage extends React.Component {
         for (let role of hostRoles) {
             if (hostsWithRoleCount(localState, role) == 1) {
                 groupsToRemove.push(convertRole(role));
+                if (role === 'mon') {
+                    groupsToRemove.push(convertRole('mgr'));
+                }
             }
         }
 
@@ -397,18 +386,17 @@ export class HostsPage extends React.Component {
                     })
                     .catch((error) => {
                         console.error("Error " + error + " deleting " + hostname);
+                    })
+                    .finally(() => {
+                        if (groupsToRemove.length > 0) {
+                            this.deleteGroups(groupsToRemove);
+                        }
                     });
         } else {
             // status was NOTOK, so the host is not in the inventory
             console.log("host index is " + idx);
             this.deleteHostEntry(idx);
         }
-
-        if (groupsToRemove.length > 0) {
-            this.deleteGroups(groupsToRemove);
-        }
-
-        console.log("TODO: if this is the last host, remove all groups from the inventory");
     }
 
     componentWillReceiveProps(props) {
