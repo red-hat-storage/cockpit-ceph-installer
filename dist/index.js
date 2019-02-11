@@ -21619,13 +21619,13 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Kebab).call(this, props));
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "toggle", function () {
-      if (_this.state.menu === "dropdown-menu hidden") {
+      if (_this.state.menu === "dropdown-menu hidden dropdown-menu-tbl-right") {
         _this.setState({
-          menu: "dropdown-menu visible"
+          menu: "dropdown-menu visible dropdown-menu-tbl-right"
         });
       } else {
         _this.setState({
-          menu: "dropdown-menu hidden"
+          menu: "dropdown-menu hidden dropdown-menu-tbl-right"
         });
       }
     });
@@ -21633,18 +21633,15 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "clickHandler", function (value, callback) {
       // e.preventDefault();
       // event.preventDefault();
-      console.log("you clicked an option " + value);
-
       _this.setState({
-        menu: "dropdown-menu hidden"
+        menu: "dropdown-menu hidden dropdown-menu-tbl-right"
       });
 
-      console.log(callback);
       callback(value);
     });
 
     _this.state = {
-      menu: "dropdown-menu hidden"
+      menu: "dropdown-menu hidden dropdown-menu-tbl-right"
     };
     return _this;
   }
@@ -21679,17 +21676,14 @@ function (_React$Component) {
         type: "button",
         onBlur: function onBlur() {
           _this2.setState({
-            menu: "dropdown-menu hidden"
+            menu: "dropdown-menu hidden dropdown-menu-tbl-right"
           });
         },
         onClick: this.toggle
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
         className: "fa fa-ellipsis-v"
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
-        className: this.state.menu,
-        style: {
-          minWidth: "60px"
-        }
+        className: this.state.menu
       }, actions));
     }
   }]);
@@ -23911,10 +23905,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_emptyrow_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/emptyrow.jsx */ "./src/components/common/emptyrow.jsx");
 /* harmony import */ var _common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./common/notifications.jsx */ "./src/components/common/notifications.jsx");
 /* harmony import */ var _common_modal_jsx__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./common/modal.jsx */ "./src/components/common/modal.jsx");
-/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
-/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../services/errorHandlers.js */ "./src/services/errorHandlers.js");
+/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
+/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_10__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -23934,6 +23929,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -23963,6 +23959,7 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "nextAction", function (event) {
       var usable = true;
+      var errMsgs = [];
 
       if (_this.state.hosts.length > 0) {
         // we must have hosts to process before moving on to validation
@@ -23975,18 +23972,11 @@ function (_React$Component) {
         });
 
         if (hostOKCount != _this.state.hosts.length) {
-          usable = false;
-
-          _this.setState({
-            msgLevel: "error",
-            msgText: "All hosts must be in an OK state prior to Validation"
-          }); // return;
-
+          errMsgs.push("Hosts must be in an 'OK' state to continue");
         }
 
-        var monCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["hostsWithRoleCount"])(_this.state.hosts, 'mon');
-        var osdCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["hostsWithRoleCount"])(_this.state.hosts, 'osd');
-        var errMsgs = [];
+        var monCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'mon');
+        var osdHostCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'osd');
 
         switch (true) {
           case monCount === 0:
@@ -24002,14 +23992,8 @@ function (_React$Component) {
             break;
         }
 
-        switch (true) {
-          case osdCount == 0:
-            errMsgs.push("OSD hosts are required");
-            break;
-
-          case osdCount < 3:
-            errMsgs.push("A minimum of 3 OSD hosts are needed");
-            break;
+        if (osdHostCount === 0) {
+          errMsgs.push("OSD hosts are required");
         }
 
         if (errMsgs.length > 0) {
@@ -24032,7 +24016,7 @@ function (_React$Component) {
       } else {
         _this.setState({
           msgLevel: "error",
-          msgText: "You needs hosts in an OK state to continue"
+          msgText: "You need hosts in an OK state to continue"
         });
 
         console.log("You haven't got any hosts - can't continue");
@@ -24053,7 +24037,7 @@ function (_React$Component) {
       } // check selected groups are in the inventory
 
 
-      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["buildRoles"])([stateObject]); // if the user asks for a mon, they get a mgr collocated too
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([stateObject]); // if the user asks for a mon, they get a mgr collocated too
 
       if (roleList.includes('mons')) {
         console.log("adding mgrs to role list since we have a mon");
@@ -24070,7 +24054,7 @@ function (_React$Component) {
       var tokenString = _this.props.svctoken;
       var ansibleRoles;
       var createGroups = [];
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_7__["getGroups"])(_this.props.svctoken).done(function (resp) {
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["getGroups"])(_this.props.svctoken).done(function (resp) {
         ansibleRoles = JSON.parse(resp)['data']['groups'];
       }).then(function () {
         console.log("existing roles from runner-service: " + ansibleRoles);
@@ -24080,7 +24064,7 @@ function (_React$Component) {
 
           if (!ansibleRoles.includes(groupName)) {
             // need to create a group
-            createGroups.push(Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_7__["addGroup"])(groupName, tokenString));
+            createGroups.push(Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addGroup"])(groupName, tokenString));
           }
         }
       }).then(function () {
@@ -24105,7 +24089,7 @@ function (_React$Component) {
           var sequence = Promise.resolve();
           newHosts.forEach(function (hostName) {
             sequence = sequence.then(function () {
-              return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_7__["addHost"])(hostName, rolesString, tokenString);
+              return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, rolesString, tokenString);
             }).then(function (resp) {
               console.log(resp);
               var r = JSON.parse(resp);
@@ -24113,36 +24097,9 @@ function (_React$Component) {
               hostInfo = 'Connectivity verified, added to the inventory';
               hostStatus = r.status;
             }).catch(function (err) {
-              switch (err.status) {
-                case 401:
-                  console.log("SSH key problem with " + hostName);
-                  hostStatus = "NOTOK";
-                  hostInfo = "SSH Auth failure to " + hostName;
-                  break;
-
-                case 404:
-                  console.log("Server " + hostName + " not found");
-                  hostStatus = "NOTOK";
-                  hostInfo = "Host not found (DNS issue?)";
-                  break;
-
-                case 500:
-                  console.error("error returned from the ansible-runner-service");
-                  hostStatus = "NOTOK";
-                  hostInfo = "Failed request in 'ansible-runner-service'. Please check logs";
-                  break;
-
-                case 504:
-                  console.error("Timed out waiting for ssh response");
-                  hostStatus = "NOTOK";
-                  hostInfo = "SSH connection failed with a timeout error";
-                  break;
-
-                default:
-                  console.error("Unknown error condition");
-                  hostStatus = 'NOTOK';
-                  hostInfo = "Unknown error (" + err.status + "), please check ansible-runner-service logs";
-              }
+              var result = Object(_services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_7__["decodeAddError"])(hostName, err);
+              hostStatus = result.statusText;
+              hostInfo = result.statusDescription;
             }).finally(function () {
               console.log("running code regardless of success/fail state");
               var newObject = JSON.parse(JSON.stringify(stateObject));
@@ -24185,6 +24142,59 @@ function (_React$Component) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "retryHost", function (hostName) {
+      // host already in the hosts array, so no need to check presence
+      // get the roles from the existing entry
+      var hostInfo, hostStatus;
+
+      var currentHosts = _this.state.hosts.slice(0);
+
+      var ptr;
+
+      for (var i = 0; i < currentHosts.length; i++) {
+        if (currentHosts[i].hostname === hostName) {
+          currentHosts[i].status = 'RETRY';
+          ptr = i;
+          break;
+        }
+      }
+
+      _this.setState({
+        hosts: currentHosts
+      }); // update the table to show the retry action
+
+
+      var that = _assertThisInitialized(_assertThisInitialized(_this));
+
+      var tokenString = _this.props.svctoken;
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([currentHosts[ptr]]);
+
+      if (roleList.includes('mons')) {
+        console.log("adding mgrs to role list since we have a mon");
+        roleList.push('mgrs');
+      }
+
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, roleList.join(','), tokenString).then(function (resp) {
+        console.log("Add OK");
+        var r = JSON.parse(resp);
+        hostStatus = r.status;
+        hostInfo = 'Connectivity verified, added to the inventory';
+      }).catch(function (err) {
+        console.error("Unable to add host: " + JSON.stringify(err));
+        var result = Object(_services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_7__["decodeAddError"])(hostName, err);
+        hostStatus = result.statusText;
+        hostInfo = result.statusDescription;
+      }).finally(function () {
+        console.log("tidy up");
+        currentHosts[ptr].info = hostInfo;
+        currentHosts[ptr].status = hostStatus;
+        that.setState({
+          hosts: currentHosts
+        });
+        that.config[hostName] = currentHosts[ptr];
+      });
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateState", function (hosts) {
       // update the host state to drive render update
       console.log("updating state with " + JSON.stringify(hosts));
@@ -24202,11 +24212,11 @@ function (_React$Component) {
       console.log("current hosts are: " + JSON.stringify(_this.state.hosts));
 
       if (checked) {
-        var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["getHost"])(localState, hostname);
+        var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["getHost"])(localState, hostname);
         console.log("host is: " + JSON.stringify(hostObject));
-        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["buildRoles"])([hostObject]);
+        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([hostObject]);
 
-        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
           console.log("current hosts are: " + JSON.stringify(localState));
 
           _this.setState({
@@ -24225,7 +24235,7 @@ function (_React$Component) {
         }
       }
 
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, _this.props.svctoken);
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, _this.props.svctoken);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHostEntry", function (idx) {
@@ -24249,19 +24259,47 @@ function (_React$Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteGroups", function (groupsToRemove) {
-      console.log("We need to delete the following groups: " + groupsToRemove.join(','));
+      console.log("We need to remove the following groups: " + groupsToRemove.join(',') + " - " + JSON.stringify(groupsToRemove));
       var delChain = Promise.resolve();
+      groupsToRemove.forEach(function (group) {
+        return delChain.then(function () {
+          return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteGroup"])(group, _this.props.svctoken);
+        });
+      });
+      delChain.catch(function (err) {
+        console.error("Failed to remove group. Error: " + JSON.stringify(err));
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHost", function (hostname) {
+      // delete a host from the state
+      console.log("You clicked to delete host - " + hostname);
+      var localState = JSON.parse(JSON.stringify(_this.state.hosts));
+
+      for (var idx in localState) {
+        if (localState[idx].hostname == hostname) {
+          // match found
+          break;
+        }
+      }
+
+      var hostRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["activeRoles"])(localState[idx]);
+      var groupsToRemove = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = groupsToRemove[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var g = _step.value;
-          console.log("Removing " + g + "from the inventory");
-          delChain = delChain.then(function () {
-            return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_7__["deleteGroup"])(g, _this.props.svctoken);
-          });
+        for (var _iterator = hostRoles[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var role = _step.value;
+
+          if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(localState, role) == 1) {
+            groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(role));
+
+            if (role === 'mon') {
+              groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])('mgr'));
+            }
+          }
         }
       } catch (err) {
         _didIteratorError = true;
@@ -24278,59 +24316,17 @@ function (_React$Component) {
         }
       }
 
-      delChain.catch(function (err) {
-        console.log("Failed to remove " + g + ": " + err);
-      });
-    });
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHost", function (hostname) {
-      // delete a host from the state
-      console.log("You clicked to delete host - " + hostname);
-      var localState = JSON.parse(JSON.stringify(_this.state.hosts));
-
-      for (var idx in localState) {
-        if (localState[idx].hostname == hostname) {
-          // match found
-          break;
-        }
-      }
-
-      var hostRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["activeRoles"])(localState[idx]);
-      var groupsToRemove = [];
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = hostRoles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var role = _step2.value;
-
-          if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["hostsWithRoleCount"])(localState, role) == 1) {
-            groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["convertRole"])(role));
-          }
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
       if (localState[idx].status == 'OK') {
         // OK state means we've added the host to the inventory, so we need
         // to delete from the inventory AND the UI state
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_7__["deleteHost"])(hostname, _this.props.svctoken).then(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteHost"])(hostname, _this.props.svctoken).then(function (resp) {
           _this.deleteHostEntry(idx);
         }).catch(function (error) {
           console.error("Error " + error + " deleting " + hostname);
+        }).finally(function () {
+          if (groupsToRemove.length > 0) {
+            _this.deleteGroups(groupsToRemove);
+          }
         });
       } else {
         // status was NOTOK, so the host is not in the inventory
@@ -24338,12 +24334,6 @@ function (_React$Component) {
 
         _this.deleteHostEntry(idx);
       }
-
-      if (groupsToRemove.length > 0) {
-        _this.deleteGroups(groupsToRemove);
-      }
-
-      console.log("TODO: if this is the last host, remove all groups from the inventory");
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "hideModal", function () {
@@ -24413,9 +24403,7 @@ function (_React$Component) {
     }; // this.hostMaskInput = React.createRef();
 
     return _this;
-  } // TODO: need to consider the hosts as a json object key=hostname to cut down on
-  // screen updates?
-
+  }
 
   _createClass(HostsPage, [{
     key: "expandHosts",
@@ -24445,7 +24433,7 @@ function (_React$Component) {
         if (currentHosts.includes(hostName)) {
           // need to drop to avoid duplicate
           hostErrors.push(hostName);
-          hosts = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["removeItem"])(hosts, hostName);
+          hosts = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["removeItem"])(hosts, hostName);
         }
       });
 
@@ -24468,7 +24456,7 @@ function (_React$Component) {
         console.log("hosts have changed, so sort them"); // sort the hosts by name, then update our state
 
         var tempHosts = JSON.parse(JSON.stringify(props.hosts));
-        tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["sortByKey"])('hostname'));
+        tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["sortByKey"])('hostname'));
         this.setState({
           hosts: tempHosts
         });
@@ -24488,6 +24476,7 @@ function (_React$Component) {
             hostData: host,
             roleChange: _this2.updateHost,
             deleteRow: _this2.deleteHost,
+            retryHost: _this2.retryHost,
             modal: _this2.showModal
           });
         });
@@ -24523,7 +24512,9 @@ function (_React$Component) {
         action: this.showAddHosts
       }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "divCenter"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "host-container"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
         className: "roleTable"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("thead", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
         className: "thHostname"
@@ -24589,9 +24580,14 @@ function (_React$Component2) {
       }
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this3)), "dummy", function () {
+      console.log("Dummy function for a retry request");
+    });
+
     _this3.state = {
       host: _this3.props.hostData
     };
+    _this3.actions = [];
     return _this3;
   }
 
@@ -24605,6 +24601,17 @@ function (_React$Component2) {
         this.setState({
           host: props.hostData
         });
+        this.actions = [{
+          action: "Delete",
+          callback: this.props.deleteRow
+        }];
+
+        if (props.hostData.status === 'NOTOK') {
+          this.actions.push({
+            action: "Retry",
+            callback: this.props.retryHost
+          });
+        }
       }
     }
   }, {
@@ -24654,10 +24661,7 @@ function (_React$Component2) {
         className: "tdDeleteBtn"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_kebab_jsx__WEBPACK_IMPORTED_MODULE_2__["Kebab"], {
         value: this.state.host.hostname,
-        actions: [{
-          action: "Delete",
-          callback: this.props.deleteRow
-        }]
+        actions: this.actions
       })));
     }
   }]);
@@ -24827,12 +24831,12 @@ function (_React$Component4) {
         var currentRoles = [];
         roles.forEach(function (role) {
           if (_this5.state[role]) {
-            currentRoles.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["convertRole"])(role));
+            currentRoles.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(role));
           }
         });
         console.log("current roles from mask are " + currentRoles);
 
-        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["collocationOK"])(currentRoles, roleName, _this5.props.installType, _this5.props.clusterType)) {
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["collocationOK"])(currentRoles, roleName, _this5.props.installType, _this5.props.clusterType)) {
           console.log("invalid roles - violates collocation rules");
 
           _this5.setState({
@@ -25071,7 +25075,7 @@ function (_React$Component5) {
         }, fixMe), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
           className: "btn fa fa-clipboard clippy",
           onClick: function onClick() {
-            Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_8__["copyToClipboard"])(fixMe);
+            Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["copyToClipboard"])(fixMe);
           }
         }));
         helper = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
@@ -25954,7 +25958,6 @@ function (_React$Component) {
           }
         }
 
-        var osdCount = 0;
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
         var _iteratorError2 = undefined;
@@ -25962,16 +25965,6 @@ function (_React$Component) {
         try {
           for (var _iterator2 = props.config.hosts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var host = _step2.value;
-
-            switch (props.config.flashUsage) {
-              case "OSD Data":
-                osdCount += host.ssd;
-                break;
-
-              default:
-                osdCount += host.hdd;
-            }
-
             var msgStats = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["msgCount"])(host.msgs);
 
             var _arr = Object.keys(msgStats);
@@ -26004,7 +25997,7 @@ function (_React$Component) {
           }
         }
 
-        this.clusterData['OSD devices'] = osdCount;
+        this.clusterData['OSD devices'] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["osdCount"])(props.config.hosts, props.config.flashUsage);
         this.clusterData['Public Network'] = props.config.publicNetwork;
         this.clusterData['Cluster Network'] = props.config.clusterNetwork;
 
@@ -26227,9 +26220,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
- // import { GenericModal } from './common/modal.jsx';
 
- // import { emptyRow } from './common/emptyrow.jsx';
 
 
 
@@ -26276,8 +26267,7 @@ function (_React$Component) {
           console.log("updating state");
           Object.assign(host, obj);
           localState[i] = host;
-          var currentCount = _this.state.probedCount + 1; // let processed = Object.keys(this.eventLookup).length;
-
+          var currentCount = _this.state.probedCount + 1;
           var level = currentCount === localState.length ? "success" : "info";
 
           _this.setState({
@@ -26288,10 +26278,7 @@ function (_React$Component) {
             probeStatusMsg: currentCount + "/" + localState.length + " probes complete"
           });
 
-          console.log("updating notification message " + currentCount); // let processed = Object.keys(this.eventLookup).length;
-          // this.setState({
-          // });
-
+          console.log("updating notification message " + currentCount);
           break;
         }
       }
@@ -26305,14 +26292,7 @@ function (_React$Component) {
       var eventData = response.data.events;
       var eventIDs = Object.keys(eventData);
       var eventCount = eventIDs.length;
-      var hostCount = _this.state.hosts.length; // let processed = Object.keys(this.eventLookup).length;
-      // this.setState({
-      //     msgLevel: 'info',
-      //     msgText: processed + "/" + hostCount + " probes complete",
-      //     probeStatusMsg: processed + "/" + hostCount + " probes complete"
-      // });
-      // this.refs.validationMessage.forceUpdateHandler();
-
+      var hostCount = _this.state.hosts.length;
       console.log("Progress " + eventCount + "/" + hostCount);
       eventIDs.forEach(function (eventID, idx, ary) {
         if (_this.eventLookup.hasOwnProperty(eventID)) {
@@ -26340,8 +26320,6 @@ function (_React$Component) {
       _this.setState({
         probeEnabled: true,
         ready: true,
-        // msgLevel: 'success',
-        // msgText: 'Probe scan is complete',
         probeStatusMsg: ''
       });
 
@@ -26456,10 +26434,7 @@ function (_React$Component) {
 
           return;
         } else {
-          console.log("collocation is OK"); // this.setState({
-          //     msgLevel: 'info',
-          //     msgText: ''
-          // });
+          console.log("collocation is OK");
         }
       }
 
@@ -26471,11 +26446,7 @@ function (_React$Component) {
         _this.setState({
           msgLevel: 'error',
           msgText: "You can't select 'ALL' hosts until a probe has been performed"
-        }); // let errorMsg = (
-        //     <div>You can't select 'ALL' hosts until a probe has been performed</div>
-        // );
-        // this.showModal(errorMsg);
-
+        });
 
         return;
       }
@@ -26500,11 +26471,7 @@ function (_React$Component) {
         _this.setState({
           msgLevel: 'error',
           msgText: "There aren't any usable hosts. All hosts have errors or warnings related to them"
-        }); // let errorMsg = (
-        //     <div>There aren't any usable hosts. All hosts have errors or warnings related to them</div>
-        // );
-        // this.showModal(errorMsg);
-
+        });
       }
     });
 
@@ -26526,11 +26493,7 @@ function (_React$Component) {
             _this.setState({
               msgLevel: 'error',
               msgText: "Only hosts with a status of 'OK' can be selected"
-            }); // let errorMsg = (
-            //     <div>Only hosts with a status of 'OK' can be selected</div>
-            // );
-            // this.showModal(errorMsg);
-
+            });
           }
 
           break;
@@ -26541,6 +26504,24 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkHostsReady", function () {
       // Need to have more than 3 hosts in a selected state
       // all selected hosts must have a status of OK
+      var minimum = {
+        osdHosts: {
+          "Production": 3,
+          "Development/POC": 1
+        },
+        osdCount: {
+          "Production": 3,
+          "Development/POC": 1
+        },
+        mons: {
+          "Production": [3, 5, 7],
+          "Development/POC": [1, 3]
+        },
+        clusterSize: {
+          "Production": 3,
+          "Development/POC": 1
+        }
+      };
       var candidateHosts = [];
       var hostsToDelete = [];
 
@@ -26550,12 +26531,7 @@ function (_React$Component) {
         _this.setState({
           msgLevel: 'warning',
           msgText: "You have made role changes, so a further probe is required."
-        }); // let errorMsg = (
-        //     <div>
-        //         You have made role changes, so a further probe is required.
-        //     </div>);
-        // this.showModal(errorMsg);
-
+        });
 
         return;
       }
@@ -26577,26 +26553,51 @@ function (_React$Component) {
         } else {
           hostsToDelete.push(_this.state.hosts[i].hostname);
         }
-      } // if (this.state.probePending) {
-      //     console.error("You must run another probe, since changes have been made");
-      //     return;
-      // }
-      // TODO: this is mickey-mouse for testing ONLY
+      }
 
-
-      if (candidateHosts.length < 3) {
+      if (candidateHosts.length < minimum.clusterSize[_this.props.clusterType]) {
         _this.setState({
           msgLevel: 'error',
-          msgText: "To proceed you need to select at least 3 hosts in an 'OK' state"
+          msgText: "To proceed you need to select at least " + minimum.clusterSize[_this.props.clusterType] + " hosts in an 'OK' state"
+        });
+
+        return;
+      } // perform some pre-req checks for a production like deployment
+
+
+      var validMonCounts = minimum.mons[_this.props.clusterType]; // array
+
+      if (!validMonCounts.includes(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(candidateHosts, 'mon'))) {
+        _this.setState({
+          msgLevel: 'error',
+          msgText: "You need " + validMonCounts.join(' or ') + " mons to continue"
+        });
+
+        return;
+      } // check we have a minimum number of osd hosts
+
+
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(candidateHosts, 'osd') < minimum.osdHosts[_this.props.clusterType]) {
+        _this.setState({
+          msgLevel: 'error',
+          msgText: "You need at least " + minimum.osdHosts[_this.props.clusterType] + " OSD hosts to continue"
+        });
+      } // the hosts provided must have a common subnet
+
+
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["commonSubnets"])(candidateHosts, 'all').length == 0) {
+        _this.setState({
+          msgLevel: 'error',
+          msgText: "Ceph requires at least one common subnet across all hosts"
         });
 
         return;
       }
 
-      if (![3, 5].includes(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(candidateHosts, 'mon'))) {
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["osdCount"])(candidateHosts, _this.props.flashUsage) < minimum.osdCount[_this.props.clusterType]) {
         _this.setState({
           msgLevel: 'error',
-          msgText: "You need either 3 or 5 mons to continue"
+          msgText: "Ceph requires at least " + minimum.osdCount[_this.props.clusterType] + " OSD(s) to store data"
         });
 
         return;
@@ -26725,16 +26726,7 @@ function (_React$Component) {
         });
       } else {
         rows = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null); // emptyRow();
-      } // if (!this.state.probeEnabled) {
-      //     spinner = (
-      //         <div className="modifier">
-      //             <div className="modifier spinner spinner-lg" >&nbsp;</div>
-      //             <ProbeStatus msg={this.state.probeStatusMsg} />
-      //         </div>);
-      // } else {
-      //     spinner = (<div style={{display: "inline-block", width: "40px"}} />);
-      // }
-
+      }
 
       probeButtonClass = this.state.pendingProbe ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
       nextButtonClass = this.state.ready ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
@@ -26980,14 +26972,7 @@ function (_React$Component3) {
     _this4.state = {// msgClass: "hidden"
     };
     return _this4;
-  } // toggleMsgs = () => {
-  //     if (this.state.msgClass == 'hidden') {
-  //         this.setState({msgClass: "visible"});
-  //     } else {
-  //         this.setState({msgClass: "hidden"});
-  //     }
-  // }
-
+  }
 
   _createClass(HostStatus, [{
     key: "render",
@@ -27014,7 +26999,6 @@ function (_React$Component4) {
   _createClass(HostMsgs, [{
     key: "render",
     value: function render() {
-      // let display = "scrollX " + this.props.display;
       var msgLines = this.props.msgs.map(function (m, i) {
         var _m$split = m.split(':'),
             _m$split2 = _slicedToArray(_m$split, 2),
@@ -27028,8 +27012,7 @@ function (_React$Component4) {
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: highlight
         }, mType), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, mDesc));
-      }); // let tdStyle = "full-width " + this.props.msgClass;
-
+      });
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         colSpan: "14",
         className: "full-width display-inline-block"
@@ -27064,17 +27047,7 @@ function (_React$Component5) {
   }]);
 
   return HostSelector;
-}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component); // class ProbeStatus extends React.Component {
-//     render () {
-//         console.log("rendering probestatus message");
-//         return (
-//             <div className="modifier" >
-//                 <small>{ this.props.msg }</small>
-//             </div>
-//         );
-//     }
-// }
-
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 /* harmony default export */ __webpack_exports__["default"] = (ValidatePage);
 
@@ -27549,11 +27522,12 @@ function cephAnsibleSequence(roles) {
 /*!**********************************!*\
   !*** ./src/services/apicalls.js ***!
   \**********************************/
-/*! exports provided: addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getEvents, getJobEvent, storeGroupVars, storeHostVars, checkAPI */
+/*! exports provided: now, addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getEvents, getJobEvent, storeGroupVars, storeHostVars, checkAPI */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "now", function() { return now; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addGroup", function() { return addGroup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deleteGroup", function() { return deleteGroup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getGroups", function() { return getGroups; });
@@ -27583,15 +27557,20 @@ var http = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.http({
 
   }
 });
+function now() {
+  // return time, compatible with the ansible-runner-service log file
+  var t = new Date();
+  return t.toString().split(" ")[4] + "," + t.getMilliseconds();
+}
 function addGroup(groupName, svcToken) {
-  console.log("requesting new group " + groupName);
+  console.log("requesting new group " + groupName + " @ " + now());
   var promise = http.post('/api/v1/groups/' + groupName, null, {
     Authorization: svcToken
   });
   return promise;
 }
 function deleteGroup(groupName, svcToken) {
-  console.log("attempting to remove " + groupName + " from the inventory");
+  console.log("attempting to remove " + groupName + " @ " + now());
   var url = "/api/v1/groups/" + groupName;
   return http.request({
     path: url,
@@ -27603,14 +27582,14 @@ function deleteGroup(groupName, svcToken) {
   });
 }
 function getGroups(svcToken) {
-  console.log("fetching defined groups");
+  console.log("fetching defined groups @ " + now());
   var promise = http.get('/api/v1/groups', null, {
     Authorization: svcToken
   });
   return promise;
 }
 function addHost(hostName, groupNames, svcToken) {
-  console.log("Adding host to the ansible inventory");
+  console.log("Adding host to the ansible inventory @ " + now());
   var groups = groupNames.replace(',', '*').split('*');
   var groupString = groups[0];
 
@@ -27625,7 +27604,7 @@ function addHost(hostName, groupNames, svcToken) {
   return promise;
 }
 function deleteHost(hostName, svcToken) {
-  console.log("removing " + hostName + " from the inventory");
+  console.log("removing " + hostName + " from the inventory @ " + now());
   var url = "/api/v1/hosts/" + hostName;
   return http.request({
     path: url,
@@ -27637,7 +27616,7 @@ function deleteHost(hostName, svcToken) {
   });
 }
 function changeHost(hostname, role, checked, svctoken) {
-  console.log("changeHost: changing host state for " + hostname + " role=" + role);
+  console.log("changeHost: changing host state for " + hostname + " role=" + role + " @ " + now());
 
   if (!checked) {
     if (role == 'mons') {
@@ -27660,14 +27639,14 @@ function changeHost(hostname, role, checked, svctoken) {
   }
 }
 function addRole(hostName, roleName, svcToken) {
-  console.log("Adding role " + roleName + " to " + hostName);
+  console.log("Adding role " + roleName + " to " + hostName + " @ " + now());
   var url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
   return http.post(url, null, {
     Authorization: svcToken
   });
 }
 function removeRole(hostName, roleName, svcToken) {
-  console.log("Removing role " + roleName + " from " + hostName);
+  console.log("Removing role " + roleName + " from " + hostName + " @ " + now());
   var url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
   return http.request({
     path: url,
@@ -27679,14 +27658,14 @@ function removeRole(hostName, roleName, svcToken) {
   });
 }
 function runPlaybook(playbookName, data, svcToken) {
-  console.log("starting playbook " + playbookName);
+  console.log("starting playbook " + playbookName + " @ " + now());
   var url = "/api/v1/playbooks/" + playbookName;
   return http.post(url, data, {
     Authorization: svcToken
   });
 }
 function getPlaybookState(playUUID, svcToken) {
-  console.log("checking playbook with UUID " + playUUID);
+  console.log("checking playbook with UUID " + playUUID + " @ " + now());
   var url = "/api/v1/playbooks/" + playUUID;
   return http.get(url, null, {
     Authorization: svcToken
@@ -27714,24 +27693,77 @@ function getJobEvent(playUUID, eventUUID, svcToken) {
   });
 }
 function storeGroupVars(groupName, vars, svcToken) {
-  console.log("Storing group vars for group " + groupName);
+  console.log("Storing group vars for group " + groupName + " @ " + now());
   var url = "/api/v1/groupvars/" + groupName;
   return http.post(url, vars, {
     Authorization: svcToken
   });
 }
 function storeHostVars(hostName, groupName, vars, svcToken) {
-  console.log("storing host vars for host " + hostName);
+  console.log("storing host vars for host " + hostName + " @ " + now());
   var url = "/api/v1/hostvars/" + hostName + "/groups/" + groupName;
   return http.post(url, vars, {
     Authorization: svcToken
   });
 }
 function checkAPI(svcToken) {
-  console.log("checking API is there");
+  console.log("checking API is there @ " + now());
   return http.get("api", null, {
     Authorization: svcToken
   });
+}
+
+/***/ }),
+
+/***/ "./src/services/errorHandlers.js":
+/*!***************************************!*\
+  !*** ./src/services/errorHandlers.js ***!
+  \***************************************/
+/*! exports provided: decodeAddError */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "decodeAddError", function() { return decodeAddError; });
+function decodeAddError(hostName, error) {
+  var hostStatus = '';
+  var hostInfo = '';
+
+  switch (error.status) {
+    case 401:
+      console.log("SSH key problem with " + hostName);
+      hostStatus = "NOTOK";
+      hostInfo = "SSH Auth failure to " + hostName;
+      break;
+
+    case 404:
+      console.log("Server " + hostName + " not found");
+      hostStatus = "NOTOK";
+      hostInfo = "Host not found (DNS issue?)";
+      break;
+
+    case 500:
+      console.error("error returned from the ansible-runner-service");
+      hostStatus = "NOTOK";
+      hostInfo = "Failed request in 'ansible-runner-service'. Please check logs";
+      break;
+
+    case 504:
+      console.error("Timed out waiting for ssh response");
+      hostStatus = "NOTOK";
+      hostInfo = "SSH connection failed with a timeout error";
+      break;
+
+    default:
+      console.error("Unknown error condition");
+      hostStatus = 'NOTOK';
+      hostInfo = "Unknown error (" + error.status + "), please check ansible-runner-service logs";
+  }
+
+  return {
+    statusText: hostStatus,
+    statusDescription: hostInfo
+  };
 }
 
 /***/ }),
@@ -27740,7 +27772,7 @@ function checkAPI(svcToken) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime */
+/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -27768,6 +27800,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commonSubnets", function() { return commonSubnets; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildSubnetLookup", function() { return buildSubnetLookup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentTime", function() { return currentTime; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "osdCount", function() { return osdCount; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _apicalls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./apicalls.js */ "./src/services/apicalls.js");
@@ -28365,6 +28398,44 @@ function currentTime() {
   /* return current time in 24hr format */
   var d = new Date();
   return d.toLocaleTimeString('en-GB');
+}
+function osdCount(hosts, flashUsage) {
+  // return the number of OSD devices from the hosts array
+  var ctr = 0;
+  var _iteratorNormalCompletion5 = true;
+  var _didIteratorError5 = false;
+  var _iteratorError5 = undefined;
+
+  try {
+    for (var _iterator5 = hosts[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+      var host = _step5.value;
+
+      switch (flashUsage) {
+        case "OSD Data":
+          ctr += host.ssd;
+          break;
+
+        default:
+          ctr += host.hdd;
+      }
+    }
+  } catch (err) {
+    _didIteratorError5 = true;
+    _iteratorError5 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+        _iterator5.return();
+      }
+    } finally {
+      if (_didIteratorError5) {
+        throw _iteratorError5;
+      }
+    }
+  }
+
+  console.log("detected " + ctr + "candidate disks for OSDs");
+  return ctr;
 }
 
 /***/ }),
