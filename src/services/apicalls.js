@@ -10,14 +10,20 @@ const http = cockpit.http({
     }
 });
 
+export function now() {
+    // return time, compatible with the ansible-runner-service log file
+    let t = new Date();
+    return t.toString().split(" ")[4] + "," + t.getMilliseconds();
+}
+
 export function addGroup(groupName, svcToken) {
-    console.log("requesting new group " + groupName);
+    console.log("requesting new group " + groupName + " @ " + now());
     let promise = http.post('/api/v1/groups/' + groupName, null, { Authorization: svcToken });
     return promise;
 }
 
 export function deleteGroup(groupName, svcToken) {
-    console.log("attempting to remove " + groupName + " from the inventory");
+    console.log("attempting to remove " + groupName + " @ " + now());
     let url = "/api/v1/groups/" + groupName;
     return http.request({
         path: url,
@@ -28,13 +34,13 @@ export function deleteGroup(groupName, svcToken) {
 }
 
 export function getGroups(svcToken) {
-    console.log("fetching defined groups");
+    console.log("fetching defined groups @ " + now());
     let promise = http.get('/api/v1/groups', null, { Authorization: svcToken });
     return promise;
 }
 
 export function addHost(hostName, groupNames, svcToken) {
-    console.log("Adding host to the ansible inventory");
+    console.log("Adding host to the ansible inventory @ " + now());
 
     let groups = groupNames.replace(',', '*').split('*');
     let groupString = groups[0];
@@ -49,7 +55,7 @@ export function addHost(hostName, groupNames, svcToken) {
 }
 
 export function deleteHost(hostName, svcToken) {
-    console.log("removing " + hostName + " from the inventory");
+    console.log("removing " + hostName + " from the inventory @ " + now());
     let url = "/api/v1/hosts/" + hostName;
     return http.request({
         path: url,
@@ -60,7 +66,7 @@ export function deleteHost(hostName, svcToken) {
 }
 
 export function changeHost(hostname, role, checked, svctoken) {
-    console.log("changeHost: changing host state for " + hostname + " role=" + role);
+    console.log("changeHost: changing host state for " + hostname + " role=" + role + " @ " + now());
     if (!checked) {
         if (role == 'mons') {
             console.log("requesting mgr to be removed");
@@ -83,13 +89,13 @@ export function changeHost(hostname, role, checked, svctoken) {
 }
 
 export function addRole(hostName, roleName, svcToken) {
-    console.log("Adding role " + roleName + " to " + hostName);
+    console.log("Adding role " + roleName + " to " + hostName + " @ " + now());
     let url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
     return http.post(url, null, { Authorization: svcToken });
 }
 
 export function removeRole(hostName, roleName, svcToken) {
-    console.log("Removing role " + roleName + " from " + hostName);
+    console.log("Removing role " + roleName + " from " + hostName + " @ " + now());
     let url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
     return http.request({
         path: url,
@@ -100,13 +106,13 @@ export function removeRole(hostName, roleName, svcToken) {
 }
 
 export function runPlaybook(playbookName, data, svcToken) {
-    console.log("starting playbook " + playbookName);
+    console.log("starting playbook " + playbookName + " @ " + now());
     let url = "/api/v1/playbooks/" + playbookName;
     return http.post(url, data, { Authorization: svcToken });
 }
 
 export function getPlaybookState(playUUID, svcToken) {
-    console.log("checking playbook with UUID " + playUUID);
+    console.log("checking playbook with UUID " + playUUID + " @ " + now());
     let url = "/api/v1/playbooks/" + playUUID;
     return http.get(url, null, { Authorization: svcToken });
 }
@@ -130,18 +136,18 @@ export function getJobEvent(playUUID, eventUUID, svcToken) {
 }
 
 export function storeGroupVars(groupName, vars, svcToken) {
-    console.log("Storing group vars for group " + groupName);
+    console.log("Storing group vars for group " + groupName + " @ " + now());
     let url = "/api/v1/groupvars/" + groupName;
     return http.post(url, vars, { Authorization: svcToken });
 }
 
 export function storeHostVars(hostName, groupName, vars, svcToken) {
-    console.log("storing host vars for host " + hostName);
+    console.log("storing host vars for host " + hostName + " @ " + now());
     let url = "/api/v1/hostvars/" + hostName + "/groups/" + groupName;
     return http.post(url, vars, { Authorization: svcToken });
 }
 
 export function checkAPI(svcToken) {
-    console.log("checking API is there");
+    console.log("checking API is there @ " + now());
     return http.get("api", null, {Authorization: svcToken});
 }
