@@ -1,6 +1,6 @@
 Name: ceph-installer
-Version: %{_version}
-Release: 1%{?dist}
+Version: 0.8
+Release: 5%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
@@ -38,7 +38,7 @@ if [ "$1" = 1 ]; then
   cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-container.yml 
 
 # TODO: Could change ansible-runner-service target_user parm = ceph (default will be root)
-#       i.d add the parameter and restart runner-service daemon
+#       i.e add the parameter and restart runner-service daemon
 fi
 
 
