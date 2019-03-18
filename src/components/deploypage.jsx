@@ -16,7 +16,7 @@ export class DeployPage extends React.Component {
         super(props);
         this.state = {
             deployEnabled: true,
-            deployBtnText: 'Deploy',
+            deployBtnText: 'Save',
             statusMsg: '',
             deployActive: false,
             settings: {},
@@ -239,24 +239,7 @@ export class DeployPage extends React.Component {
         });
     }
 
-    deployBtnHandler = () => {
-        // user clicked deploy/Complete or retry button (multi-personality syndrome)
-        console.log("User clicked the Deploy/Complete/Retry button");
-        if (this.state.deployBtnText == 'Complete') {
-            this.fetchCephState();
-            return;
-        }
-
-        console.log("current app state is;");
-        console.log(JSON.stringify(this.state.settings));
-        this.reset();
-        this.setState({
-            deployActive: true,
-            deployBtnText: 'Running',
-            deployEnabled: false,
-        });
-
-        this.props.deployHandler(); // turns of the navigation bar
+    storeAnsibleVars = () => {
         console.log("Creating the hostvars and groupvars variables");
         let roleList = buildRoles(this.state.settings.hosts);
         console.log("Generating variables for roles " + roleList);
@@ -307,15 +290,39 @@ export class DeployPage extends React.Component {
                 }
             }
         }
-
-        chain = chain.then(() => {
-            console.log("hostvars and groupvars in place");
-            this.startPlaybook();
-        });
-
+        chain.then(() => this.setState({deployBtnText: "Deploy"}));
         chain.catch(err => {
-            console.error("problem creating group vars files: " + err);
+            console.error("Problem creating group vars files: " + err);
+            this.props.modalHandler("Unable to create Ansible Variables",
+                                    "Failed to create the Ansible hostvars/groupvars files. Use the error messages " +
+                                    "in the web browsers console log to determine failure");
         });
+    }
+
+    deployBtnHandler = () => {
+        // user clicked deploy/Complete or retry button (multi-personality syndrome)
+        console.log("User clicked the Save/Deploy/Complete/Retry button");
+        console.log("current app state is;");
+        console.log(JSON.stringify(this.state.settings));
+
+        switch (this.state.deployBtnText) {
+        case "Complete":
+            this.fetchCephState();
+            break;
+        case "Save":
+            this.storeAnsibleVars();
+            break;
+        case "Deploy":
+        case "Retry":
+            this.props.deployHandler(); // turns on deployStarted flag
+            this.reset();
+            this.setState({
+                deployActive: true,
+                deployBtnText: 'Running',
+                deployEnabled: false,
+            });
+            this.startPlaybook();
+        }
     }
 
     startPlaybook = () => {
@@ -424,6 +431,11 @@ export class DeployPage extends React.Component {
         }
     }
 
+    previousPage = () => {
+        this.setState({deployBtnText: "Save"});
+        this.props.prevPage();
+    }
+
     render() {
         console.log("in deploypage render method");
 
@@ -461,7 +473,8 @@ export class DeployPage extends React.Component {
             <div id="deploy" className={this.props.className}>
 
                 <h3>6. Deploy the Cluster</h3>
-                You are now ready to start the deployment process. <br />
+                You are now ready to start the deployment process. Click 'Save' to commit your choices, then 'Deploy' to begin the
+                installation process. <br />
                 <table className="runtime-table">
                     <tbody>
                         <tr>
@@ -499,7 +512,7 @@ export class DeployPage extends React.Component {
                 </div>
                 <div className="nav-button-container">
                     <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
-                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.deployEnabled} action={this.props.prevPage} />
+                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.deployEnabled} action={this.previousPage} />
                 </div>
             </div>
         );

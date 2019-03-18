@@ -84,6 +84,7 @@ export function allVars (vars) {
         forYML.ceph_repository = "community";
         forYML.ceph_origin = "repository";
         forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
+        forYML.ceph_stable_release = vars.targetVersion.split('(')[1].slice(0, -1).toLowerCase(); // nautilus
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
@@ -108,6 +109,7 @@ export function allVars (vars) {
         if (forYML.ceph_repository === "rhcs") {
             forYML.ceph_repository_type = "cdn";
         }
+        forYML.containerized_deployment = false;
     }
 
     if (vars.rgwNetwork != '') {
