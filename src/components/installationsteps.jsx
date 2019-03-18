@@ -20,7 +20,7 @@ export class InstallationSteps extends React.Component {
             lastPage: 0,
             hosts: [],
             sourceType: "Red Hat",
-            targetVersion: "RHCS 3.1",
+            targetVersion: "RHCS 3",
             clusterType: "Production",
             installType: "RPM",
             networkType: 'ipv4',
@@ -129,11 +129,13 @@ export class InstallationSteps extends React.Component {
 
     prevPageHandler = (param) => {
         console.log("return to prior page");
-        if (param.constructor === {}.constructor) {
-            console.log("received " + JSON.stringify(param));
+        if (param != undefined) {
+            if (param.constructor === {}.constructor) {
+                console.log("received " + JSON.stringify(param));
+                this.updateState(param);
+            }
         }
 
-        this.updateState(param);
         let current = this.state.pageNum;
         this.setState({
             pageNum: current - 1,
