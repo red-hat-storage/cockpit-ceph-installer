@@ -78,7 +78,7 @@ export class ValidatePage extends React.Component {
                 Object.assign(host, obj);
                 localState[i] = host;
                 let currentCount = this.state.probedCount + 1;
-                let level = (currentCount === localState.length) ? "success" : "info";
+                let level = (currentCount === localState.length) ? "success" : "active";
 
                 this.setState({
                     hosts: localState,
@@ -143,7 +143,7 @@ export class ValidatePage extends React.Component {
             pendingProbe: false,
             ready: false,
             probedCount: 0,
-            msgLevel: 'info',
+            msgLevel: 'active',
             msgText: "0/" + this.state.hosts.length + " probes complete",
             probeStatusMsg: "0/" + this.state.hosts.length + " probes complete"
         });
@@ -198,6 +198,29 @@ export class ValidatePage extends React.Component {
 
                     console.log("starting progress tracker");
                     checkPlaybook(playUUID, this.props.svctoken, this.updateProbeStatus, this.probeComplete);
+                })
+                .catch((e) => {
+                    let errorMsg;
+                    console.error("Problem starting the playbook: response was - " + JSON.stringify(e));
+                    if (e.hasOwnProperty('status')) {
+                        // API returned a bad state
+                        switch (e.status) {
+                        case 404:
+                            errorMsg = "checkrole.yml file is missing. Install the file, then retry";
+                            break;
+                        default:
+                            errorMsg = "Error response from API service (" + e.status + "). Check API service log for more information";
+                        }
+                    } else {
+                        // no status attribute = API was not there.
+                        errorMsg = "Ansible service API unavailable. Try again after starting the service";
+                    }
+                    this.setState({
+                        probeEnabled: true,
+                        pendingProbe: true,
+                        msgLevel: 'error',
+                        msgText: errorMsg
+                    });
                 });
 
         this.setState({
