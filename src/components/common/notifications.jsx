@@ -31,6 +31,10 @@ export class Notification extends React.Component {
             msgClass = "alert alert-success";
             msgIcon = "pficon pficon-ok";
             break;
+        case "active":
+            msgClass = "alert alert-info";
+            msgIcon = "pficon spinner spinner-sm";
+            break;
         default:
             msgClass = "alert alert-info";
             msgIcon = "pficon pficon-info";
