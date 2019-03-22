@@ -198,9 +198,28 @@ export class HostsPage extends React.Component {
                                             });
                                 });
                             })
-                            .catch(err => console.error("create groups problem :" + err + ", " + err.message));
+                            .catch(err => {
+                                console.error("create groups problem :" + err + ", " + err.message);
+                                this.setState({
+                                    msgLevel: 'error',
+                                    msgText: "Unable to create ansible groups. Please check the ansible runner service log for more details"
+                                });
+                            });
                 })
-                .fail(error => console.error('Problem fetching group list' + error));
+                .fail(error => {
+                    console.error('Problem fetching group list: ' + error);
+                    let errorMsg;
+                    if (error.hasOwnProperty("status")) {
+                        errorMsg = "Unexpected API response (" + error.status + ") : " + error.message;
+                    } else {
+                        errorMsg = "Unable to fetch ansible groups. Check that the ansible API service is running";
+                    }
+
+                    this.setState({
+                        msgLevel: "error",
+                        msgText: errorMsg
+                    });
+                });
     }
 
     retryHost = (hostName) => {
@@ -477,8 +496,8 @@ export class HostsPage extends React.Component {
                 <h3>2. Host Definition</h3>
                 <p>Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be
                  expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless
-                 SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to
-                 resolve the issue and remove/re-add the host.</p>
+                 SSH is verified, with any errors detected shown below. Hosts in a 'NOTOK' state, will need to be resolved
+                 by either selecting <i>Retry</i> or <i>Delete</i> from the row's action icon.</p>
                 <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
                 <GenericModal
                     show={this.state.modalVisible}

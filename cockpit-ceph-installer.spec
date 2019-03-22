@@ -1,6 +1,6 @@
 Name: ceph-installer
 Version: 0.8
-Release: 6%{?dist}
+Release: 7%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
@@ -47,7 +47,10 @@ fi
 %{_datadir}/metainfo/*
 
 %changelog
-* Sun Mar 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.8.6
+* Thu Mar 21 2019 Paul Cuzner <pcuzner@redhat.com> 0.8-7
+- Return error if the probe task fails in some way
+- Add visual cue (spinner) when the probe task is running
+* Sun Mar 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.8-6
 - Added 'save' step in deploy workflow, enabling ansible vars to be manually updated
 * Sun Dec 16 2018 Paul Cuzner <pcuzner@redhat.com> 0.8
 - Initial rpm build
