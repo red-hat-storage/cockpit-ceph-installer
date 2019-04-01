@@ -67,10 +67,19 @@ export function osdsVars (vars) {
         }
     }
 
-    if (mixed && vars.flashUsage.startsWith("Journal")) {
-        forYML.osd_scenario = 'non-collocated';
-    } else {
-        forYML.osd_scenario = "collocated";
+    switch (vars.targetVersion) {
+    case "RHCS 4":
+    case "14 (Nautilus)":
+        // ceph-volume based OSDs
+        forYML.osd_scenario = 'lvm';
+        break;
+    default:
+        // Older Ceph versions based on ceph-disk not ceph-volume
+        if (mixed && vars.flashUsage.startsWith("Journal")) {
+            forYML.osd_scenario = 'non-collocated';
+        } else {
+            forYML.osd_scenario = "collocated";
+        }
     }
 
     return forYML;
