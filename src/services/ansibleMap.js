@@ -163,29 +163,15 @@ export function monsVars (vars) {
 export function mgrsVars (vars) {
     let forYML = {};
 
-    const community_dashboard_versions = ["13", "14"];
-    const rhcs_dashboard_versions = ["4"];
+    let module_map = {
+        "12 (Luminous)" : ["prometheus", "status"],
+        "13 (Mimic)" : ["prometheus", "status", "dashboard"],
+        "14 (Nautilus)" : ["prometheus", "status", "dashboard", "pg_autoscaler"],
+        "RHCS 3": ["prometheus", "status"],
+        "RHCS 4": ["prometheus", "status", "dashboard", "pg_autoscaler"]
+    };
 
-    switch (vars.sourceType) {
-    case "Community":
-        if (community_dashboard_versions.includes(vars.targetVersion.split(' ')[0])) {
-            forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
-        } else {
-            forYML.ceph_mgr_modules = ["status", "prometheus"];
-        }
-        break;
-
-    case "Red Hat":
-        if (rhcs_dashboard_versions.includes(vars.targetVersion.split(' ')[1])) {
-            forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
-        } else {
-            forYML.ceph_mgr_modules = ["status", "prometheus"];
-        }
-        break;
-
-    default:
-        forYML.ceph_mgr_modules = ["status", "prometheus"];
-    }
+    forYML.ceph_mgr_modules = module_map[vars.targetVersion];
 
     return forYML;
 }
