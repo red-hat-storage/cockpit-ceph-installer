@@ -94,11 +94,17 @@ export function allVars (vars) {
         forYML.ceph_origin = "repository";
         forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
         forYML.ceph_stable_release = vars.targetVersion.split('(')[1].slice(0, -1).toLowerCase(); // nautilus
+        if (forYML.ceph_stable_release == 'nautilus') {
+            forYML.dashboard_enabled = true;
+        }
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
         forYML.ceph_origin = "repository";
         forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
+        if (forYML.ceph_rhcs_version == '4') {
+            forYML.dashboard_enabled = true;
+        }
         break;
     case "Distribution":
         forYML.ceph_origin = "distro";
