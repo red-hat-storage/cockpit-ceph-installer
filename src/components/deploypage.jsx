@@ -445,7 +445,7 @@ export class DeployPage extends React.Component {
         msgText = this.state.status.msg.charAt(0).toUpperCase() + this.state.status.msg.slice(1);
         switch (this.state.status.msg) {
         case "failed":
-            msgClass = "runtime-table-value align-left errorText";
+            msgClass = "runtime-table-value align-left errorText bold-text";
             break;
         case "successful":
             msgClass = "runtime-table-value align-left success";
