@@ -49,50 +49,58 @@ export class ValidatePage extends React.Component {
         console.log("processing event data for " + eventData.remote_addr);
         let eventHostname = eventData.remote_addr;
         let localState = JSON.parse(JSON.stringify(this.state.hosts));
-        let facts = eventData.res.data.summary_facts;
+        let probeTotal = localState.length - hostsWithRoleCount(localState, 'metrics');
+        if (!eventData.res.hasOwnProperty('data')) {
+            console.log("Skipping " + eventHostname + ", no data returned");
+        } else {
+            let facts = eventData.res.data.summary_facts;
 
-        let obj = {};
-        obj['vendor'] = facts.vendor;
-        obj['model'] = facts.model;
-        obj['cpuType'] = facts.cpu_type;
-        obj['subnets'] = facts.network.subnets;
-        obj['subnet_details'] = facts.network.subnet_details;
-        obj['hdd_devices'] = Object.keys(facts.hdd);
-        obj['hdd'] = obj.hdd_devices.length;
-        obj['ssd_devices'] = Object.keys(facts.ssd);
-        obj['ssd'] = obj.ssd_devices.length;
-        obj['capacity'] = facts.capacity;
-        obj['cpu'] = facts.cpu_core_count;
-        obj['ram'] = Math.round(facts.ram_mb / 1024);
+            let obj = {};
+            obj['vendor'] = facts.vendor;
+            obj['model'] = facts.model;
+            obj['cpuType'] = facts.cpu_type;
+            obj['subnets'] = facts.network.subnets;
+            obj['subnet_details'] = facts.network.subnet_details;
+            obj['hdd_devices'] = Object.keys(facts.hdd);
+            obj['hdd'] = obj.hdd_devices.length;
+            obj['ssd_devices'] = Object.keys(facts.ssd);
+            obj['ssd'] = obj.ssd_devices.length;
+            obj['capacity'] = facts.capacity;
+            obj['cpu'] = facts.cpu_core_count;
+            obj['ram'] = Math.round(facts.ram_mb / 1024);
 
-        console.log(JSON.stringify(eventData.res.data.status));
-        obj['ready'] = eventData.res.data.status;
-        obj['msgs'] = eventData.res.data.status_msgs;
-
-        obj['nic'] = countNICs(facts);
-
-        for (let i = 0; i < localState.length; i++) {
-            let host = localState[i];
-            if (host.hostname == eventHostname) {
-                console.log("updating state");
-                Object.assign(host, obj);
-                localState[i] = host;
-                let currentCount = this.state.probedCount + 1;
-                let level = (currentCount === localState.length) ? "success" : "active";
-
-                this.setState({
-                    hosts: localState,
-                    probedCount: currentCount,
-                    msgLevel: level,
-                    msgText: currentCount + "/" + localState.length + " probes complete",
-                    probeStatusMsg: currentCount + "/" + localState.length + " probes complete"
-                });
-                console.log("updating notification message " + currentCount);
-                break;
+            console.log(JSON.stringify(eventData.res.data.status));
+            obj['ready'] = eventData.res.data.status;
+            if (eventData.res.data.status.toLowerCase() == 'ok') {
+                obj['selected'] = true;
             }
-        }
+            obj['msgs'] = eventData.res.data.status_msgs;
 
-        this.roleSummary = JSON.stringify(allRoles(this.state.hosts));
+            obj['nic'] = countNICs(facts);
+
+            for (let i = 0; i < localState.length; i++) {
+                let host = localState[i];
+                if (host.hostname == eventHostname) {
+                    console.log("updating state");
+                    Object.assign(host, obj);
+                    localState[i] = host;
+                    let currentCount = this.state.probedCount + 1;
+                    let level = (currentCount === probeTotal) ? "success" : "active";
+
+                    this.setState({
+                        hosts: localState,
+                        probedCount: currentCount,
+                        msgLevel: level,
+                        msgText: currentCount + "/" + probeTotal + " probes complete",
+                        probeStatusMsg: currentCount + "/" + probeTotal + " probes complete"
+                    });
+                    console.log("updating notification message " + currentCount);
+                    break;
+                }
+            }
+
+            this.roleSummary = JSON.stringify(allRoles(this.state.hosts));
+        }
         // this.probeSummary = JSON.stringify(this.state.hosts);
     }
 
@@ -138,14 +146,15 @@ export class ValidatePage extends React.Component {
 
     probeHosts = () => {
         console.log("Request to probe hosts received");
+        let probeTotal = this.state.hosts.length - hostsWithRoleCount(this.state.hosts, 'metrics');
         this.setState({
             probeEnabled: false,
             pendingProbe: false,
             ready: false,
             probedCount: 0,
             msgLevel: 'active',
-            msgText: "0/" + this.state.hosts.length + " probes complete",
-            probeStatusMsg: "0/" + this.state.hosts.length + " probes complete"
+            msgText: "0/" + probeTotal + " probes complete",
+            probeStatusMsg: "0/" + probeTotal + " probes complete"
         });
 
         console.log("remove the status info for all the hosts");
@@ -160,7 +169,10 @@ export class ValidatePage extends React.Component {
         // pass it to the api request
         var rolesByHost = {};
         this.state.hosts.forEach((host, idx, hosts) => {
-            rolesByHost[host.hostname] = buildRoles([host]).join(',');
+            // ignore the metrics host for the probe
+            if (!host.metrics) {
+                rolesByHost[host.hostname] = buildRoles([host]).join(',');
+            }
         });
         console.log("roles :" + JSON.stringify(rolesByHost));
         // call the playbook
@@ -360,7 +372,7 @@ export class ValidatePage extends React.Component {
         }
 
         for (let i = 0; i < this.state.hosts.length; i++) {
-            if (this.state.hosts[i].selected) {
+            if ((this.state.hosts[i].selected) || (this.state.hosts[i]['metrics'])) {
                 candidateHosts.push(JSON.parse(JSON.stringify(this.state.hosts[i])));
             } else {
                 hostsToDelete.push(this.state.hosts[i].hostname);
@@ -478,11 +490,14 @@ export class ValidatePage extends React.Component {
         var nextButtonClass;
         if (this.state.hosts.length > 0) {
             rows = this.state.hosts.map(host => {
-                return <HostDiscoveryRow
-                            key={host.hostname}
-                            hostData={host}
-                            updateRole={this.updateRole}
-                            callback={this.toggleSingleRow} />;
+                // only show ceph nodes, ignoring the metrics host
+                if (!host.metrics) {
+                    return <HostDiscoveryRow
+                        key={host.hostname}
+                        hostData={host}
+                        updateRole={this.updateRole}
+                        callback={this.toggleSingleRow} />;
+                }
             });
         } else {
             rows = (<tbody />); // emptyRow();
@@ -495,7 +510,7 @@ export class ValidatePage extends React.Component {
             <div id="validate" className={this.props.className} >
                 <h3>3. Validate Host Selection</h3>
                 The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
-                 probe the hosts to validate that their hardware configuration is compatible with
+                 probe the hosts that Ceph will use to validate that their hardware configuration is compatible with
                  their intended Ceph role. Once the probe is complete you must select the hosts to
                  use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
                 <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
