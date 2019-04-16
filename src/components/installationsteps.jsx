@@ -30,6 +30,7 @@ export class InstallationSteps extends React.Component {
             publicNetwork: '',
             clusterNetwork: '',
             rgwNetwork:'',
+            metricsHost: '',
             deployStarted: false
             // startTime: '',
             // endTime: '',
@@ -73,6 +74,12 @@ export class InstallationSteps extends React.Component {
     deployHandler = () => {
         // invoked when the user clicks on deploy
         this.setState({deployStarted: true});
+    }
+
+    setMetricsHost = (hostname) => {
+        this.setState({
+            metricsHost: hostname
+        });
     }
 
     updateState = (param) => {
@@ -191,8 +198,10 @@ export class InstallationSteps extends React.Component {
                     <HostsPage
                         className={this.page['hosts']}
                         action={this.nextHandler}
+                        metricsHostHandler={this.setMetricsHost}
                         prevPage={this.prevPageHandler}
                         hosts={this.state.hosts}
+                        targetVersion={this.state.targetVersion}
                         installType={this.state.installType}
                         clusterType={this.state.clusterType}
                         svctoken={this.props.svctoken} />
