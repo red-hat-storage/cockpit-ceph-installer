@@ -12,6 +12,7 @@ export class NetworkPage extends React.Component {
             clusterNetwork: '',
             rgwNetwork: ''
         };
+        this.cephHosts = [];
         this.internalNetworks = []; // suitable for cluster connectivity
         this.externalNetworks = []; // shared across all nodes
         this.s3Networks = []; // common to Radosgw hosts
@@ -23,18 +24,26 @@ export class NetworkPage extends React.Component {
             // the page is active, so refresh the items with updated props
             // from the parent
 
+            for (let idx = 0; idx < props.hosts.length; idx++) {
+                if (props.hosts[idx]['metrics']) {
+                    continue;
+                } else {
+                    this.cephHosts.push(props.hosts[idx]);
+                }
+            }
+
             console.log("setting subnet array state variables");
-            this.internalNetworks = commonSubnets(props.hosts, 'osd');
-            this.externalNetworks = commonSubnets(props.hosts, 'all');
-            this.subnetLookup = buildSubnetLookup(props.hosts);
+            this.internalNetworks = commonSubnets(this.cephHosts, 'osd');
+            this.externalNetworks = commonSubnets(this.cephHosts, 'all');
+            this.subnetLookup = buildSubnetLookup(this.cephHosts);
             let netState = {};
 
             netState['clusterNetwork'] = this.internalNetworks[0];
             netState['publicNetwork'] = this.externalNetworks[0];
 
-            if (buildRoles(props.hosts).includes('rgws')) {
+            if (buildRoles(this.cephHosts).includes('rgws')) {
                 console.log("determining the rgw networks");
-                this.s3Networks = commonSubnets(props.hosts, 'rgw');
+                this.s3Networks = commonSubnets(this.cephHosts, 'rgw');
                 netState['rgwNetwork'] = this.s3Networks[0];
             } else {
                 console.log("no rgw role seen across the hosts");
@@ -74,7 +83,7 @@ export class NetworkPage extends React.Component {
                         subnets={this.internalNetworks}
                         name="clusterNetwork"
                         lookup={this.subnetLookup}
-                        hosts={this.props.hosts}
+                        hosts={this.cephHosts}
                         updateHandler={this.updateHandler} />
                     <NetworkOptions
                         title="Public Network"
@@ -82,7 +91,7 @@ export class NetworkPage extends React.Component {
                         subnets={this.externalNetworks}
                         name="publicNetwork"
                         lookup={this.subnetLookup}
-                        hosts={this.props.hosts}
+                        hosts={this.cephHosts}
                         updateHandler={this.updateHandler} />
                     <NetworkOptions
                         title="S3 Client Network"
@@ -90,7 +99,7 @@ export class NetworkPage extends React.Component {
                         subnets={this.s3Networks}
                         name="rgwNetwork"
                         lookup={this.subnetLookup}
-                        hosts={this.props.hosts}
+                        hosts={this.cephHosts}
                         updateHandler={this.updateHandler} />
                 </div>
                 <div className="nav-button-container">
