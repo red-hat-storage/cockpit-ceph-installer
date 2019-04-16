@@ -21557,15 +21557,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var emptyRow = function emptyRow() {
-  return (// <tbody>
-    react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", {
-      className: "emptyTable"
-    }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-      colSpan: "9",
-      className: "emptyTable"
-    }, "No Hosts Defined")) // </tbody>
-
-  );
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", {
+    colSpan: "10",
+    className: "emptyRow"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+    colSpan: "10",
+    className: "emptyCell"
+  }, "No Hosts Defined"));
 };
 
 /***/ }),
@@ -22004,6 +22002,11 @@ function (_React$Component) {
         case "success":
           msgClass = "alert alert-success";
           msgIcon = "pficon pficon-ok";
+          break;
+
+        case "active":
+          msgClass = "alert alert-info";
+          msgIcon = "pficon spinner spinner-sm";
           break;
 
         default:
@@ -22786,30 +22789,7 @@ function (_React$Component) {
       });
     });
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deployBtnHandler", function () {
-      // user clicked deploy/Complete or retry button (multi-personality syndrome)
-      console.log("User clicked the Deploy/Complete/Retry button");
-
-      if (_this.state.deployBtnText == 'Complete') {
-        _this.fetchCephState();
-
-        return;
-      }
-
-      console.log("current app state is;");
-      console.log(JSON.stringify(_this.state.settings));
-
-      _this.reset();
-
-      _this.setState({
-        deployActive: true,
-        deployBtnText: 'Running',
-        deployEnabled: false
-      });
-
-      _this.props.deployHandler(); // turns of the navigation bar
-
-
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "storeAnsibleVars", function () {
       console.log("Creating the hostvars and groupvars variables");
       var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])(_this.state.settings.hosts);
       console.log("Generating variables for roles " + roleList);
@@ -22923,14 +22903,51 @@ function (_React$Component) {
         }
       }
 
-      chain = chain.then(function () {
-        console.log("hostvars and groupvars in place");
-
-        _this.startPlaybook();
+      chain.then(function () {
+        return _this.setState({
+          deployBtnText: "Deploy"
+        });
       });
       chain.catch(function (err) {
-        console.error("problem creating group vars files: " + err);
+        console.error("Problem creating group vars files: " + err);
+
+        _this.props.modalHandler("Unable to create Ansible Variables", "Failed to create the Ansible hostvars/groupvars files. Use the error messages " + "in the web browsers console log to determine failure");
       });
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deployBtnHandler", function () {
+      // user clicked deploy/Complete or retry button (multi-personality syndrome)
+      console.log("User clicked the Save/Deploy/Complete/Retry button");
+      console.log("current app state is;");
+      console.log(JSON.stringify(_this.state.settings));
+
+      switch (_this.state.deployBtnText) {
+        case "Complete":
+          _this.fetchCephState();
+
+          break;
+
+        case "Save":
+          _this.storeAnsibleVars();
+
+          break;
+
+        case "Deploy":
+        case "Retry":
+          _this.props.deployHandler(); // turns on deployStarted flag
+
+
+          _this.reset();
+
+          _this.setState({
+            deployActive: true,
+            deployBtnText: 'Running',
+            deployEnabled: false
+          });
+
+          _this.startPlaybook();
+
+      }
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "startPlaybook", function () {
@@ -23064,9 +23081,17 @@ function (_React$Component) {
       }
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "previousPage", function () {
+      _this.setState({
+        deployBtnText: "Save"
+      });
+
+      _this.props.prevPage();
+    });
+
     _this.state = {
       deployEnabled: true,
-      deployBtnText: 'Deploy',
+      deployBtnText: 'Save',
       statusMsg: '',
       deployActive: false,
       settings: {},
@@ -23189,7 +23214,7 @@ function (_React$Component) {
 
       switch (this.state.status.msg) {
         case "failed":
-          msgClass = "runtime-table-value align-left errorText";
+          msgClass = "runtime-table-value align-left errorText bold-text";
           break;
 
         case "successful":
@@ -23219,7 +23244,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         id: "deploy",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", null, "6. Deploy the Cluster"), "You are now ready to start the deployment process. ", react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("table", {
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", null, "6. Deploy the Cluster"), "You are now ready to start the deployment process. Click 'Save' to commit your choices, then 'Deploy' to begin the installation process. ", react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("table", {
         className: "runtime-table"
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("td", {
         className: "runtime-table-label"
@@ -23282,7 +23307,7 @@ function (_React$Component) {
       }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_2__["UIButton"], {
         btnLabel: "\u2039 Back",
         disabled: !this.state.deployEnabled,
-        action: this.props.prevPage
+        action: this.previousPage
       })));
     }
   }]);
@@ -23961,6 +23986,28 @@ function (_React$Component) {
       var usable = true;
       var errMsgs = [];
 
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.targetVersion)) {
+        var metricsHost = '';
+
+        for (var idx = 0; idx < _this.state.hosts.length; idx++) {
+          if (_this.state.hosts[idx]['metrics']) {
+            metricsHost = _this.state.hosts[idx]['hostname'];
+            break;
+          }
+        }
+
+        if (metricsHost) {
+          _this.props.metricsHostHandler(metricsHost);
+        } else {
+          _this.setState({
+            msgLevel: 'error',
+            msgText: "To continue you must provide a host for metrics (grafana/prometheus)"
+          });
+
+          return;
+        }
+      }
+
       if (_this.state.hosts.length > 0) {
         // we must have hosts to process before moving on to validation
         var hostOKCount = 0;
@@ -24135,10 +24182,27 @@ function (_React$Component) {
             });
           });
         }).catch(function (err) {
-          return console.error("create groups problem :" + err + ", " + err.message);
+          console.error("create groups problem :" + err + ", " + err.message);
+
+          _this.setState({
+            msgLevel: 'error',
+            msgText: "Unable to create ansible groups. Please check the ansible runner service log for more details"
+          });
         });
       }).fail(function (error) {
-        return console.error('Problem fetching group list' + error);
+        console.error('Problem fetching group list: ' + error);
+        var errorMsg;
+
+        if (error.hasOwnProperty("status")) {
+          errorMsg = "Unexpected API response (" + error.status + ") : " + error.message;
+        } else {
+          errorMsg = "Unable to fetch ansible groups. Check that the ansible API service is running";
+        }
+
+        _this.setState({
+          msgLevel: "error",
+          msgText: errorMsg
+        });
       });
     });
 
@@ -24210,11 +24274,23 @@ function (_React$Component) {
       var localState = _this.state.hosts.splice(0);
 
       console.log("current hosts are: " + JSON.stringify(_this.state.hosts));
+      var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["getHost"])(localState, hostname);
 
       if (checked) {
-        var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["getHost"])(localState, hostname);
+        // host role has been checked
         console.log("host is: " + JSON.stringify(hostObject));
         var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([hostObject]);
+
+        if (role == "metrics" && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') > 0) {
+          _this.setState({
+            msgLevel: 'error',
+            msgText: "Only one host can hold the metrics role"
+          });
+
+          _this.updateState(localState);
+
+          return;
+        }
 
         if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
           console.log("current hosts are: " + JSON.stringify(localState));
@@ -24228,12 +24304,38 @@ function (_React$Component) {
 
           return;
         } else {
-          console.log("should turn of any collocation error message"); // this.setState({
-          //     msgLevel: 'info',
-          //     msgText: ''
-          // });
+          // collocation is OK, but are there any other issues to look for?
+          if (role == 'metrics' && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') == 1) {
+            _this.setState({
+              msgLevel: 'error',
+              msgText: "Only one host may have the metrics role"
+            });
+
+            _this.updateState(localState);
+
+            return;
+          }
+        }
+      } else {
+        // host role has been unchecked
+        console.log("unchecking a role");
+
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["activeRoleCount"])(hostObject) == 1) {
+          _this.setState({
+            msgLevel: 'error',
+            msgText: "Hosts must have at least one role. To remove the host, select 'Delete' from the action menu"
+          });
+
+          _this.updateState(localState);
+
+          return;
         }
       }
+
+      _this.setState({
+        msgLevel: 'info',
+        msgText: ''
+      });
 
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, _this.props.svctoken);
     });
@@ -24360,6 +24462,8 @@ function (_React$Component) {
       console.log("Show add hosts modal");
 
       _this.setState({
+        msgLevel: 'info',
+        msgText: '',
         addHostsVisible: true
       }); // this.hostMaskInput.current.focus();
 
@@ -24467,7 +24571,8 @@ function (_React$Component) {
     value: function render() {
       var _this2 = this;
 
-      var rows;
+      var rows, metricsClass;
+      metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.targetVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
 
       if (this.state.hosts.length > 0) {
         rows = this.state.hosts.map(function (host) {
@@ -24477,6 +24582,7 @@ function (_React$Component) {
             roleChange: _this2.updateHost,
             deleteRow: _this2.deleteHost,
             retryHost: _this2.retryHost,
+            targetVersion: _this2.props.targetVersion,
             modal: _this2.showModal
           });
         });
@@ -24487,7 +24593,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "hosts",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "2. Host Definition"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless SSH is verified, with any errors detected shown below. If a host is in a NOTOK state, you will need to resolve the issue and remove/re-add the host."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__["Notification"], {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "2. Host Definition"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Hostnames or hostname masks can be used to assign roles to specific hosts. Click 'Add Hosts' to define the hosts and roles. This process checks that the hosts can be reached, and the roles requested align to best practice collocation rules. All hosts listed here, must be in an 'OK' state in order to continue. To remove or retry connectivity to a host, use the row's action icon."), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__["Notification"], {
         ref: "validationMessage",
         msgLevel: this.state.msgLevel,
         msgText: this.state.msgText
@@ -24498,8 +24604,10 @@ function (_React$Component) {
         closeHandler: this.hideModal
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(HostMask, {
         show: this.state.addHostsVisible,
+        hosts: this.state.hosts,
         callback: this.addHostsToTable,
         clusterType: this.props.clusterType,
+        targetVersion: this.props.targetVersion,
         closeHandler: this.hideAddHosts,
         installType: this.props.installType
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -24529,6 +24637,8 @@ function (_React$Component) {
       }, "rgw"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
         className: "textCenter thRoleWidth"
       }, "iscsi"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+        className: metricsClass
+      }, "metrics"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
         className: "textCenter thStatusWidth"
       }, "Status"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
         className: "leftAligned thHostInfo"
@@ -24617,6 +24727,7 @@ function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
+      var metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.targetVersion) ? "thMetricsWidth visible-cell" : "hidden";
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "thHostname"
       }, this.colorify(this.state.host.hostname)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
@@ -24648,6 +24759,12 @@ function (_React$Component2) {
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
         role: "iscsi",
         checked: this.state.host.iscsi,
+        callback: this.hostRoleChange
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        className: metricsClass
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
+        role: "metrics",
+        checked: this.state.host.metrics,
         callback: this.hostRoleChange
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "textCenter hostStatusCell"
@@ -24815,6 +24932,7 @@ function (_React$Component4) {
         osd: false,
         rgw: false,
         iscsi: false,
+        metrics: false,
         hostmask: '',
         hostmaskOK: false,
         msgLevel: 'info',
@@ -24827,7 +24945,7 @@ function (_React$Component4) {
 
       if (checkedState) {
         console.log("need to check collocation rules");
-        var roles = ['mon', 'mds', 'osd', 'rgw', 'iscsi'];
+        var roles = ['mon', 'mds', 'osd', 'rgw', 'iscsi', 'metrics'];
         var currentRoles = [];
         roles.forEach(function (role) {
           if (_this5.state[role]) {
@@ -24841,10 +24959,41 @@ function (_React$Component4) {
 
           _this5.setState({
             msgLevel: 'error',
-            msgText: 'Collocation of ' + currentRoles.join(', ') + " is not allowed "
+            msgText: 'Collocation of ' + currentRoles.join(', ') + " with " + roleName + " is not allowed."
           });
 
           return;
+        } else {
+          if (roleName == 'metrics') {
+            // check that the hostname is explicit
+            console.log("check that the hostname " + _this5.state.hostmask + " is explicit");
+
+            if (_this5.state.hostmask.includes('[') || _this5.state.hostmask.includes("]")) {
+              _this5.setState({
+                msgLevel: 'error',
+                msgText: "A metrics role can only be applied to a single host, a range is not supported"
+              });
+
+              return;
+            }
+
+            console.log("check that the metrics role hasn't already been selected");
+
+            if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this5.props.hosts, roleName) > 0) {
+              _this5.setState({
+                msgLevel: 'error',
+                msgText: "A metrics role has already been selected"
+              });
+
+              return;
+            }
+          } // turn off any prior error message
+
+
+          _this5.setState({
+            msgLevel: 'info',
+            msgText: ''
+          });
         }
       }
 
@@ -24861,8 +25010,8 @@ function (_React$Component4) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this5)), "checkMaskValid", function () {
-      var i = _this5.props.installType;
-      console.log("type of install " + i);
+      // let i = this.props.installType;
+      console.log("type of install " + _this5.props.installType);
       console.log("state is :" + JSON.stringify(_this5.state));
       console.log("check the mask info is usable to populate the table"); // check that at least one role is selected and we have a hostmask
 
@@ -24888,22 +25037,23 @@ function (_React$Component4) {
         return;
       }
 
-      var flags = ['mon', 'mds', 'osd', 'rgw', 'iscsi'];
-      var rolesOK = false;
+      var flags = ['mon', 'mds', 'osd', 'rgw', 'iscsi', 'metrics'];
+      var rolesSelected = false;
 
       for (var property in _this5.state) {
+        // skip other properties
         if (!flags.includes(property)) {
           continue;
         }
 
         if (_this5.state[property]) {
           console.log("at least one role is selected");
-          rolesOK = true;
+          rolesSelected = true;
           break;
         }
       }
 
-      if (rolesOK) {
+      if (rolesSelected) {
         console.log("Ok to expand and populate the table");
 
         _this5.reset();
@@ -24931,6 +25081,7 @@ function (_React$Component4) {
       osd: false,
       rgw: false,
       iscsi: false,
+      metrics: false,
       hostmask: '',
       hostmaskOK: false,
       msgLevel: 'info',
@@ -24942,14 +25093,29 @@ function (_React$Component4) {
   _createClass(HostMask, [{
     key: "render",
     // componentWillReceiveProps(props) {
-    //     console.log("HostMask component received " + JSON.stringify(props));
-    //     if (props.show) {
-    //         console.log("revealed add hosts and set focus");
-    //         this.refs.hostInput.setFocus();
+    //     if (versionSupportsMetrics(this.props.targetVersion)) {
+    //         this.setState({metrics: false});
     //     }
     // }
     value: function render() {
       var showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
+      var metrics_cbox = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null);
+      var metrics_label = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null);
+
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.targetVersion)) {
+        console.log("enabling selection of metrics role - grafana/prometheus");
+        metrics_cbox = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
+          role: "metrics",
+          checked: this.state.metrics,
+          callback: this.updateRole
+        }));
+        metrics_label = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+          style: {
+            minWidth: "60px"
+          }
+        }, "Metrics (grafana/prometheus)");
+      }
+
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: showHideClass
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -25022,7 +25188,7 @@ function (_React$Component4) {
         style: {
           minWidth: "60px"
         }
-      }, "rgw"))))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__["Notification"], {
+      }, "rgw"), metrics_cbox, metrics_label)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__["Notification"], {
         msgLevel: this.state.msgLevel,
         msgText: this.state.msgText
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -25235,6 +25401,12 @@ function (_React$Component) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setMetricsHost", function (hostname) {
+      _this.setState({
+        metricsHost: hostname
+      });
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateState", function (param) {
       var ignoredKeys = ['className', 'modalVisible', 'modalContent'];
       console.log("Updating state");
@@ -25275,11 +25447,13 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "prevPageHandler", function (param) {
       console.log("return to prior page");
 
-      if (param.constructor === {}.constructor) {
-        console.log("received " + JSON.stringify(param));
-      }
+      if (param != undefined) {
+        if (param.constructor === {}.constructor) {
+          console.log("received " + JSON.stringify(param));
 
-      _this.updateState(param);
+          _this.updateState(param);
+        }
+      }
 
       var current = _this.state.pageNum;
 
@@ -25296,7 +25470,7 @@ function (_React$Component) {
       lastPage: 0,
       hosts: [],
       sourceType: "Red Hat",
-      targetVersion: "RHCS 3.1",
+      targetVersion: "RHCS 3",
       clusterType: "Production",
       installType: "RPM",
       networkType: 'ipv4',
@@ -25306,6 +25480,7 @@ function (_React$Component) {
       publicNetwork: '',
       clusterNetwork: '',
       rgwNetwork: '',
+      metricsHost: '',
       deployStarted: false // startTime: '',
       // endTime: '',
       // runDuration: ''
@@ -25397,8 +25572,10 @@ function (_React$Component) {
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_hostspage_jsx__WEBPACK_IMPORTED_MODULE_4__["default"], {
         className: this.page['hosts'],
         action: this.nextHandler,
+        metricsHostHandler: this.setMetricsHost,
         prevPage: this.prevPageHandler,
         hosts: this.state.hosts,
+        targetVersion: this.state.targetVersion,
         installType: this.state.installType,
         clusterType: this.state.clusterType,
         svctoken: this.props.svctoken
@@ -25516,6 +25693,7 @@ function (_React$Component) {
       clusterNetwork: '',
       rgwNetwork: ''
     };
+    _this.cephHosts = [];
     _this.internalNetworks = []; // suitable for cluster connectivity
 
     _this.externalNetworks = []; // shared across all nodes
@@ -25533,17 +25711,25 @@ function (_React$Component) {
       if (props.className == 'page') {
         // the page is active, so refresh the items with updated props
         // from the parent
+        for (var idx = 0; idx < props.hosts.length; idx++) {
+          if (props.hosts[idx]['metrics']) {
+            continue;
+          } else {
+            this.cephHosts.push(props.hosts[idx]);
+          }
+        }
+
         console.log("setting subnet array state variables");
-        this.internalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'osd');
-        this.externalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'all');
-        this.subnetLookup = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildSubnetLookup"])(props.hosts);
+        this.internalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'osd');
+        this.externalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'all');
+        this.subnetLookup = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildSubnetLookup"])(this.cephHosts);
         var netState = {};
         netState['clusterNetwork'] = this.internalNetworks[0];
         netState['publicNetwork'] = this.externalNetworks[0];
 
-        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(props.hosts).includes('rgws')) {
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(this.cephHosts).includes('rgws')) {
           console.log("determining the rgw networks");
-          this.s3Networks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(props.hosts, 'rgw');
+          this.s3Networks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'rgw');
           netState['rgwNetwork'] = this.s3Networks[0];
         } else {
           console.log("no rgw role seen across the hosts");
@@ -25569,7 +25755,7 @@ function (_React$Component) {
         subnets: this.internalNetworks,
         name: "clusterNetwork",
         lookup: this.subnetLookup,
-        hosts: this.props.hosts,
+        hosts: this.cephHosts,
         updateHandler: this.updateHandler
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
         title: "Public Network",
@@ -25577,7 +25763,7 @@ function (_React$Component) {
         subnets: this.externalNetworks,
         name: "publicNetwork",
         lookup: this.subnetLookup,
-        hosts: this.props.hosts,
+        hosts: this.cephHosts,
         updateHandler: this.updateHandler
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
         title: "S3 Client Network",
@@ -25585,7 +25771,7 @@ function (_React$Component) {
         subnets: this.s3Networks,
         name: "rgwNetwork",
         lookup: this.subnetLookup,
-        hosts: this.props.hosts,
+        hosts: this.cephHosts,
         updateHandler: this.updateHandler
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "nav-button-container"
@@ -25922,6 +26108,11 @@ function (_React$Component) {
 
         this.clusterData['Hosts'] = props.config.hosts.length;
         var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["buildRoles"])(props.config.hosts);
+
+        if (roleList.includes('ceph-grafana')) {
+          roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["removeItem"])(roleList, 'ceph-grafana');
+        }
+
         this.clusterData['Roles'] = roleList.join(', ');
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
@@ -26005,6 +26196,10 @@ function (_React$Component) {
           this.clusterData['S3 Network'] = props.config.rgwNetwork;
         } else {
           this.clusterData['S3 Network'] = '';
+        }
+
+        if (props.config.metricsHost) {
+          this.clusterData['Metrics Host'] = this.props.config.metricsHost;
         }
 
         this.hostList = JSON.parse(JSON.stringify(this.props.config.hosts));
@@ -26124,40 +26319,43 @@ function (_React$Component3) {
       console.log("in hostlisting render");
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "host-review-title"
-      }, "Hosts"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
+      }, "Storage Cluster Hosts"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
         className: "host-review-table"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, this.props.hosts.map(function (host, idx) {
-        var roles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["buildRoles"])([host]).join(', ');
-        var specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
-        var specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
-        console.log(JSON.stringify(host.subnet_details));
-        console.log(_this3.props.clusterNetwork);
-        console.log("net = " + JSON.stringify(host.subnet_details[_this3.props.clusterNetwork]));
-        var clusterNetwork = host.subnet_details[_this3.props.clusterNetwork].addr + " | " + host.subnet_details[_this3.props.clusterNetwork].devices[0];
-        var publicNetwork = host.subnet_details[_this3.props.publicNetwork].addr + " | " + host.subnet_details[_this3.props.publicNetwork].devices[0];
-        var s3Network;
+        if (!host.metrics) {
+          // only build table entries for ceph hosts
+          var roles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["buildRoles"])([host]).join(', ');
+          var specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
+          var specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
+          console.log(JSON.stringify(host.subnet_details));
+          console.log(_this3.props.clusterNetwork);
+          console.log("net = " + JSON.stringify(host.subnet_details[_this3.props.clusterNetwork]));
+          var clusterNetwork = host.subnet_details[_this3.props.clusterNetwork].addr + " | " + host.subnet_details[_this3.props.clusterNetwork].devices[0];
+          var publicNetwork = host.subnet_details[_this3.props.publicNetwork].addr + " | " + host.subnet_details[_this3.props.publicNetwork].devices[0];
+          var s3Network;
 
-        if (_this3.props.s3Network && roles.includes('rgws')) {
-          s3Network = host.subnet_details[_this3.props.s3Network].addr + " | " + host.subnet_details[_this3.props.s3Network].devices[0];
-        } else {
-          s3Network = 'N/A';
+          if (_this3.props.s3Network && roles.includes('rgws')) {
+            s3Network = host.subnet_details[_this3.props.s3Network].addr + " | " + host.subnet_details[_this3.props.s3Network].devices[0];
+          } else {
+            s3Network = 'N/A';
+          }
+
+          return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", {
+            key: idx
+          }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+            className: "host-review-table-wide"
+          }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, host.hostname), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), host.vendor, "\xA0", host.model), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+            className: "host-review-table-std"
+          }, specL1, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), specL2), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+            className: "host-review-table-std"
+          }, roles), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+            className: "host-review-table-wide"
+          }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "Cluster Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), clusterNetwork), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+            className: "host-review-table-wide"
+          }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "Public Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), publicNetwork), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+            className: "host-review-table-wide"
+          }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "S3 Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), s3Network));
         }
-
-        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", {
-          key: idx
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-          className: "host-review-table-wide"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, host.hostname), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), host.vendor, "\xA0", host.model), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-          className: "host-review-table-std"
-        }, specL1, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), specL2), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-          className: "host-review-table-std"
-        }, roles), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-          className: "host-review-table-wide"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "Cluster Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), clusterNetwork), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-          className: "host-review-table-wide"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "Public Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), publicNetwork), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-          className: "host-review-table-wide"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("strong", null, "S3 Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), s3Network));
       }))));
     }
   }]);
@@ -26241,49 +26439,61 @@ function (_React$Component) {
       console.log("processing event data for " + eventData.remote_addr);
       var eventHostname = eventData.remote_addr;
       var localState = JSON.parse(JSON.stringify(_this.state.hosts));
-      var facts = eventData.res.data.summary_facts;
-      var obj = {};
-      obj['vendor'] = facts.vendor;
-      obj['model'] = facts.model;
-      obj['cpuType'] = facts.cpu_type;
-      obj['subnets'] = facts.network.subnets;
-      obj['subnet_details'] = facts.network.subnet_details;
-      obj['hdd_devices'] = Object.keys(facts.hdd);
-      obj['hdd'] = obj.hdd_devices.length;
-      obj['ssd_devices'] = Object.keys(facts.ssd);
-      obj['ssd'] = obj.ssd_devices.length;
-      obj['capacity'] = facts.capacity;
-      obj['cpu'] = facts.cpu_core_count;
-      obj['ram'] = Math.round(facts.ram_mb / 1024);
-      console.log(JSON.stringify(eventData.res.data.status));
-      obj['ready'] = eventData.res.data.status;
-      obj['msgs'] = eventData.res.data.status_msgs;
-      obj['nic'] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["countNICs"])(facts);
+      var probeTotal = localState.length - Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(localState, 'metrics');
 
-      for (var i = 0; i < localState.length; i++) {
-        var host = localState[i];
+      if (!eventData.res.hasOwnProperty('data')) {
+        console.log("Skipping " + eventHostname + ", no data returned");
+      } else {
+        var facts = eventData.res.data.summary_facts;
+        var obj = {};
+        obj['vendor'] = facts.vendor;
+        obj['model'] = facts.model;
+        obj['cpuType'] = facts.cpu_type;
+        obj['subnets'] = facts.network.subnets;
+        obj['subnet_details'] = facts.network.subnet_details;
+        obj['hdd_devices'] = Object.keys(facts.hdd);
+        obj['hdd'] = obj.hdd_devices.length;
+        obj['ssd_devices'] = Object.keys(facts.ssd);
+        obj['ssd'] = obj.ssd_devices.length;
+        obj['capacity'] = facts.capacity;
+        obj['cpu'] = facts.cpu_core_count;
+        obj['ram'] = Math.round(facts.ram_mb / 1024);
+        console.log(JSON.stringify(eventData.res.data.status));
+        obj['ready'] = eventData.res.data.status;
 
-        if (host.hostname == eventHostname) {
-          console.log("updating state");
-          Object.assign(host, obj);
-          localState[i] = host;
-          var currentCount = _this.state.probedCount + 1;
-          var level = currentCount === localState.length ? "success" : "info";
-
-          _this.setState({
-            hosts: localState,
-            probedCount: currentCount,
-            msgLevel: level,
-            msgText: currentCount + "/" + localState.length + " probes complete",
-            probeStatusMsg: currentCount + "/" + localState.length + " probes complete"
-          });
-
-          console.log("updating notification message " + currentCount);
-          break;
+        if (eventData.res.data.status.toLowerCase() == 'ok') {
+          obj['selected'] = true;
         }
-      }
 
-      _this.roleSummary = JSON.stringify(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["allRoles"])(_this.state.hosts)); // this.probeSummary = JSON.stringify(this.state.hosts);
+        obj['msgs'] = eventData.res.data.status_msgs;
+        obj['nic'] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["countNICs"])(facts);
+
+        for (var i = 0; i < localState.length; i++) {
+          var host = localState[i];
+
+          if (host.hostname == eventHostname) {
+            console.log("updating state");
+            Object.assign(host, obj);
+            localState[i] = host;
+            var currentCount = _this.state.probedCount + 1;
+            var level = currentCount === probeTotal ? "success" : "active";
+
+            _this.setState({
+              hosts: localState,
+              probedCount: currentCount,
+              msgLevel: level,
+              msgText: currentCount + "/" + probeTotal + " probes complete",
+              probeStatusMsg: currentCount + "/" + probeTotal + " probes complete"
+            });
+
+            console.log("updating notification message " + currentCount);
+            break;
+          }
+        }
+
+        _this.roleSummary = JSON.stringify(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["allRoles"])(_this.state.hosts));
+      } // this.probeSummary = JSON.stringify(this.state.hosts);
+
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateProbeStatus", function (response, playUUID) {
@@ -26328,15 +26538,16 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "probeHosts", function () {
       console.log("Request to probe hosts received");
+      var probeTotal = _this.state.hosts.length - Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(_this.state.hosts, 'metrics');
 
       _this.setState({
         probeEnabled: false,
         pendingProbe: false,
         ready: false,
         probedCount: 0,
-        msgLevel: 'info',
-        msgText: "0/" + _this.state.hosts.length + " probes complete",
-        probeStatusMsg: "0/" + _this.state.hosts.length + " probes complete"
+        msgLevel: 'active',
+        msgText: "0/" + probeTotal + " probes complete",
+        probeStatusMsg: "0/" + probeTotal + " probes complete"
       });
 
       console.log("remove the status info for all the hosts");
@@ -26357,7 +26568,10 @@ function (_React$Component) {
       var rolesByHost = {};
 
       _this.state.hosts.forEach(function (host, idx, hosts) {
-        rolesByHost[host.hostname] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])([host]).join(',');
+        // ignore the metrics host for the probe
+        if (!host.metrics) {
+          rolesByHost[host.hostname] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["buildRoles"])([host]).join(',');
+        }
       });
 
       console.log("roles :" + JSON.stringify(rolesByHost)); // call the playbook
@@ -26394,6 +26608,31 @@ function (_React$Component) {
         console.log("tracking playbook with UUID :" + playUUID);
         console.log("starting progress tracker");
         Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["checkPlaybook"])(playUUID, _this.props.svctoken, _this.updateProbeStatus, _this.probeComplete);
+      }).catch(function (e) {
+        var errorMsg;
+        console.error("Problem starting the playbook: response was - " + JSON.stringify(e));
+
+        if (e.hasOwnProperty('status')) {
+          // API returned a bad state
+          switch (e.status) {
+            case 404:
+              errorMsg = "checkrole.yml file is missing. Install the file, then retry";
+              break;
+
+            default:
+              errorMsg = "Error response from API service (" + e.status + "). Check API service log for more information";
+          }
+        } else {
+          // no status attribute = API was not there.
+          errorMsg = "Ansible service API unavailable. Try again after starting the service";
+        }
+
+        _this.setState({
+          probeEnabled: true,
+          pendingProbe: true,
+          msgLevel: 'error',
+          msgText: errorMsg
+        });
       });
 
       _this.setState({
@@ -26548,7 +26787,7 @@ function (_React$Component) {
       }
 
       for (var i = 0; i < _this.state.hosts.length; i++) {
-        if (_this.state.hosts[i].selected) {
+        if (_this.state.hosts[i].selected || _this.state.hosts[i]['metrics']) {
           candidateHosts.push(JSON.parse(JSON.stringify(_this.state.hosts[i])));
         } else {
           hostsToDelete.push(_this.state.hosts[i].hostname);
@@ -26717,12 +26956,15 @@ function (_React$Component) {
 
       if (this.state.hosts.length > 0) {
         rows = this.state.hosts.map(function (host) {
-          return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(HostDiscoveryRow, {
-            key: host.hostname,
-            hostData: host,
-            updateRole: _this2.updateRole,
-            callback: _this2.toggleSingleRow
-          });
+          // only show ceph nodes, ignoring the metrics host
+          if (!host.metrics) {
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(HostDiscoveryRow, {
+              key: host.hostname,
+              hostData: host,
+              updateRole: _this2.updateRole,
+              callback: _this2.toggleSingleRow
+            });
+          }
         });
       } else {
         rows = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null); // emptyRow();
@@ -26733,7 +26975,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "validate",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "3. Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_2__["Notification"], {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "3. Validate Host Selection"), "The hosts have been checked for DNS and passwordless SSH.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The next step is to probe the hosts that Ceph will use to validate that their hardware configuration is compatible with their intended Ceph role. Once the probe is complete you must select the hosts to use for deployment using the checkboxes (", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "only hosts in an 'OK' state can be selected"), ")", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_2__["Notification"], {
         ref: "validationMessage",
         msgLevel: this.state.msgLevel,
         msgText: this.state.msgText
@@ -26956,10 +27198,11 @@ function (_React$Component3) {
       var msgTypes = Object.keys(msgSummary);
       var summary = msgTypes.map(function (mtype, i) {
         var classes = "status-msg " + mtype;
+        var mtypeText = msgSummary[mtype] > 1 ? mtype + "s" : mtype;
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           key: i,
           className: classes
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, msgSummary[mtype]), "\xA0", mtype);
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, msgSummary[mtype]), "\xA0", mtypeText);
       });
 
       if (msgTypes.length > 0) {
@@ -27331,10 +27574,21 @@ function osdsVars(vars) {
     }
   }
 
-  if (mixed && vars.flashUsage.startsWith("Journal")) {
-    forYML.osd_scenario = 'non-collocated';
-  } else {
-    forYML.osd_scenario = "collocated";
+  switch (vars.targetVersion) {
+    case "RHCS 4":
+    case "14 (Nautilus)":
+      // ceph-volume based OSDs
+      forYML.osd_scenario = 'lvm';
+      break;
+
+    default:
+      // Older Ceph versions based on ceph-disk not ceph-volume
+      if (mixed && vars.flashUsage.startsWith("Journal")) {
+        forYML.osd_scenario = 'non-collocated';
+      } else {
+        forYML.osd_scenario = "collocated";
+      }
+
   }
 
   return forYML;
@@ -27348,12 +27602,22 @@ function allVars(vars) {
       forYML.ceph_origin = "repository";
       forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
 
+      forYML.ceph_stable_release = vars.targetVersion.split('(')[1].slice(0, -1).toLowerCase(); // nautilus
+
+      if (forYML.ceph_stable_release == 'nautilus') {
+        forYML.dashboard_enabled = true;
+      }
+
       break;
 
     case "Red Hat":
       forYML.ceph_repository = "rhcs";
       forYML.ceph_origin = "repository";
       forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
+
+      if (forYML.ceph_rhcs_version == '4') {
+        forYML.dashboard_enabled = true;
+      }
 
       break;
 
@@ -27379,6 +27643,7 @@ function allVars(vars) {
         forYML.ceph_repository_type = "cdn";
       }
 
+      forYML.containerized_deployment = false;
   }
 
   if (vars.rgwNetwork != '') {
@@ -27420,32 +27685,14 @@ function monsVars(vars) {
 }
 function mgrsVars(vars) {
   var forYML = {};
-  var community_dashboard_versions = ["13", "14"];
-  var rhcs_dashboard_versions = ["4"];
-
-  switch (vars.sourceType) {
-    case "Community":
-      if (community_dashboard_versions.includes(vars.targetVersion.split(' ')[0])) {
-        forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
-      } else {
-        forYML.ceph_mgr_modules = ["status", "prometheus"];
-      }
-
-      break;
-
-    case "Red Hat":
-      if (rhcs_dashboard_versions.includes(vars.targetVersion.split(' ')[1])) {
-        forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
-      } else {
-        forYML.ceph_mgr_modules = ["status", "prometheus"];
-      }
-
-      break;
-
-    default:
-      forYML.ceph_mgr_modules = ["status", "prometheus"];
-  }
-
+  var module_map = {
+    "12 (Luminous)": ["prometheus", "status"],
+    "13 (Mimic)": ["prometheus", "status", "dashboard"],
+    "14 (Nautilus)": ["prometheus", "status", "dashboard", "pg_autoscaler"],
+    "RHCS 3": ["prometheus", "status"],
+    "RHCS 4": ["prometheus", "status", "dashboard", "pg_autoscaler"]
+  };
+  forYML.ceph_mgr_modules = module_map[vars.targetVersion];
   return forYML;
 }
 function rgwsVars(vars) {
@@ -27772,12 +28019,13 @@ function decodeAddError(hostName, error) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: getSVCToken, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount */
+/*! exports provided: getSVCToken, versionSupportsMetrics, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getSVCToken", function() { return getSVCToken; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "versionSupportsMetrics", function() { return versionSupportsMetrics; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildRoles", function() { return buildRoles; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeItem", function() { return removeItem; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertRole", function() { return convertRole; });
@@ -27814,7 +28062,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 
 
-var validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi'];
+var validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi', 'metrics'];
 function getSVCToken() {
   console.log("external function fetching svctoken from filesystem"); // var token_path = '/etc/hosts';
 
@@ -27823,6 +28071,9 @@ function getSVCToken() {
     "superuser": "require"
   }).read();
   return promise;
+}
+function versionSupportsMetrics(version) {
+  return ["14 (Nautilus)", "RHCS 4"].includes(version);
 }
 function buildRoles(hosts) {
   // return a list of roles from an array of host state objects
@@ -27883,6 +28134,10 @@ function convertRole(role) {
 
     case "iscsi":
       role = 'iscsigws';
+      break;
+
+    case "metrics":
+      role = "ceph-grafana";
       break;
 
     default:
@@ -28037,7 +28292,7 @@ function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
     }
   }
 
-  console.log("DEBUG CHANGEHOST - groups are" + JSON.stringify(groups));
+  console.log("DEBUG toggleHostRole - groups are" + JSON.stringify(groups));
   groupChain.then(function () {
     Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["changeHost"])(hostname, ansibleRole, checked, svctoken).then(function (resp) {
       console.log("changeHost call completed, updating internal host information"); // console.log("Updated host entry in inventory");
@@ -28258,6 +28513,12 @@ function collocationOK(currentRoles, newRole, installType, clusterType) {
   console.log("checking for collocation violations");
   console.log("current roles " + currentRoles);
   console.log("new role is " + newRole);
+
+  if (newRole == 'metrics' && currentRoles.length > 0 || currentRoles.includes('ceph-grafana')) {
+    console.log("request for metrics on a host with other ceph roles is denied");
+    return false;
+  }
+
   newRole = convertRole(newRole);
 
   if (installType.toLowerCase() == 'container') {
