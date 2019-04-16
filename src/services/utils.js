@@ -236,7 +236,7 @@ export function checkPlaybook(playUUID, svctoken, activeCB, finishedCB) {
                     getTaskEvents(playUUID, "CEPH_CHECK_ROLE", svctoken)
                             .then((resp) => {
                                 activeCB(JSON.parse(resp), playUUID);
-                                finishedCB();
+                                finishedCB(response.msg);
                             });
                 }
             });

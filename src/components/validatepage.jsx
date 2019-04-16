@@ -43,6 +43,7 @@ export class ValidatePage extends React.Component {
         this.roleSummary = '';
         this.eventLookup = {}; // lookup for probe results
         this.skipChecks = false;
+        this.playUUID = '';
     }
 
     processEventData = (eventData) => {
@@ -134,13 +135,24 @@ export class ValidatePage extends React.Component {
         });
     }
 
-    probeComplete = () => {
-        console.log("probe scan has completed");
-        this.setState({
-            probeEnabled: true,
-            ready: true,
-            probeStatusMsg: ''
-        });
+    probeComplete = (playbookStatus) => {
+        console.log("probe playbook complete : " + playbookStatus);
+        if (playbookStatus == 'failed') {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "Unexpected playbook failure. Check ansible-runner-service directory '" + this.playUUID + "' for details.",
+                probeEnabled: true,
+                pendingProbe: true,
+                ready: false,
+                probeStatusMsg: ''
+            });
+        } else {
+            this.setState({
+                probeEnabled: true,
+                ready: true,
+                probeStatusMsg: ''
+            });
+        }
         this.eventLookup = {};
     }
 
@@ -205,11 +217,11 @@ export class ValidatePage extends React.Component {
                     let response = JSON.parse(resp);
                     console.log("playbook execution started :" + response.status);
                     console.log("response object :" + JSON.stringify(response));
-                    let playUUID = response.data.play_uuid;
-                    console.log("tracking playbook with UUID :" + playUUID);
+                    this.playUUID = response.data.play_uuid;
+                    console.log("tracking playbook with UUID :" + this.playUUID);
 
                     console.log("starting progress tracker");
-                    checkPlaybook(playUUID, this.props.svctoken, this.updateProbeStatus, this.probeComplete);
+                    checkPlaybook(this.playUUID, this.props.svctoken, this.updateProbeStatus, this.probeComplete);
                 })
                 .catch((e) => {
                     let errorMsg;
