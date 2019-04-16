@@ -3,10 +3,8 @@ import '../../app.scss';
 
 export const emptyRow = () => {
     return (
-        // <tbody>
-        <tr className="emptyTable">
-            <td colSpan="9" className="emptyTable">No Hosts Defined</td>
+        <tr colSpan="10" className="emptyRow">
+            <td colSpan="10" className="emptyCell">No Hosts Defined</td>
         </tr>
-        // </tbody>
     );
 };
