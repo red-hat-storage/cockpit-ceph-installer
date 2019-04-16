@@ -1,6 +1,6 @@
 import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
-import { buildRoles, hostsWithRoleCount, msgCount, osdCount } from '../services/utils.js';
+import { buildRoles, hostsWithRoleCount, msgCount, osdCount, removeItem } from '../services/utils.js';
 import '../app.scss';
 
 export class ReviewPage extends React.Component {
@@ -42,6 +42,9 @@ export class ReviewPage extends React.Component {
 
             this.clusterData['Hosts'] = props.config.hosts.length;
             let roleList = buildRoles(props.config.hosts);
+            if (roleList.includes('ceph-grafana')) {
+                roleList = removeItem(roleList, 'ceph-grafana');
+            }
             this.clusterData['Roles'] = roleList.join(', ');
             for (let role of roleList) {
                 let roleName;
@@ -71,12 +74,16 @@ export class ReviewPage extends React.Component {
             this.clusterData['OSD devices'] = osdCount(props.config.hosts, props.config.flashUsage);
             this.clusterData['Public Network'] = props.config.publicNetwork;
             this.clusterData['Cluster Network'] = props.config.clusterNetwork;
+
             if (props.config.rgwNetwork) {
                 this.clusterData['S3 Network'] = props.config.rgwNetwork;
             } else {
                 this.clusterData['S3 Network'] = '';
             }
 
+            if (props.config.metricsHost) {
+                this.clusterData['Metrics Host'] = this.props.config.metricsHost;
+            }
             this.hostList = JSON.parse(JSON.stringify(this.props.config.hosts));
         }
     }
@@ -148,36 +155,39 @@ class HostListing extends React.Component {
         console.log("in hostlisting render");
         return (
             <div>
-                <div className="host-review-title">Hosts</div>
+                <div className="host-review-title">Storage Cluster Hosts</div>
                 <table className="host-review-table">
                     <tbody>
                         { this.props.hosts.map((host, idx) => {
-                            let roles = buildRoles([host]).join(', ');
-                            let specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
-                            let specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
-                            console.log(JSON.stringify(host.subnet_details));
-                            console.log(this.props.clusterNetwork);
-                            console.log("net = " + JSON.stringify(host.subnet_details[this.props.clusterNetwork]));
-                            let clusterNetwork = host.subnet_details[this.props.clusterNetwork].addr + " | " + host.subnet_details[this.props.clusterNetwork].devices[0];
-                            let publicNetwork = host.subnet_details[this.props.publicNetwork].addr + " | " + host.subnet_details[this.props.publicNetwork].devices[0];
-                            let s3Network;
-                            if (this.props.s3Network && roles.includes('rgws')) {
-                                s3Network = host.subnet_details[this.props.s3Network].addr + " | " + host.subnet_details[this.props.s3Network].devices[0];
-                            } else {
-                                s3Network = 'N/A';
+                            if (!host.metrics) {
+                                // only build table entries for ceph hosts
+                                let roles = buildRoles([host]).join(', ');
+                                let specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
+                                let specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
+                                console.log(JSON.stringify(host.subnet_details));
+                                console.log(this.props.clusterNetwork);
+                                console.log("net = " + JSON.stringify(host.subnet_details[this.props.clusterNetwork]));
+                                let clusterNetwork = host.subnet_details[this.props.clusterNetwork].addr + " | " + host.subnet_details[this.props.clusterNetwork].devices[0];
+                                let publicNetwork = host.subnet_details[this.props.publicNetwork].addr + " | " + host.subnet_details[this.props.publicNetwork].devices[0];
+                                let s3Network;
+                                if (this.props.s3Network && roles.includes('rgws')) {
+                                    s3Network = host.subnet_details[this.props.s3Network].addr + " | " + host.subnet_details[this.props.s3Network].devices[0];
+                                } else {
+                                    s3Network = 'N/A';
+                                }
+                                return (
+                                    <tr key={idx}>
+                                        <td className="host-review-table-wide">
+                                            <strong>{host.hostname}</strong><br />
+                                            {host.vendor}&nbsp;{host.model}
+                                        </td>
+                                        <td className="host-review-table-std">{specL1}<br />{specL2}</td>
+                                        <td className="host-review-table-std">{roles}</td>
+                                        <td className="host-review-table-wide"><strong>Cluster Network</strong><br />{clusterNetwork}</td>
+                                        <td className="host-review-table-wide"><strong>Public Network</strong><br />{publicNetwork}</td>
+                                        <td className="host-review-table-wide"><strong>S3 Network</strong><br />{s3Network}</td>
+                                    </tr>);
                             }
-                            return (
-                                <tr key={idx}>
-                                    <td className="host-review-table-wide">
-                                        <strong>{host.hostname}</strong><br />
-                                        {host.vendor}&nbsp;{host.model}
-                                    </td>
-                                    <td className="host-review-table-std">{specL1}<br />{specL2}</td>
-                                    <td className="host-review-table-std">{roles}</td>
-                                    <td className="host-review-table-wide"><strong>Cluster Network</strong><br />{clusterNetwork}</td>
-                                    <td className="host-review-table-wide"><strong>Public Network</strong><br />{publicNetwork}</td>
-                                    <td className="host-review-table-wide"><strong>S3 Network</strong><br />{s3Network}</td>
-                                </tr>);
                         })}
                     </tbody>
                 </table>
