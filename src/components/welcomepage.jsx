@@ -49,9 +49,9 @@ export class WelcomePage extends React.Component {
                 <h3>Welcome</h3>
                 This installation process provides a guided workflow to help you install
                 your Ceph cluster. <br />
-                The main components of the installation workflow are represented above. Once a
-                step is complete, you automatically move on to the next step but can return to
-                a prior steps by simply clicking the relevant step number above.
+                The main components of the installation workflow are represented above. Each page in
+                 this process has navigation buttons placed at the bottom right of the window, enabling you to
+                 proceed and return to prior steps in the workflow.
                 <p />
                 <GenericModal
                     show={this.state.modalVisible}
@@ -74,11 +74,11 @@ export class WelcomePage extends React.Component {
                         </tr>
                         <tr>
                             <td className="tdTitles">Hosts</td>
-                            <td>Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd or rgw</td>
+                            <td>Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd, rgw or mds</td>
                         </tr>
                         <tr>
                             <td className="tdTitles">Validation</td>
-                            <td>Validate the configuration of the candidate hosts against the required Ceph roles using established
+                            <td>Validate the configuration of the candidate Ceph hosts against the required Ceph roles using established
                             best practice guidelines
                             </td>
                         </tr>
@@ -92,7 +92,7 @@ export class WelcomePage extends React.Component {
                         </tr>
                         <tr>
                             <td className="tdTitles">Deploy</td>
-                            <td>Start the installation process and monitor progress</td>
+                            <td>Save your selections, start the deployment process and monitor installation progress.</td>
                         </tr>
                     </tbody>
                 </table>
