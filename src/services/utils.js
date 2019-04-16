@@ -2,7 +2,7 @@
 import cockpit from 'cockpit';
 import { addGroup, deleteGroup, changeHost, getPlaybookState, getTaskEvents } from './apicalls.js';
 
-const validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi'];
+const validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi', 'metrics'];
 
 export function getSVCToken () {
     console.log("external function fetching svctoken from filesystem");
@@ -11,6 +11,10 @@ export function getSVCToken () {
 
     let promise = cockpit.file(tokenPath, {"superuser": "require"}).read();
     return promise;
+}
+
+export function versionSupportsMetrics(version) {
+    return ["14 (Nautilus)", "RHCS 4"].includes(version);
 }
 
 export function buildRoles(hosts) {
@@ -46,6 +50,9 @@ export function convertRole(role) {
         break;
     case "iscsi":
         role = 'iscsigws';
+        break;
+    case "metrics":
+        role = "ceph-grafana";
         break;
     default:
         console.error("processing an unknown role type");
@@ -160,7 +167,7 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
             groupChain = groupChain.then(() => addGroup(groups[g], svctoken));
         }
     }
-    console.log("DEBUG CHANGEHOST - groups are" + JSON.stringify(groups));
+    console.log("DEBUG toggleHostRole - groups are" + JSON.stringify(groups));
     groupChain
             .then(() => {
                 changeHost(hostname, ansibleRole, checked, svctoken)
@@ -348,6 +355,10 @@ export function collocationOK(currentRoles, newRole, installType, clusterType) {
     console.log("checking for collocation violations");
     console.log("current roles " + currentRoles);
     console.log("new role is " + newRole);
+    if ((newRole == 'metrics' && currentRoles.length > 0) || (currentRoles.includes('ceph-grafana'))) {
+        console.log("request for metrics on a host with other ceph roles is denied");
+        return false;
+    }
     newRole = convertRole(newRole);
     if (installType.toLowerCase() == 'container') {
         return true;
