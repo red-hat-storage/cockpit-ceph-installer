@@ -162,16 +162,16 @@ class HostListing extends React.Component {
                             if (!host.metrics) {
                                 // only build table entries for ceph hosts
                                 let roles = buildRoles([host]).join(', ');
-                                let specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
+                                let specL1 = host.cpu + " CPU, " + host.ram + "GB RAM, " + host.nic + " NIC";
                                 let specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
                                 console.log(JSON.stringify(host.subnet_details));
                                 console.log(this.props.clusterNetwork);
                                 console.log("net = " + JSON.stringify(host.subnet_details[this.props.clusterNetwork]));
-                                let clusterNetwork = host.subnet_details[this.props.clusterNetwork].addr + " | " + host.subnet_details[this.props.clusterNetwork].devices[0];
-                                let publicNetwork = host.subnet_details[this.props.publicNetwork].addr + " | " + host.subnet_details[this.props.publicNetwork].devices[0];
+                                let clusterNetwork = host.subnet_details[this.props.clusterNetwork].addr + " | " + host.subnet_details[this.props.clusterNetwork].devices[0].replace('ansible_', '');
+                                let publicNetwork = host.subnet_details[this.props.publicNetwork].addr + " | " + host.subnet_details[this.props.publicNetwork].devices[0].replace('ansible_', '');
                                 let s3Network;
                                 if (this.props.s3Network && roles.includes('rgws')) {
-                                    s3Network = host.subnet_details[this.props.s3Network].addr + " | " + host.subnet_details[this.props.s3Network].devices[0];
+                                    s3Network = host.subnet_details[this.props.s3Network].addr + " | " + host.subnet_details[this.props.s3Network].devices[0].replace('ansible_', '');
                                 } else {
                                     s3Network = 'N/A';
                                 }
