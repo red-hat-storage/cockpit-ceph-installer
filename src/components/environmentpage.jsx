@@ -46,7 +46,7 @@ export class EnvironmentPage extends React.Component {
         };
         this.network_type = {
             description: "Network connectivity",
-            options: ['ipv4', 'ipv6'],
+            options: ['ipv4'], // 'ipv6'],
             default: 'ipv4',
             name: 'networkType',
             tooltip: "",
