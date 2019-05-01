@@ -54,6 +54,10 @@ export function convertRole(role) {
     case "metrics":
         role = "ceph-grafana";
         break;
+    case "ceph-grafana":
+        // used by deploypage
+        role = "metrics";
+        break;
     default:
         console.error("processing an unknown role type");
         role = "??";
