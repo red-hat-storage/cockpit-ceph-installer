@@ -58,9 +58,9 @@ export class InstallationSteps extends React.Component {
                 " for performance and fault tolerance.",
             "Review the configuration information that you have provided, prior to moving to installation. Use" +
                 " the back button to return to prior pages to change your selections.",
-            "When you click 'Deploy', the Ansible settings will be committed to disk using standard" +
-                " Ansible formats. This allows you to refer to or modify these settings at a later date" +
-                " if you decide to directly manage your cluster with Ansible."
+            "When you click 'Save', the Ansible settings will be committed to disk using standard" +
+                " Ansible formats. This allows you to refer to or modify these settings before" +
+                " starting the deployment."
         ];
         this.visited = [];
     }
