@@ -46,6 +46,8 @@ export class HostsPage extends React.Component {
                 }
             }
             if (metricsHost) {
+                // pass the metrics host name back to the parent state
+                // Note this will drive a state change to all child components
                 this.props.metricsHostHandler(metricsHost);
             } else {
                 this.setState({
@@ -56,6 +58,7 @@ export class HostsPage extends React.Component {
             }
         }
 
+        // console.log("Debug: we have these hosts: " + JSON.stringify(this.state.hosts));
         if (this.state.hosts.length > 0) {
             // we must have hosts to process before moving on to validation
             var hostOKCount = 0;
@@ -66,6 +69,7 @@ export class HostsPage extends React.Component {
             });
             if (hostOKCount != this.state.hosts.length) {
                 errMsgs.push("Hosts must be in an 'OK' state to continue");
+                console.log("Debug: hosts are " + JSON.stringify(this.state.hosts));
             }
 
             let monCount = hostsWithRoleCount(this.state.hosts, 'mon');
@@ -93,6 +97,7 @@ export class HostsPage extends React.Component {
                     msgText: errMsgs.join('. ')
                 });
                 usable = false;
+                return;
             }
 
             if (usable) {
@@ -255,7 +260,12 @@ export class HostsPage extends React.Component {
             }
         }
 
-        this.setState({hosts: currentHosts}); // update the table to show the retry action
+        // update the table to show the retry action, and turn of any old error messages
+        this.setState({
+            hosts: currentHosts,
+            msgLevel: 'info',
+            msgText: ''
+        });
 
         var that = this;
         var tokenString = this.props.svctoken;
@@ -423,6 +433,12 @@ export class HostsPage extends React.Component {
         // delete a host from the state
         console.log("You clicked to delete host - " + hostname);
 
+        // turn off any old error messages
+        this.setState({
+            msgLevel: 'info',
+            msgText: ''
+        });
+
         var localState = JSON.parse(JSON.stringify(this.state.hosts));
 
         for (var idx in localState) {
@@ -467,14 +483,18 @@ export class HostsPage extends React.Component {
 
     componentWillReceiveProps(props) {
         // pick up the state change from the parent
-        console.log("hostspage receiving props update");
+        // console.log("Debug: hostspage receiving props update NEW: " + JSON.stringify(props.hosts));
         const { hosts } = this.state.hosts;
         if (props.hosts != hosts) {
-            console.log("hosts have changed, so sort them");
-            // sort the hosts by name, then update our state
-            var tempHosts = JSON.parse(JSON.stringify(props.hosts));
-            tempHosts.sort(sortByKey('hostname'));
-            this.setState({hosts: tempHosts});
+            if (props.hosts.length == 0) {
+                console.log("Hosts from parent is empty, skipping update of local state");
+            } else {
+                console.log("Applying update from parent hosts state to local state");
+                // sort the hosts by name, then update our state
+                var tempHosts = JSON.parse(JSON.stringify(props.hosts));
+                tempHosts.sort(sortByKey('hostname'));
+                this.setState({hosts: tempHosts});
+            }
         }
     }
 
@@ -1052,7 +1072,7 @@ export class HostInfo extends React.Component {
 
         return (
             <div>
-                <span className="leftAligned">{this.props.info}</span>
+                <span className="leftAligned">{this.props.info} &nbsp;</span>
                 { helper }
             </div>
         );
