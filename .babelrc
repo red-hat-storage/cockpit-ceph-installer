@@ -1,4 +1,6 @@
 {
     "presets": ["@babel/env",
-                "@babel/preset-react"]
+                "@babel/preset-react"],
+    "plugins": ["transform-es2015-arrow-functions",
+                "@babel/plugin-proposal-class-properties"]
 }
