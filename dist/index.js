@@ -22550,6 +22550,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -22595,13 +22603,18 @@ function (_React$Component) {
       var currentState = _this.state.roleState;
       var changesMade = false;
       var eventRoleName;
-      var shortName = eventData.data.role.replace("ceph-", '');
+      var shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
 
-      if (_this.roleSequence.includes(shortName)) {
+      if (['mon', 'mgr', 'osd', 'mds', 'rgw'].includes(shortName)) {
         eventRoleName = shortName + "s";
       } else {
         eventRoleName = shortName;
-      }
+      } // if (this.roleSequence.includes(shortName)) {
+      //     eventRoleName = shortName + "s";
+      // } else {
+      //     eventRoleName = shortName;
+      // }
+
 
       switch (eventData.msg) {
         case "running":
@@ -22614,8 +22627,8 @@ function (_React$Component) {
           } else {
             if (eventRoleName) {
               // console.log("current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
-              // if the event role is not in the list AND we have seen the role-active name
-              // - set the current role to complete and move pending to the next
+              // if the event role is not in the list AND we have seen the role-active name before
+              // - set the current role to complete and move to the next role in the ansible sequence
               if (!_this.roleSequence.includes(shortName) && _this.roleSeen.includes(_this.roleActive.slice(0, -1))) {
                 currentState[_this.roleActive] = 'complete'; // FIXME: this won't work for iscsi
 
@@ -22624,8 +22637,9 @@ function (_React$Component) {
 
                 var nextRole = _this.roleSequence[_this.roleSequence.indexOf(a) + 1];
 
-                currentState[nextRole + 's'] = 'active';
-                _this.roleActive = nextRole + 's';
+                var nextRoleName = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(nextRole);
+                currentState[nextRoleName] = 'active';
+                _this.roleActive = nextRoleName;
                 changesMade = true;
                 break;
               } // if the shortname is in the sequence, but not in last seen
@@ -22641,7 +22655,7 @@ function (_React$Component) {
           break;
 
         case "failed":
-          currentState[_this.roleActive] = 'failed'; // mark current breadcrumb as complete
+          currentState[_this.roleActive] = 'failed'; // mark current breadcrumb as failed
 
           changesMade = true;
           break;
@@ -22663,31 +22677,49 @@ function (_React$Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "formattedOutput", function (output) {
+      var urlRegex = /(https?:\/\/[^\s]+)/g;
       var cmdOutput = output.map(function (textLine, idx) {
-        return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          key: idx,
-          className: "code"
-        }, textLine);
+        var match = urlRegex.exec(textLine);
+        var parts;
+
+        if (match) {
+          parts = textLine.split(match[0]);
+          return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+            key: idx,
+            className: "code"
+          }, parts[0], react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("a", {
+            href: match[0],
+            rel: "noopener noreferrer",
+            target: "_blank"
+          }, " ", match[0], " "), parts[1]);
+        } else {
+          return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+            key: idx,
+            className: "code"
+          }, textLine);
+        }
       });
       return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, cmdOutput);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "fetchCephState", function () {
       console.log("querying events for " + _this.playbookUUID);
+      var foundEvents = [];
+      var content = [];
 
       if (_this.mocked) {
         // just return the mocked data output
         console.log("using mocked data");
         console.log("calling the main app modal");
 
-        var content = _this.formattedOutput(_this.mockCephOutput);
-
-        _this.props.modalHandler(content);
+        _this.props.modalHandler("Ceph Cluster Status", _this.formattedOutput(_this.mockCephOutput));
       } else {
         console.log("fetching event data from the playbook run");
         Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getEvents"])(_this.playbookUUID, _this.props.svctoken).then(function (resp) {
           var response = JSON.parse(resp);
-          var foundEvent;
+          var matchCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.settings.targetVersion) ? 2 : 1;
+          console.log("Debug: Looking for " + matchCount + " job events in the playbook stream"); // process the events in reverse order, since what we're looking for is at the end of the run
+
           var evtIDs = Object.keys(response.data.events).reverse();
           var _iteratorNormalCompletion = true;
           var _didIteratorError = false;
@@ -22697,11 +22729,16 @@ function (_React$Component) {
             for (var _iterator = evtIDs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
               var evt = _step.value;
               var thisEvent = response.data.events[evt];
+              var task = thisEvent['task'];
 
-              if (thisEvent['event'] === 'runner_on_ok' && thisEvent['task'].startsWith('show ceph status for')) {
+              if (thisEvent['event'] === 'runner_on_ok' && (task.startsWith('show ceph status for') || task.startsWith('print dashboard URL'))) {
                 console.log("ceph status event " + JSON.stringify(thisEvent));
-                foundEvent = evt;
-                break;
+                foundEvents.push(evt);
+
+                if (foundEvents.length == matchCount) {
+                  console.log("Debug: found all required matches");
+                  break;
+                }
               }
             }
           } catch (err) {
@@ -22719,22 +22756,62 @@ function (_React$Component) {
             }
           }
 
-          if (foundEvent) {
-            Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getJobEvent"])(_this.playbookUUID, foundEvent, _this.props.svctoken).then(function (resp) {
-              var response = JSON.parse(resp);
-              var output = response.data.event_data.res.msg;
+          if (foundEvents) {
+            // build iterable containing all the promises
+            var events = [];
 
-              var content = _this.formattedOutput(output);
+            for (var _i = 0; _i < foundEvents.length; _i++) {
+              var eventID = foundEvents[_i];
+              var promise = Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getJobEvent"])(_this.playbookUUID, eventID, _this.props.svctoken);
+              events.push(promise);
+            } // wait for all promises to resolve
 
-              _this.props.modalHandler("Ceph Cluster Status", content);
-            }).catch(function (e) {
-              console.error("Error fetching job event: " + e.message);
+
+            Promise.all(events).then(function (values) {
+              // values will be a list of response objects
+              console.log(JSON.stringify(values));
+              var _iteratorNormalCompletion2 = true;
+              var _didIteratorError2 = false;
+              var _iteratorError2 = undefined;
+
+              try {
+                for (var _iterator2 = values[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                  var _resp = _step2.value;
+
+                  var _response = JSON.parse(_resp);
+
+                  var output = _response.data.event_data.res.msg;
+
+                  if (Array.isArray(output)) {
+                    // put multi-line output first
+                    content.unshift.apply(content, _toConsumableArray(output));
+                  } else {
+                    // place single line output at the end
+                    content.push(output);
+                  }
+                }
+              } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                    _iterator2.return();
+                  }
+                } finally {
+                  if (_didIteratorError2) {
+                    throw _iteratorError2;
+                  }
+                }
+              }
+
+              _this.props.modalHandler("Ceph Cluster Status", _this.formattedOutput(content));
             });
           } else {
-            console.log("playbook didn't have a show ceph status task");
+            console.log("No events to provide end of install information");
           }
         }).catch(function (e) {
-          console.error("Unable to fetch events for play " + _this.playbookUUID);
+          console.error("Unable to fetch events for playbook run " + _this.playbookUUID);
         });
       }
     });
@@ -22742,13 +22819,13 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "reset", function () {
       var allRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])(_this.props.settings.hosts);
       var tmpRoleState = {};
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator2 = allRoles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var role = _step2.value;
+        for (var _iterator3 = allRoles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var role = _step3.value;
           tmpRoleState[role] = 'pending';
 
           if (role == 'mons') {
@@ -22756,16 +22833,16 @@ function (_React$Component) {
           }
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+            _iterator3.return();
           }
         } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -22800,13 +22877,13 @@ function (_React$Component) {
       chain = chain.then(function () {
         return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('all', vars, _this.props.svctoken);
       });
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator3 = roleList[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var roleGroup = _step3.value;
+        for (var _iterator4 = roleList[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var roleGroup = _step4.value;
 
           switch (roleGroup) {
             case "mons":
@@ -22850,16 +22927,16 @@ function (_React$Component) {
           }
         }
       } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-            _iterator3.return();
+          if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+            _iterator4.return();
           }
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          if (_didIteratorError4) {
+            throw _iteratorError4;
           }
         }
       }
@@ -22868,13 +22945,13 @@ function (_React$Component) {
 
       if (roleList.includes("osds")) {
         console.log("generating hostvars for the osd hosts");
-        var _iteratorNormalCompletion4 = true;
-        var _didIteratorError4 = false;
-        var _iteratorError4 = undefined;
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
 
         try {
           var _loop = function _loop() {
-            var host = _step4.value;
+            var host = _step5.value;
 
             if (host.osd) {
               var osd_metadata = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["hostVars"])(host, _this.state.settings.flashUsage);
@@ -22884,20 +22961,20 @@ function (_React$Component) {
             }
           };
 
-          for (var _iterator4 = _this.state.settings.hosts[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          for (var _iterator5 = _this.state.settings.hosts[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
             _loop();
           }
         } catch (err) {
-          _didIteratorError4 = true;
-          _iteratorError4 = err;
+          _didIteratorError5 = true;
+          _iteratorError5 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-              _iterator4.return();
+            if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+              _iterator5.return();
             }
           } finally {
-            if (_didIteratorError4) {
-              throw _iteratorError4;
+            if (_didIteratorError5) {
+              throw _iteratorError5;
             }
           }
         }
@@ -22942,7 +23019,8 @@ function (_React$Component) {
           _this.setState({
             deployActive: true,
             deployBtnText: 'Running',
-            deployEnabled: false
+            deployEnabled: false,
+            backBtnEnabled: false
           });
 
           _this.startPlaybook();
@@ -23009,13 +23087,24 @@ function (_React$Component) {
 
           console.log("Last status is " + playStatus);
           var buttonText;
-          buttonText = playStatus == "SUCCESSFUL" ? "Complete" : "Retry";
+
+          if (playStatus == "SUCCESSFUL") {
+            buttonText = "Complete";
+
+            _this.setState({
+              backBtnEnabled: false
+            }); // disables the back button!
+
+          } else {
+            buttonText = "Retry";
+          }
+
           _this.endTime = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["currentTime"])();
 
           _this.setState({
             deployActive: false,
-            deployBtnText: buttonText,
-            deployEnabled: true
+            deployEnabled: true,
+            deployBtnText: buttonText
           });
         }
       } else {
@@ -23091,6 +23180,7 @@ function (_React$Component) {
 
     _this.state = {
       deployEnabled: true,
+      backBtnEnabled: true,
       deployBtnText: 'Save',
       statusMsg: '',
       deployActive: false,
@@ -23168,30 +23258,35 @@ function (_React$Component) {
 
         if (allRoles.length > 0) {
           var tmpRoleState = {};
-          var _iteratorNormalCompletion5 = true;
-          var _didIteratorError5 = false;
-          var _iteratorError5 = undefined;
+          var _iteratorNormalCompletion6 = true;
+          var _didIteratorError6 = false;
+          var _iteratorError6 = undefined;
 
           try {
-            for (var _iterator5 = allRoles[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-              var role = _step5.value;
-              tmpRoleState[role] = 'pending';
+            for (var _iterator6 = allRoles[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+              var role = _step6.value;
+
+              if (role == 'ceph-grafana') {
+                tmpRoleState['metrics'] = 'pending';
+              } else {
+                tmpRoleState[role] = 'pending';
+              }
 
               if (role == 'mons') {
                 tmpRoleState['mgrs'] = 'pending';
               }
             }
           } catch (err) {
-            _didIteratorError5 = true;
-            _iteratorError5 = err;
+            _didIteratorError6 = true;
+            _iteratorError6 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
-                _iterator5.return();
+              if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
+                _iterator6.return();
               }
             } finally {
-              if (_didIteratorError5) {
-                throw _iteratorError5;
+              if (_didIteratorError6) {
+                throw _iteratorError6;
               }
             }
           }
@@ -23218,7 +23313,7 @@ function (_React$Component) {
           break;
 
         case "successful":
-          msgClass = "runtime-table-value align-left success";
+          msgClass = "runtime-table-value align-left success bold-text";
           break;
 
         default:
@@ -23306,7 +23401,7 @@ function (_React$Component) {
         action: this.deployBtnHandler
       }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_2__["UIButton"], {
         btnLabel: "\u2039 Back",
-        disabled: !this.state.deployEnabled,
+        disabled: !this.state.backBtnEnabled,
         action: this.previousPage
       })));
     }
@@ -23492,13 +23587,13 @@ function (_React$Component4) {
       if (this.props.errorEvent.res.results) {
         console.log("errorEvent: has results array");
         var results = this.props.errorEvent.res.results;
-        var _iteratorNormalCompletion6 = true;
-        var _didIteratorError6 = false;
-        var _iteratorError6 = undefined;
+        var _iteratorNormalCompletion7 = true;
+        var _didIteratorError7 = false;
+        var _iteratorError7 = undefined;
 
         try {
-          for (var _iterator6 = results[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-            var e = _step6.value;
+          for (var _iterator7 = results[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+            var e = _step7.value;
 
             if (e.failed) {
               if (e.hasOwnProperty('msg')) {
@@ -23517,16 +23612,16 @@ function (_React$Component4) {
             }
           }
         } catch (err) {
-          _didIteratorError6 = true;
-          _iteratorError6 = err;
+          _didIteratorError7 = true;
+          _iteratorError7 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
-              _iterator6.return();
+            if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
+              _iterator7.return();
             }
           } finally {
-            if (_didIteratorError6) {
-              throw _iteratorError6;
+            if (_didIteratorError7) {
+              throw _iteratorError7;
             }
           }
         }
@@ -23799,7 +23894,8 @@ function (_React$Component) {
     };
     _this.network_type = {
       description: "Network connectivity",
-      options: ['ipv4', 'ipv6'],
+      options: ['ipv4'],
+      // 'ipv6'],
       default: 'ipv4',
       name: 'networkType',
       tooltip: "",
@@ -23997,6 +24093,8 @@ function (_React$Component) {
         }
 
         if (metricsHost) {
+          // pass the metrics host name back to the parent state
+          // Note this will drive a state change to all child components
           _this.props.metricsHostHandler(metricsHost);
         } else {
           _this.setState({
@@ -24006,7 +24104,8 @@ function (_React$Component) {
 
           return;
         }
-      }
+      } // console.log("Debug: we have these hosts: " + JSON.stringify(this.state.hosts));
+
 
       if (_this.state.hosts.length > 0) {
         // we must have hosts to process before moving on to validation
@@ -24020,6 +24119,7 @@ function (_React$Component) {
 
         if (hostOKCount != _this.state.hosts.length) {
           errMsgs.push("Hosts must be in an 'OK' state to continue");
+          console.log("Debug: hosts are " + JSON.stringify(_this.state.hosts));
         }
 
         var monCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'mon');
@@ -24050,6 +24150,7 @@ function (_React$Component) {
           });
 
           usable = false;
+          return;
         }
 
         if (usable) {
@@ -24221,12 +24322,14 @@ function (_React$Component) {
           ptr = i;
           break;
         }
-      }
+      } // update the table to show the retry action, and turn of any old error messages
+
 
       _this.setState({
-        hosts: currentHosts
-      }); // update the table to show the retry action
-
+        hosts: currentHosts,
+        msgLevel: 'info',
+        msgText: ''
+      });
 
       var that = _assertThisInitialized(_assertThisInitialized(_this));
 
@@ -24375,7 +24478,13 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHost", function (hostname) {
       // delete a host from the state
-      console.log("You clicked to delete host - " + hostname);
+      console.log("You clicked to delete host - " + hostname); // turn off any old error messages
+
+      _this.setState({
+        msgLevel: 'info',
+        msgText: ''
+      });
+
       var localState = JSON.parse(JSON.stringify(_this.state.hosts));
 
       for (var idx in localState) {
@@ -24553,17 +24662,21 @@ function (_React$Component) {
     key: "componentWillReceiveProps",
     value: function componentWillReceiveProps(props) {
       // pick up the state change from the parent
-      console.log("hostspage receiving props update");
+      // console.log("Debug: hostspage receiving props update NEW: " + JSON.stringify(props.hosts));
       var hosts = this.state.hosts.hosts;
 
       if (props.hosts != hosts) {
-        console.log("hosts have changed, so sort them"); // sort the hosts by name, then update our state
+        if (props.hosts.length == 0) {
+          console.log("Hosts from parent is empty, skipping update of local state");
+        } else {
+          console.log("Applying update from parent hosts state to local state"); // sort the hosts by name, then update our state
 
-        var tempHosts = JSON.parse(JSON.stringify(props.hosts));
-        tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["sortByKey"])('hostname'));
-        this.setState({
-          hosts: tempHosts
-        });
+          var tempHosts = JSON.parse(JSON.stringify(props.hosts));
+          tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["sortByKey"])('hostname'));
+          this.setState({
+            hosts: tempHosts
+          });
+        }
       }
     }
   }, {
@@ -25254,7 +25367,7 @@ function (_React$Component5) {
 
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
         className: "leftAligned"
-      }, this.props.info), helper);
+      }, this.props.info, " \xA0"), helper);
     }
   }]);
 
@@ -25495,7 +25608,7 @@ function (_React$Component) {
       review: "page behind",
       deploy: "page behind"
     };
-    _this.infoText = ["", "The environment settings define the basic constraints that will apply to the target Ceph cluster.", "Enter the hostnames using either the hostname or a hostname pattern to " + "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc).", "By probing the hosts, we can check that there are enough hardware resources to" + " support the intended Ceph roles. It also allows you to visually check the" + " detected devices and configuration are as expected. Once probed, you may" + " hover over the hostname to show the hardware model name of the server.", "Separating network traffic across multiple subnets is a recommeded best practice" + " for performance and fault tolerance.", "Review the configuration information that you have provided, prior to moving to installation. Use" + " the back button to return to prior pages to change your selections.", "When you click 'Deploy', the Ansible settings will be committed to disk using standard" + " Ansible formats. This allows you to refer to or modify these settings at a later date" + " if you decide to directly manage your cluster with Ansible."];
+    _this.infoText = ["", "The environment settings define the basic constraints that will apply to the target Ceph cluster.", "Enter the hostnames using either the hostname or a hostname pattern to " + "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc).", "By probing the hosts, we can check that there are enough hardware resources to" + " support the intended Ceph roles. It also allows you to visually check the" + " detected devices and configuration are as expected. Once probed, you may" + " hover over the hostname to show the hardware model name of the server.", "Separating network traffic across multiple subnets is a recommeded best practice" + " for performance and fault tolerance.", "Review the configuration information that you have provided, prior to moving to installation. Use" + " the back button to return to prior pages to change your selections.", "When you click 'Save', the Ansible settings will be committed to disk using standard" + " Ansible formats. This allows you to refer to or modify these settings before" + " starting the deployment."];
     _this.visited = [];
     return _this;
   }
@@ -26325,17 +26438,20 @@ function (_React$Component3) {
         if (!host.metrics) {
           // only build table entries for ceph hosts
           var roles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["buildRoles"])([host]).join(', ');
-          var specL1 = host.cpu + " CPU, " + host.ram + " RAM, " + host.nic + " NIC";
+          var specL1 = host.cpu + " CPU, " + host.ram + "GB RAM, " + host.nic + " NIC";
           var specL2 = host.hdd + " HDD, " + host.ssd + " SSD";
           console.log(JSON.stringify(host.subnet_details));
           console.log(_this3.props.clusterNetwork);
           console.log("net = " + JSON.stringify(host.subnet_details[_this3.props.clusterNetwork]));
-          var clusterNetwork = host.subnet_details[_this3.props.clusterNetwork].addr + " | " + host.subnet_details[_this3.props.clusterNetwork].devices[0];
-          var publicNetwork = host.subnet_details[_this3.props.publicNetwork].addr + " | " + host.subnet_details[_this3.props.publicNetwork].devices[0];
+
+          var clusterNetwork = host.subnet_details[_this3.props.clusterNetwork].addr + " | " + host.subnet_details[_this3.props.clusterNetwork].devices[0].replace('ansible_', '');
+
+          var publicNetwork = host.subnet_details[_this3.props.publicNetwork].addr + " | " + host.subnet_details[_this3.props.publicNetwork].devices[0].replace('ansible_', '');
+
           var s3Network;
 
           if (_this3.props.s3Network && roles.includes('rgws')) {
-            s3Network = host.subnet_details[_this3.props.s3Network].addr + " | " + host.subnet_details[_this3.props.s3Network].devices[0];
+            s3Network = host.subnet_details[_this3.props.s3Network].addr + " | " + host.subnet_details[_this3.props.s3Network].devices[0].replace('ansible_', '');
           } else {
             s3Network = 'N/A';
           }
@@ -26524,14 +26640,25 @@ function (_React$Component) {
       });
     });
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "probeComplete", function () {
-      console.log("probe scan has completed");
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "probeComplete", function (playbookStatus) {
+      console.log("probe playbook complete : " + playbookStatus);
 
-      _this.setState({
-        probeEnabled: true,
-        ready: true,
-        probeStatusMsg: ''
-      });
+      if (playbookStatus == 'failed') {
+        _this.setState({
+          msgLevel: 'error',
+          msgText: "Unexpected playbook failure. Check ansible-runner-service directory '" + _this.playUUID + "' for details.",
+          probeEnabled: true,
+          pendingProbe: true,
+          ready: false,
+          probeStatusMsg: ''
+        });
+      } else {
+        _this.setState({
+          probeEnabled: true,
+          ready: true,
+          probeStatusMsg: ''
+        });
+      }
 
       _this.eventLookup = {};
     });
@@ -26604,10 +26731,10 @@ function (_React$Component) {
         var response = JSON.parse(resp);
         console.log("playbook execution started :" + response.status);
         console.log("response object :" + JSON.stringify(response));
-        var playUUID = response.data.play_uuid;
-        console.log("tracking playbook with UUID :" + playUUID);
+        _this.playUUID = response.data.play_uuid;
+        console.log("tracking playbook with UUID :" + _this.playUUID);
         console.log("starting progress tracker");
-        Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["checkPlaybook"])(playUUID, _this.props.svctoken, _this.updateProbeStatus, _this.probeComplete);
+        Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["checkPlaybook"])(_this.playUUID, _this.props.svctoken, _this.updateProbeStatus, _this.probeComplete);
       }).catch(function (e) {
         var errorMsg;
         console.error("Problem starting the playbook: response was - " + JSON.stringify(e));
@@ -26920,6 +27047,7 @@ function (_React$Component) {
     _this.eventLookup = {}; // lookup for probe results
 
     _this.skipChecks = false;
+    _this.playUUID = '';
     return _this;
   }
 
@@ -27390,7 +27518,7 @@ function (_React$Component) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         id: "welcome",
         className: this.props.className
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Welcome"), "This installation process provides a guided workflow to help you install your Ceph cluster. ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The main components of the installation workflow are represented above. Once a step is complete, you automatically move on to the next step but can return to a prior steps by simply clicking the relevant step number above.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_modal_jsx__WEBPACK_IMPORTED_MODULE_2__["GenericModal"], {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Welcome"), "This installation process provides a guided workflow to help you install your Ceph cluster. ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "The main components of the installation workflow are represented above. Each page in this process has navigation buttons placed at the bottom right of the window, enabling you to proceed and return to prior steps in the workflow.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_modal_jsx__WEBPACK_IMPORTED_MODULE_2__["GenericModal"], {
         show: this.state.modalVisible,
         content: this.state.modalContent,
         title: this.state.modalTitle,
@@ -27399,15 +27527,15 @@ function (_React$Component) {
         className: "tdTitles"
       }, "Environment"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "The target environment defines the high level scope of the installation. Within this option you declare items such as;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "installation source"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "OSD type ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g 'legacy' filestore or bluestore)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "data security features ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g. encryption)"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
-      }, "Hosts"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd or rgw")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+      }, "Hosts"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd, rgw or mds")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
-      }, "Validation"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Validate the configuration of the candidate hosts against the required Ceph roles using established best practice guidelines")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+      }, "Validation"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Validate the configuration of the candidate Ceph hosts against the required Ceph roles using established best practice guidelines")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
       }, "Network"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Network subnet declaration for the front end (client) and backend (ceph) networks")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
       }, "Review"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Review the configuration settings made prior to installation")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
-      }, "Deploy"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Start the installation process and monitor progress")))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, "Deploy"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Save your selections, start the deployment process and monitor installation progress.")))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "nav-button-container"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["UIButton"], {
         primary: true,
@@ -27718,7 +27846,9 @@ function rgwsVars(vars) {
 function cephAnsibleSequence(roles) {
   // the goal here it to align to the execution sequence of the ceph-ansible playbook
   // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
-  // FIXME: iscsi is not included at the moment
+  // input  : ['mons','rgws','osds','ceph-grafana']
+  // output : ['mon','mgr','osd','rgw','ceph-grafana']
+  // FIXME: iscsi is not tested/validated at the moment
   var rolesIn = [];
   var _iteratorNormalCompletion2 = true;
   var _didIteratorError2 = false;
@@ -27727,7 +27857,16 @@ function cephAnsibleSequence(roles) {
   try {
     for (var _iterator2 = roles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
       var r = _step2.value;
-      rolesIn.push(r.slice(0, -1)); // drop the last char
+
+      switch (r) {
+        case "ceph-grafana":
+          rolesIn.push(r);
+          break;
+
+        default:
+          rolesIn.push(r.slice(0, -1));
+        // eg. mons becomes mon
+      }
     }
   } catch (err) {
     _didIteratorError2 = true;
@@ -27744,7 +27883,7 @@ function cephAnsibleSequence(roles) {
     }
   }
 
-  var allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw']; // ceph-ansible sequence
+  var allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw', 'ceph-grafana']; // ceph-ansible sequence in site-*.yml
 
   var sequence = [];
 
@@ -28140,6 +28279,11 @@ function convertRole(role) {
       role = "ceph-grafana";
       break;
 
+    case "ceph-grafana":
+      // used by deploypage
+      role = "metrics";
+      break;
+
     default:
       console.error("processing an unknown role type");
       role = "??";
@@ -28368,7 +28512,7 @@ function checkPlaybook(playUUID, svctoken, activeCB, finishedCB) {
       console.log("Playbook ended : " + response.msg);
       Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getTaskEvents"])(playUUID, "CEPH_CHECK_ROLE", svctoken).then(function (resp) {
         activeCB(JSON.parse(resp), playUUID);
-        finishedCB();
+        finishedCB(response.msg);
       });
     }
   });
