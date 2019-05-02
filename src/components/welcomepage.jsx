@@ -5,6 +5,8 @@ import { checkAPI } from '../services/apicalls.js';
 import '../app.scss';
 
 export class WelcomePage extends React.Component {
+    //
+    // Initial welcome page presented prior to the configuration pages
     constructor(props) {
         super(props);
         this.state = {
@@ -23,7 +25,7 @@ export class WelcomePage extends React.Component {
     }
 
     checkRunnerAvailable = () => {
-        console.log("check the ansible-runner-service API is there");
+        console.log("checking the ansible-runner-service API is there");
 
         checkAPI()
                 .then((resp) => {
@@ -64,8 +66,7 @@ export class WelcomePage extends React.Component {
                         <tr>
                             <td className="tdTitles" >Environment</td>
                             <td>The target environment defines the high level scope of the installation. Within this
-                            option you declare items such as;
-                            <ul>
+                            option you declare items such as;<ul>
                                 <li>installation source</li>
                                 <li>OSD type <i>(e.g &apos;legacy&apos; filestore or bluestore)</i></li>
                                 <li>data security features <i>(e.g. encryption)</i></li>
@@ -101,7 +102,6 @@ export class WelcomePage extends React.Component {
                     <UIButton primary btnLabel="Environment &rsaquo;" action={this.checkRunnerAvailable} />
                 </div>
             </div>
-            //   &#x41;
         );
     }
 }
