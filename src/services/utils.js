@@ -4,12 +4,14 @@ import { addGroup, deleteGroup, changeHost, getPlaybookState, getTaskEvents } fr
 
 const validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi', 'metrics'];
 
-export function getSVCToken () {
-    console.log("external function fetching svctoken from filesystem");
-    // var token_path = '/etc/hosts';
-    var tokenPath = '/etc/ansible-runner-service/svctoken';
+export function readFile (fileName, fileType) {
+    console.log("Fetching contents of '" + fileName + "'");
+    let spec = {
+        "superuser": "require"
+    };
+    if (fileType == 'JSON') { spec['syntax'] = JSON }
 
-    let promise = cockpit.file(tokenPath, {"superuser": "require"}).read();
+    let promise = cockpit.file(fileName, spec).read();
     return promise;
 }
 
