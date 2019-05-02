@@ -2,6 +2,8 @@ import React from 'react';
 import '../../app.scss';
 
 export class ElapsedTime extends React.Component {
+    //
+    // Simple elapsed timer widget
     constructor(props) {
         super(props);
         this.state = {
@@ -37,10 +39,6 @@ export class ElapsedTime extends React.Component {
         this.setState({active: false});
         clearInterval(this.loadInterval);
     }
-
-    // componentDidMount(props) {
-    //     this.loadInterval = setInterval(this.updateTimer, 1000);
-    // }
 
     componentWillUnmount(props) {
         console.log("Unmounting the ElapsedTime component, cancelling the timer");

@@ -2,6 +2,9 @@ import React from 'react';
 import '../../app.scss';
 
 export class Notification extends React.Component {
+    //
+    // Notification component used to show the user info/warning/error and success
+    // messages
     constructor(props) {
         super(props);
         this.state = {};
@@ -40,7 +43,7 @@ export class Notification extends React.Component {
             msgIcon = "pficon pficon-info";
             break;
         }
-        // message = (this.props.msgText) ? this.props.msgText : 'dummy message';
+
         if (this.props.msgText) {
             notification = (
                 <div className={msgClass} >

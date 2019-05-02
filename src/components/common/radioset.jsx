@@ -2,6 +2,8 @@ import React from 'react';
 import '../../app.scss';
 
 export class RadioSet extends React.Component {
+    //
+    // radio button group component
     constructor(props) {
         super(props);
 
@@ -9,16 +11,6 @@ export class RadioSet extends React.Component {
             name: props.config.name,
             selected: props.config.default
         };
-
-        // this.config = props.config;
-        // this.changeHandler = this.changeHandler.bind(this);
-        // this.radioStyle = {
-        //     marginRight: "10px"
-        // };
-
-        // if (!this.config.horizontal) {
-        //     delete this.radioStyle.display;
-        // }
     }
 
     changeHandler = (event) => {
