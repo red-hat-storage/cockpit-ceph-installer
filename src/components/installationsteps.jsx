@@ -11,31 +11,32 @@ import ProgressTracker from './progresstracker.jsx';
 import InfoBar from './infobar.jsx';
 
 export class InstallationSteps extends React.Component {
+    //
+    // This is the main page that loads all the page components into the DOM
+    //
     constructor(props) {
         super(props);
-        this.nextHandler = this.nextHandler.bind(this);
-        // this.jumpToPageHandler = this.jumpToPageHandler.bind(this);
         this.state = {
             pageNum: 0,
             lastPage: 0,
             hosts: [],
-            sourceType: "Red Hat",
-            targetVersion: "RHCS 3",
-            clusterType: "Production",
-            installType: "RPM",
-            networkType: 'ipv4',
-            osdType: "Bluestore",
-            osdMode: "Standard",
-            flashUsage: "Journals/Logs",
+            sourceType: props.defaults.sourceType,
+            targetVersion: props.defaults.targetVersion,
+            clusterType: props.defaults.clusterType,
+            installType: props.defaults.installType,
+            networkType: props.defaults.networkType,
+            osdType: props.defaults.osdType,
+            osdMode: props.defaults.osdMode,
+            flashUsage: props.defaults.flashUsage,
             publicNetwork: '',
             clusterNetwork: '',
             rgwNetwork:'',
             metricsHost: '',
             deployStarted: false
-            // startTime: '',
-            // endTime: '',
-            // runDuration: ''
         };
+
+        // define the classes the pages will initially use on first render. If behind is defined,
+        // the page will be hidden.
         this.page = {
             welcome: "page",
             environment: "page behind",
@@ -68,7 +69,6 @@ export class InstallationSteps extends React.Component {
     deployCluster() {
         console.log("go deploy the cluster");
         console.log("Current state is " + JSON.stringify(this.state));
-        // console.log("Current config is " + JSON.stringify(this.config));
     }
 
     deployHandler = () => {
@@ -83,6 +83,8 @@ export class InstallationSteps extends React.Component {
     }
 
     updateState = (param) => {
+        //
+        // Handles applying state changes from child components to the local state
         let ignoredKeys = ['className', 'modalVisible', 'modalContent'];
 
         console.log("Updating state");
@@ -90,14 +92,8 @@ export class InstallationSteps extends React.Component {
             if (param.constructor === {}.constructor) {
                 // this is a json object
                 let stateObject = param;
-                // console.log(JSON.stringify(stateObject));
                 console.log("Lets apply the settings to the parents config object");
-                // if ('className' in stateObject) {
-                //     console.log("removing className attribute");
-                //     delete stateObject['className'];
-                // }
-                // this.config = Object.assign(this.config, stateObject);
-                // console.log("installation config holds: " + JSON.stringify(this.config));
+
                 let keys = Object.keys(stateObject);
                 for (var k of keys) {
                     if (ignoredKeys.includes(k)) {
@@ -107,14 +103,12 @@ export class InstallationSteps extends React.Component {
                         this.setState({[k]: stateObject[k]});
                     }
                 }
-                // this.config = Object.assign(this.config, stateObject);
-                // console.log("installation config holds: " + JSON.stringify(this.config));
                 console.log("installation state updated with: " + JSON.stringify(stateObject));
             }
         }
     }
 
-    nextHandler (param) {
+    nextHandler = (param) => {
         this.updateState(param);
 
         let current = this.state.pageNum;
@@ -150,31 +144,7 @@ export class InstallationSteps extends React.Component {
         });
     }
 
-    // jumpToPageHandler (param) {
-    //     if (!this.state.deployStarted) {
-    //         if (this.visited.includes(param)) {
-    //             console.log("jump to already visited page " + param + " requested");
-    //             let current = this.state.pageNum;
-    //             if (param < current) {
-    //                 this.setState({
-    //                     pageNum: param,
-    //                     lastPage: current
-    //                 });
-    //             } else {
-    //                 console.error("can't jump forward - need to use the next button to ensure state changes propogate correctly");
-    //             }
-    //         } else {
-    //             console.log("jump to page " + param + " denied - not been there yet!");
-    //         }
-    //     } else {
-    //         console.log("attempt to navigate back is blocked while a deployment has started/is running");
-    //     }
-    // }
-
     render() {
-        console.log("rendering installationpage: state - " + JSON.stringify(this.state));
-        console.log("Page counter is " + this.state.pageNum);
-
         let oldPage = Object.keys(this.page)[this.state.lastPage];
         console.log("old page is " + oldPage);
         let newPage = Object.keys(this.page)[this.state.pageNum];
@@ -185,15 +155,14 @@ export class InstallationSteps extends React.Component {
         console.log(this.page);
         return (
             <div>
-                <ProgressTracker
-                    pageNum={this.state.pageNum} />
-                {/* pageSwitcher={this.jumpToPageHandler} /> */}
+                <ProgressTracker pageNum={this.state.pageNum} />
                 <div id="installPages">
                     <WelcomePage
                         className={this.page['welcome']}
                         action={this.nextHandler} />
                     <EnvironmentPage
                         className={this.page['environment']}
+                        defaults={this.props.defaults}
                         action={this.nextHandler} />
                     <HostsPage
                         className={this.page['hosts']}
