@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../app.scss';
+import { Tooltip } from './tooltip.jsx';
 
 export class Selector extends React.Component {
     constructor (props) {
@@ -19,15 +20,7 @@ export class Selector extends React.Component {
         let labelStyle;
         let toolTip;
         if (this.props.tooltip) {
-            let info = this.props.tooltip.split('\n').map((text, key) => {
-                return <div key={key}>{text}</div>;
-            });
-            toolTip = (
-                <div className="textInfo">
-                    &nbsp;<span className="pficon pficon-info" />
-                    <span className="tooltipContent">{info}</span>
-                </div>
-            );
+            toolTip = (<Tooltip text={ this.props.tooltip } />);
         } else {
             toolTip = (
                 <span />
@@ -50,7 +43,7 @@ export class Selector extends React.Component {
         });
         return (
             <div className={divStyle}>
-                <div className={labelStyle}>{ this.props.labelName }{ toolTip }</div>
+                <div className={labelStyle}><b>{ this.props.labelName }</b>{ toolTip }</div>
                 <select className="dropdown-box" value={this.props.value} onChange={this.selectorChanged}>
                     { options }
                 </select>

@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../app.scss';
+import { Tooltip } from './tooltip.jsx';
 
 export class RadioSet extends React.Component {
     //
@@ -9,7 +10,7 @@ export class RadioSet extends React.Component {
 
         this.state = {
             name: props.config.name,
-            selected: props.config.default
+            selected: props.default
         };
     }
 
@@ -35,15 +36,7 @@ export class RadioSet extends React.Component {
         }
 
         if (this.props.config.tooltip) {
-            let info = this.props.config.tooltip.split('\n').map((text, key) => {
-                return <div key={key}>{text}</div>;
-            });
-            toolTip = (
-                <div className="textInfo">
-                    &nbsp;<span className="pficon pficon-info" />
-                    <span className="tooltipContent">{info}</span>
-                </div>
-            );
+            toolTip = (<Tooltip text={ this.props.config.tooltip} />);
         } else {
             toolTip = (
                 <span />
@@ -57,7 +50,7 @@ export class RadioSet extends React.Component {
                         onClick={this.changeHandler}
                         name={ this.props.config.name }
                         value={ text }
-                        defaultChecked={ this.props.config.default === text } />
+                        defaultChecked={ text.valueOf() === this.props.default.valueOf() } />
                         { text }
                     </label>
                 </div>);
