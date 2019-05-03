@@ -8,10 +8,12 @@ import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
 import { GenericModal } from './common/modal.jsx';
-// import { buildRoles, copyToClipboard, currentTime } from '../services/utils.js';
 import { buildRoles, currentTime, convertRole, versionSupportsMetrics } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
+    //
+    // Implements the deployment page that handles the creation of the ansible artifacts and
+    // the UI monitoring of playbook execution
     constructor(props) {
         super(props);
         this.state = {
@@ -115,11 +117,7 @@ export class DeployPage extends React.Component {
         } else {
             eventRoleName = shortName;
         }
-        // if (this.roleSequence.includes(shortName)) {
-        //     eventRoleName = shortName + "s";
-        // } else {
-        //     eventRoleName = shortName;
-        // }
+
         switch (eventData.msg) {
         case "running":
             if (this.roleActive == null) {

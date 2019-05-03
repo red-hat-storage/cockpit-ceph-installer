@@ -2,6 +2,8 @@ import React from 'react';
 import '../app.scss';
 
 export class ProgressTracker extends React.Component {
+    //
+    // Provides the Progress tracker widget at the top of the page
     constructor(props) {
         super(props);
         this.state = {};
@@ -14,8 +16,6 @@ export class ProgressTracker extends React.Component {
                 if (i == this.props.pageNum) {
                     this.itemState[i] = "indicator selected";
                 } else {
-                    // let current = this.itemState[i];
-                    // current = current.replace('selected', '');
                     this.itemState[i] = "indicator";
                 }
             }
@@ -35,19 +35,6 @@ export class ProgressTracker extends React.Component {
                 <span className="joiner">&nbsp;</span>
                 <span label-name="Deploy" className={this.itemState[6]}>6</span>
             </div>
-            // <div id="navcontainer">
-            //     <span label-name="Environment" onClick={ () => this.props.pageSwitcher(1) } className={this.itemState[1]}>1</span>
-            //     <span className="joiner">&nbsp;</span>
-            //     <span label-name="Hosts" onClick={() => this.props.pageSwitcher(2)} className={this.itemState[2]}>2</span>
-            //     <span className="joiner">&nbsp;</span>
-            //     <span label-name="Validate" onClick={() => this.props.pageSwitcher(3)} className={this.itemState[3]}>3</span>
-            //     <span className="joiner">&nbsp;</span>
-            //     <span label-name="Network" onClick={() => this.props.pageSwitcher(4)} className={this.itemState[4]}>4</span>
-            //     <span className="joiner">&nbsp;</span>
-            //     <span label-name="Review" onClick={() => this.props.pageSwitcher(5)} className={this.itemState[5]}>5</span>
-            //     <span className="joiner">&nbsp;</span>
-            //     <span label-name="Deploy" onClick={() => this.props.pageSwitcher(6)} className={this.itemState[6]}>6</span>
-            // </div>
         );
     }
 }
