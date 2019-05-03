@@ -43,7 +43,7 @@ export function osdsVars (vars) {
     let forYML = {
         osd_auto_discovery: false
     };
-    if (vars.osdMode != 'Standard') {
+    if (vars.osdMode == 'Encrypted') {
         forYML.dmcrypt = true;
     }
 
