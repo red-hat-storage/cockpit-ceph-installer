@@ -25,7 +25,7 @@ export class NetworkPage extends React.Component {
         if (props.className == 'page') {
             // the page is active, so refresh the items with updated props
             // from the parent
-
+            console.log("Debug: host count : " + props.hosts.length);
             for (let idx = 0; idx < props.hosts.length; idx++) {
                 if (props.hosts[idx]['metrics']) {
                     continue;
@@ -80,57 +80,65 @@ export class NetworkPage extends React.Component {
     }
 
     render() {
-        console.log("rendering network page");
+        if (this.props.className == 'page') {
+            console.log("rendering network page");
+            console.log("internal subnets " + JSON.stringify(this.internalNetworks));
+            console.log("external subnets " + JSON.stringify(this.externalNetworks));
+            console.log("s3 subnets " + JSON.stringify(this.s3Networks));
+            console.log("iscsi subnets " + JSON.stringify(this.iscsiNetworks));
+            return (
+                <div id="network" className={this.props.className}>
+                    <h3>4. Network Configuration</h3>
+                    <p>The network topology plays a significant role in determining the performance of Ceph services. An optimum
+                        network configuration uses a front-end (public) and backend (cluster) network topology. This strategy
+                        separates network loads like object replication from client workload (I/O). The probe performed against
+                        your hosts has revealed the following networking options;
+                    </p>
+                    <div className="centered-container">
+                        <NetworkOptions
+                            title="Cluster Network"
+                            description="Subnets common to OSD hosts"
+                            subnets={this.internalNetworks}
+                            name="clusterNetwork"
+                            lookup={this.subnetLookup}
+                            hosts={this.cephHosts}
+                            updateHandler={this.updateHandler} />
+                        <NetworkOptions
+                            title="Public Network"
+                            description="Subnets common to all hosts"
+                            subnets={this.externalNetworks}
+                            name="publicNetwork"
+                            lookup={this.subnetLookup}
+                            hosts={this.cephHosts}
+                            updateHandler={this.updateHandler} />
+                        <NetworkOptions
+                            title="S3 Client Network"
+                            description="Subnets common to radosgw hosts"
+                            subnets={this.s3Networks}
+                            name="rgwNetwork"
+                            lookup={this.subnetLookup}
+                            hosts={this.cephHosts}
+                            updateHandler={this.updateHandler} />
+                        <NetworkOptions
+                            title="iSCSI Target Network"
+                            description="Subnets common to iSCSI hosts"
+                            subnets={this.iscsiNetworks}
+                            name="iscsiNetwork"
+                            lookup={this.subnetLookup}
+                            hosts={this.cephHosts}
+                            updateHandler={this.updateHandler} />
 
-        return (
-            <div id="network" className={this.props.className}>
-                <h3>4. Network Configuration</h3>
-                <p>The network topology plays a significant role in determining the performance of Ceph services. The ideal
-                     network configuration uses a front-end (public) and backend (cluster) network topology. This approach
-                     separates network load like object replication from client load. The probe performed against your hosts
-                     has revealed the following networking options;
-                </p>
-                <div className="centered-container">
-                    <NetworkOptions
-                        title="Cluster Network"
-                        description="Subnets common to all OSD hosts"
-                        subnets={this.internalNetworks}
-                        name="clusterNetwork"
-                        lookup={this.subnetLookup}
-                        hosts={this.cephHosts}
-                        updateHandler={this.updateHandler} />
-                    <NetworkOptions
-                        title="Public Network"
-                        description="Subnets common to all hosts"
-                        subnets={this.externalNetworks}
-                        name="publicNetwork"
-                        lookup={this.subnetLookup}
-                        hosts={this.cephHosts}
-                        updateHandler={this.updateHandler} />
-                    <NetworkOptions
-                        title="S3 Client Network"
-                        description="Subnets common to radosgw hosts"
-                        subnets={this.s3Networks}
-                        name="rgwNetwork"
-                        lookup={this.subnetLookup}
-                        hosts={this.cephHosts}
-                        updateHandler={this.updateHandler} />
-                    <NetworkOptions
-                        title="iSCSI Target Network"
-                        description="Subnets common to iSCSI hosts"
-                        subnets={this.iscsiNetworks}
-                        name="iscsiNetwork"
-                        lookup={this.subnetLookup}
-                        hosts={this.cephHosts}
-                        updateHandler={this.updateHandler} />
-
+                    </div>
+                    <div className="nav-button-container">
+                        <UIButton primary btnLabel="Review &rsaquo;" action={this.updateParent} />
+                        <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
+                    </div>
                 </div>
-                <div className="nav-button-container">
-                    <UIButton primary btnLabel="Review &rsaquo;" action={this.updateParent} />
-                    <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
-                </div>
-            </div>
-        );
+            );
+        } else {
+            console.log("Skipping render of Networkpage - not active");
+            return (<div id="network" className={this.props.className} />);
+        }
     }
 }
 
@@ -139,7 +147,7 @@ export class NetworkOptions extends React.Component {
         super(props);
         this.state = {
             selected: null,
-            subnets: [],
+            // subnets: [],
             msg: []
         };
     }
@@ -156,31 +164,16 @@ export class NetworkOptions extends React.Component {
         this.props.updateHandler(this.props.name, event.target.value);
     }
 
-    componentWillReceiveProps(props) {
-        console.log("checking to see if subnet list need to change: " + props.name);
-        var subnets = this.state.subnets.sort();
-        // console.log("comparing " + JSON.stringify(props.subnets) + " to " + JSON.stringify(subnets));
-        if (JSON.stringify(props.subnets.sort()) != JSON.stringify(subnets)) {
-            console.log("- initialising the radio set");
-            this.setState({
-                subnets: props.subnets,
-                msg: netSummary(props.lookup, props.subnets[0], props.hosts)
-            });
-        } else {
-            console.log("no change in subnets");
-        }
-    }
-
     render() {
         var radioConfig = {
             desc: this.props.description,
-            options: this.state.subnets,
-            default: this.state.subnets[0],
+            options: this.props.subnets,
+            default: this.props.subnets[0],
             name: this.props.name,
             horizontal: false
         };
         var subnetSelection;
-        if (this.state.subnets.length > 0) {
+        if (this.props.subnets.length > 0) {
             subnetSelection = (
                 <div className="float-left network-subnets">
                     <h4 className="textCenter" ><b>{this.props.title}</b></h4>

@@ -509,83 +509,87 @@ export class ValidatePage extends React.Component {
     }
 
     render() {
-        console.log("rendering the validatepage");
+        if (this.props.className == 'page') {
+            console.log("rendering the validatepage");
 
-        // var spinner;
-        var rows;
-        var probeButtonClass;
-        var nextButtonClass;
-        if (this.state.hosts.length > 0) {
-            rows = this.state.hosts.map(host => {
-                // only show ceph nodes, ignoring the metrics host
-                if (!host.metrics) {
-                    return <HostDiscoveryRow
-                        key={host.hostname}
-                        hostData={host}
-                        updateRole={this.updateRole}
-                        callback={this.toggleSingleRow} />;
-                }
-            });
-        } else {
-            rows = (<tbody />); // emptyRow();
-        }
+            // var spinner;
+            var rows;
+            var probeButtonClass;
+            var nextButtonClass;
+            if (this.state.hosts.length > 0) {
+                rows = this.state.hosts.map(host => {
+                    // only show ceph nodes, ignoring the metrics host
+                    if (!host.metrics) {
+                        return <HostDiscoveryRow
+                            key={host.hostname}
+                            hostData={host}
+                            updateRole={this.updateRole}
+                            callback={this.toggleSingleRow} />;
+                    }
+                });
+            } else {
+                rows = (<tbody />); // emptyRow();
+            }
 
-        probeButtonClass = (this.state.pendingProbe) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
-        nextButtonClass = (this.state.ready) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
-        return (
-
-            <div id="validate" className={this.props.className} >
-                <h3>3. Validate Host Selection</h3>
-                The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
-                 probe the hosts that Ceph will use to validate that their hardware configuration is compatible with
-                 their intended Ceph role. Once the probe is complete you must select the hosts to
-                 use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
-                <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
-                <div className="divCenter">
-                    <div>
-                        <div className="proby">
-                            <table id="probe-headings" className="probe-headings">
-                                <thead>
-                                    <tr>
-                                        <th className="tdSelector">
-                                            <div className="arrow-dummy" />
-                                            <HostSelector
-                                                name="*ALL*"
-                                                selected={this.state.selectAll}
-                                                callback={this.toggleAllRows} />
-                                        </th>
-                                        <th className="thHostname">Hostname</th>
-                                        <th className="textCenter thRoleWidth">mon</th>
-                                        <th className="textCenter thRoleWidth">mds</th>
-                                        <th className="textCenter thRoleWidth">osd</th>
-                                        <th className="textCenter thRoleWidth">rgw</th>
-                                        <th className="textCenter thRoleWidth">iscsi</th>
-                                        <th className="textCenter fact">CPU</th>
-                                        <th className="textCenter fact">RAM</th>
-                                        <th className="textCenter fact">NIC</th>
-                                        <th className="textCenter fact">HDD</th>
-                                        <th className="textCenter fact">SSD</th>
-                                        <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
-                                        <th className="leftAligned thHostInfo">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody />
-                            </table>
-                        </div>
-                        <div className="probe-container">
-                            <table id="probe-table" className="probe-table" >
-                                {rows}
-                            </table>
+            probeButtonClass = (this.state.pendingProbe) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
+            nextButtonClass = (this.state.ready) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
+            return (
+                <div id="validate" className={this.props.className} >
+                    <h3>3. Validate Host Selection</h3>
+                    The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
+                    probe the hosts that Ceph will use to validate that their hardware configuration is compatible with
+                    their intended Ceph role. Once the probe is complete you must select the hosts to
+                    use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
+                    <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+                    <div className="divCenter">
+                        <div>
+                            <div className="proby">
+                                <table id="probe-headings" className="probe-headings">
+                                    <thead>
+                                        <tr>
+                                            <th className="tdSelector">
+                                                <div className="arrow-dummy" />
+                                                <HostSelector
+                                                    name="*ALL*"
+                                                    selected={this.state.selectAll}
+                                                    callback={this.toggleAllRows} />
+                                            </th>
+                                            <th className="thHostname">Hostname</th>
+                                            <th className="textCenter thRoleWidth">mon</th>
+                                            <th className="textCenter thRoleWidth">mds</th>
+                                            <th className="textCenter thRoleWidth">osd</th>
+                                            <th className="textCenter thRoleWidth">rgw</th>
+                                            <th className="textCenter thRoleWidth">iscsi</th>
+                                            <th className="textCenter fact">CPU</th>
+                                            <th className="textCenter fact">RAM</th>
+                                            <th className="textCenter fact">NIC</th>
+                                            <th className="textCenter fact">HDD</th>
+                                            <th className="textCenter fact">SSD</th>
+                                            <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
+                                            <th className="leftAligned thHostInfo">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody />
+                                </table>
+                            </div>
+                            <div className="probe-container">
+                                <table id="probe-table" className="probe-table" >
+                                    {rows}
+                                </table>
+                            </div>
                         </div>
                     </div>
+                    <div className="nav-button-container">
+                        <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
+                        <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
+                        <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.prevPageHandler} />
+                    </div>
                 </div>
-                <div className="nav-button-container">
-                    <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
-                    <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
-                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.prevPageHandler} />
-                </div>
-            </div>
-        );
+            );
+        } else {
+            console.log("Skipping render of validatepage - not active");
+            return (<div id="validate" className={this.props.className} />);
+        }
     }
 }
 

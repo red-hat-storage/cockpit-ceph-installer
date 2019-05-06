@@ -115,26 +115,30 @@ export class EnvironmentPage extends React.Component {
 
     render() {
         var versionList = this.installSource[this.state.sourceType];
-
-        return (
-            <div id="environment" className={this.props.className}>
-                <h3>1. Environment</h3>
-                Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.
-                <div >
-                    <Selector labelName="Installation Source" vertical value={this.state.sourceType} options={Object.keys(this.installSource)} callback={this.installChange} />
-                    <Selector labelName="Target Version" vertical value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
-                    <Selector labelName="Cluster Type" vertical value={this.state.clusterType} options={this.clusterTypes.options} tooltip={this.clusterTypes.tooltip} callback={this.clusterTypeChange} />
+        if (this.props.className == 'page') {
+            return (
+                <div id="environment" className={this.props.className}>
+                    <h3>1. Environment</h3>
+                    Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.
+                    <div >
+                        <Selector labelName="Installation Source" vertical value={this.state.sourceType} options={Object.keys(this.installSource)} callback={this.installChange} />
+                        <Selector labelName="Target Version" vertical value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
+                        <Selector labelName="Cluster Type" vertical value={this.state.clusterType} options={this.clusterTypes.options} tooltip={this.clusterTypes.tooltip} callback={this.clusterTypeChange} />
+                    </div>
+                    <RadioSet config={this.network_type} default={this.state.networkType} callback={this.updateState} />
+                    <RadioSet config={this.osd_type} default={this.state.osdType} callback={this.updateState} />
+                    <RadioSet config={this.flash_usage} default={this.state.flashUsage} callback={this.updateState} />
+                    <RadioSet config={this.osd_mode} default={this.state.osdMode} callback={this.updateState} />
+                    <RadioSet config={this.install_type} default={this.state.installType} callback={this.updateState} />
+                    <div className="nav-button-container">
+                        <UIButton primary btnLabel="Hosts &rsaquo;" action={this.checkReady} />
+                    </div>
                 </div>
-                <RadioSet config={this.network_type} default={this.state.networkType} callback={this.updateState} />
-                <RadioSet config={this.osd_type} default={this.state.osdType} callback={this.updateState} />
-                <RadioSet config={this.flash_usage} default={this.state.flashUsage} callback={this.updateState} />
-                <RadioSet config={this.osd_mode} default={this.state.osdMode} callback={this.updateState} />
-                <RadioSet config={this.install_type} default={this.state.installType} callback={this.updateState} />
-                <div className="nav-button-container">
-                    <UIButton primary btnLabel="Hosts &rsaquo;" action={this.checkReady} />
-                </div>
-            </div>
-        );
+            );
+        } else {
+            console.log("Skipping render of environmentpage - not active");
+            return (<div id="environment" className={this.props.className} />);
+        }
     }
 }
 

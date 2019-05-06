@@ -63,8 +63,7 @@ export class DeployPage extends React.Component {
     }
 
     componentDidMount() {
-        console.log("deploypage mounted to the DOM");
-        console.log("checking for mock data");
+        console.log("checking for mock data for the deployment");
 
         cockpit.file("/var/lib/cockpit/ceph-installer/mockdata/deploypage.json").read()
                 .done((content, tag) => {
@@ -495,85 +494,87 @@ export class DeployPage extends React.Component {
     }
 
     render() {
-        console.log("in deploypage render method");
+        if (this.props.className == 'page') {
+            console.log("in deploypage render method");
 
-        var deployBtnClass;
-        var msgClass;
-        var msgText;
-        msgText = this.state.status.msg.charAt(0).toUpperCase() + this.state.status.msg.slice(1);
-        switch (this.state.status.msg) {
-        case "failed":
-            msgClass = "runtime-table-value align-left errorText bold-text";
-            break;
-        case "successful":
-            msgClass = "runtime-table-value align-left success bold-text";
-            break;
-        default:
-            msgClass = "runtime-table-value align-left";
+            var deployBtnClass;
+            var msgClass;
+            var msgText;
+            msgText = this.state.status.msg.charAt(0).toUpperCase() + this.state.status.msg.slice(1);
+            switch (this.state.status.msg) {
+            case "failed":
+                msgClass = "runtime-table-value align-left errorText bold-text";
+                break;
+            case "successful":
+                msgClass = "runtime-table-value align-left success bold-text";
+                break;
+            default:
+                msgClass = "runtime-table-value align-left";
+            }
+
+            switch (this.state.deployBtnText) {
+            case "Failed":
+            case "Retry":
+                deployBtnClass = "nav-button btn btn-primary btn-lg";
+                break;
+            case "Complete":
+                deployBtnClass = "nav-button btn btn-success btn-lg";
+                break;
+            default:
+                deployBtnClass = "nav-button btn btn-primary btn-lg";
+                break;
+            }
+
+            return (
+                <div id="deploy" className={this.props.className}>
+                    <h3>6. Deploy the Cluster</h3>
+                    You are now ready to start the deployment process. Click 'Save' to commit your choices, then 'Deploy' to begin the
+                    installation process. <br />
+                    <table className="runtime-table">
+                        <tbody>
+                            <tr>
+                                <td className="runtime-table-label">Start Time</td>
+                                <td className="runtime-table-value align-left">{this.state.startTime}</td>
+                                <td className="runtime-table-spacer">&nbsp;</td>
+                                <td className="runtime-table-label">Completed</td>
+                                <td className="runtime-table-nbr align-right">{this.state.status.data.ok}</td>
+                            </tr>
+                            <tr>
+                                <td className="runtime-table-label">Status</td>
+                                <td className={msgClass}>{msgText}</td>
+                                <td className="runtime-table-spacer">&nbsp;</td>
+                                <td className="runtime-table-label">Skipped</td>
+                                <td className="runtime-table-nbr align-right">{this.state.status.data.skipped}</td>
+                            </tr>
+                            <tr>
+                                <td className="runtime-table-label">Run Time</td>
+                                <td className="runtime-table-value align-left">
+                                    <ElapsedTime ref="timer" active={this.state.deployActive} callback={this.storeRuntime} />
+                                </td>
+                                <td className="runtime-table-spacer">&nbsp;</td>
+                                <td className="runtime-table-label">Failures</td>
+                                <td className="runtime-table-nbr align-right">{this.state.status.data.failed}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.roleSequence } />
+                    <div>
+                        <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
+                    </div>
+                    <div id="deploy-container">
+                        <TaskStatus visible={this.state.showTaskStatus} status={this.state.status} />
+                        <FailureSummary visible={!this.state.showTaskStatus} status={this.state.status} />
+                    </div>
+                    <div className="nav-button-container">
+                        <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
+                        <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.backBtnEnabled} action={this.previousPage} />
+                    </div>
+                </div>
+            );
+        } else {
+            console.log("Skipping render of deploypage - not active");
+            return (<div id="deploy" className={this.props.className} />);
         }
-
-        switch (this.state.deployBtnText) {
-        case "Failed":
-        case "Retry":
-            deployBtnClass = "nav-button btn btn-primary btn-lg";
-            break;
-        case "Complete":
-            deployBtnClass = "nav-button btn btn-success btn-lg";
-            break;
-        default:
-            deployBtnClass = "nav-button btn btn-primary btn-lg";
-            break;
-        }
-        // console.log("btn class string is " + deployBtnClass);
-
-        return (
-
-            <div id="deploy" className={this.props.className}>
-
-                <h3>6. Deploy the Cluster</h3>
-                You are now ready to start the deployment process. Click 'Save' to commit your choices, then 'Deploy' to begin the
-                installation process. <br />
-                <table className="runtime-table">
-                    <tbody>
-                        <tr>
-                            <td className="runtime-table-label">Start Time</td>
-                            <td className="runtime-table-value align-left">{this.state.startTime}</td>
-                            <td className="runtime-table-spacer">&nbsp;</td>
-                            <td className="runtime-table-label">Completed</td>
-                            <td className="runtime-table-nbr align-right">{this.state.status.data.ok}</td>
-                        </tr>
-                        <tr>
-                            <td className="runtime-table-label">Status</td>
-                            <td className={msgClass}>{msgText}</td>
-                            <td className="runtime-table-spacer">&nbsp;</td>
-                            <td className="runtime-table-label">Skipped</td>
-                            <td className="runtime-table-nbr align-right">{this.state.status.data.skipped}</td>
-                        </tr>
-                        <tr>
-                            <td className="runtime-table-label">Run Time</td>
-                            <td className="runtime-table-value align-left">
-                                <ElapsedTime ref="timer" active={this.state.deployActive} callback={this.storeRuntime} />
-                            </td>
-                            <td className="runtime-table-spacer">&nbsp;</td>
-                            <td className="runtime-table-label">Failures</td>
-                            <td className="runtime-table-nbr align-right">{this.state.status.data.failed}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.roleSequence } />
-                <div>
-                    <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
-                </div>
-                <div id="deploy-container">
-                    <TaskStatus visible={this.state.showTaskStatus} status={this.state.status} />
-                    <FailureSummary visible={!this.state.showTaskStatus} status={this.state.status} />
-                </div>
-                <div className="nav-button-container">
-                    <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
-                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.backBtnEnabled} action={this.previousPage} />
-                </div>
-            </div>
-        );
     }
 }
 
