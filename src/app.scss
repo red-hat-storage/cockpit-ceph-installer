@@ -497,10 +497,10 @@ float:right;
     float: left;
 }
 .network-subnets {
-    margin-left: 80px; 
+    margin-left: 40px; 
     border-top: 2px solid white; 
     margin-top:20px;
-    width: 280px;
+    width: 210px;
 }
 .network-subnets:hover {
     border-top: 2px solid #39a5dc;
@@ -893,7 +893,7 @@ table#add-hosts {
 .host-review {
     margin-top: 10px;
     height: 200px;
-    width: 1100px;
+    width: 1215px;
     display: block; }
   
   table.host-review-table {
@@ -902,7 +902,7 @@ table#add-hosts {
   
   .host-review-table tr {
     border-top: 1px solid darkgray;
-    width: 1085px; }
+    width: 1200px; }
   
   .host-review-table tr:hover {
     background-color: #ebf8ff; }
@@ -967,7 +967,6 @@ table.runtime-table {
     margin-left:10px;
     width: 30px;
     height: 30px;
-  
 }
 .clippy:hover {
     color:black;
