@@ -494,6 +494,6 @@ export function osdCount(hosts, flashUsage) {
             ctr += host.hdd;
         }
     }
-    console.log("detected " + ctr + "candidate disks for OSDs");
+    console.log("Detected " + ctr + " candidate disks for OSDs");
     return ctr;
 }
