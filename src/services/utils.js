@@ -422,6 +422,11 @@ export function commonSubnets(hostArray, role) {
                     subnets.push(hostArray[idx].subnets);
                 }
                 break;
+            case "iscsi":
+                if (hostArray[idx].iscsi) {
+                    subnets.push(hostArray[idx].subnets);
+                }
+                break;
             }
         }
     }
