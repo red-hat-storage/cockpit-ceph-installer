@@ -40,6 +40,66 @@ The app makes extensive use of cockpit’s **http** and **file** methods to comm
   
 Another gotcha to be aware of is the async nature of component state itself. State should only be updated with the setState function, but even when a setState has been run, the actual update to the variables is scheduled by react. Bottom line - you can't use setState on line10, and expect to see the new value on line 11!
 
+## How stuff Works  
+### Breadcrumbs on the Deploy page
+The playbook that ceph-ansible runs processes the roles in a specific sequence, so to implement a breadcrumb trail following the installation process the
+code in ansibleMap/cephAnsibleSequence arranges the chosen roles from the host definition in a sequence compatible with the install flow. Once we have this sequence we can check the role in a tasks output to indicate whereabouts we are in the installation process, giving us the breadcrumb effect.
+
+### Hosts metadata
+Host hardware configuration is extracted from a playbook run that uses the ceph_check_role.py ansible library module. This module calls the same methods to build the configuration metadata that ansible calls itself from the "setup" module. The metadata returned passes through a Checker class to determine whether the host is 'worthy' given the set of roles associated with it. Within the app, a host is represented as a json object that looks like this;  
+```
+insert code here
+```
+
+Here's an example of the hosts array, that holds host objects.
+```
+{
+	"mon": true,
+	"mds": false,
+	"osd": true,
+	"rgw": false,
+	"iscsi": false,
+	"metrics": false,
+	"hostmaskOK": true,
+	"msgLevel": "info",
+	"msgText": "",
+	"status": "OK",
+	"hostname": "nautilus-3",
+	"cpu": 4,
+	"ram": 4,
+	"nic": 1,
+	"hdd": 4,
+	"ssd": 0,
+	"capacity": "4T / 0",
+	"ready": "OK",
+	"info": "Connectivity verified, added to the inventory",
+	"msgs": ["warning:#CPU's too low (min 6 needed)", "warning:Network bandwith low for the number of potential OSDs", "warning:RAM too low (min 20G needed)"],
+	"vendor": "QEMU",
+	"model": "pc-i440fx-2.10",
+	"selected": true,
+	"cpuType": ["AMD FX(tm)-8320 Eight-Core Processor"],
+	"subnets": ["10.90.90.0/24", "172.17.0.0/16"],
+	"subnet_details": {
+		"10.90.90.0/24": {
+			"count": 1,
+			"speed": 0,
+			"addr": "10.90.90.129",
+			"devices": ["ansible_eth0"],
+			"desc": "10.90.90.0/24"
+		},
+		"172.17.0.0/16": {
+			"count": 0,
+			"speed": 0,
+			"addr": "172.17.0.1",
+			"devices": [],
+			"desc": "172.17.0.0/16"
+		}
+	},
+	"hdd_devices": ["vdb", "vdc", "vdd", "vde"],
+	"ssd_devices": []
+}
+```
+
 
 ## External Files  
 The app makes use of 2 files that are read from the hosts local filesystem during the initial load of the app.jsx code.  

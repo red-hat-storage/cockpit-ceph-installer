@@ -13,7 +13,8 @@ The plugin currently
 - initiates the ceph-ansible playbook and monitor progress
 - any deployment errors are shown in the UI
 - following a Nautilus based deployment, the user may click a link to go straight to Ceph's web management console
-- allows environment defaults to be overridden from ```var/lib/cockpit/ceph-installer/defaults.json```
+- allows environment defaults to be overridden from `var/lib/cockpit/ceph-installer/defaults.json`  
+- supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways
 
 ## Curious, take a look...
 
