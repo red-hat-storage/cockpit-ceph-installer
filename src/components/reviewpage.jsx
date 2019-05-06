@@ -96,41 +96,51 @@ export class ReviewPage extends React.Component {
     }
 
     render() {
-        console.log("in review render");
-        return (
-
-            <div id="review" className={this.props.className}>
-                <h3>5. Review</h3>
-                You are now ready to deploy your cluster.<br />
-                <div className="display-inline-block">
-                    <StaticTable title="Environment" data={this.environmentData} align="left" />
-                    <div className="review-table-whitespace" />
-                    <StaticTable title="Cluster" data={this.clusterData} align="right" />
-                    <div className="review-table-whitespace" />
-                    <table className="display-inline-block" style={{height: "auto"}}>
-                        <tr>
-                            <StaticTable title="Network" data={this.networkData} align="right" />
-                        </tr>
-                        <tr>
-                            <StaticTable title="Cluster Readiness" data={this.validationData} align="right" />
-                        </tr>
-                    </table>
-                    {/* <div className="review-table-whitespace" /> */}
+        if (this.props.className == 'page') {
+            console.log("rendering reviewpage");
+            return (
+                <div id="review" className={this.props.className}>
+                    <h3>5. Review</h3>
+                    You are now ready to deploy your cluster.<br />
+                    <div className="display-inline-block">
+                        <StaticTable title="Environment" data={this.environmentData} align="left" />
+                        <div className="review-table-whitespace" />
+                        <StaticTable title="Cluster" data={this.clusterData} align="right" />
+                        <div className="review-table-whitespace" />
+                        <table className="display-inline-block" style={{height: "auto"}}>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <StaticTable title="Network" data={this.networkData} align="right" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <StaticTable title="Cluster Readiness" data={this.validationData} align="right" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        {/* <div className="review-table-whitespace" /> */}
+                    </div>
+                    <div className="host-review">
+                        <HostListing
+                            hosts={this.hostList}
+                            clusterNetwork={this.networkData['Cluster Network']}
+                            publicNetwork={this.networkData['Public Network']}
+                            s3Network={this.networkData['S3 Network']}
+                            iscsiNetwork={this.networkData['iSCSI Network']} />
+                    </div>
+                    <div className="nav-button-container">
+                        <UIButton primary btnLabel="Deploy &rsaquo;" action={this.props.action} />
+                        <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
+                    </div>
                 </div>
-                <div className="host-review">
-                    <HostListing
-                        hosts={this.hostList}
-                        clusterNetwork={this.networkData['Cluster Network']}
-                        publicNetwork={this.networkData['Public Network']}
-                        s3Network={this.networkData['S3 Network']}
-                        iscsiNetwork={this.networkData['iSCSI Network']} />
-                </div>
-                <div className="nav-button-container">
-                    <UIButton primary btnLabel="Deploy &rsaquo;" action={this.props.action} />
-                    <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
-                </div>
-            </div>
-        );
+            );
+        } else {
+            console.log("Skipping render of reviewpage - not active");
+            return (<div id="review" className={this.props.className} />);
+        }
     }
 }
 
