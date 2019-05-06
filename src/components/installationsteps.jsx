@@ -20,6 +20,7 @@ export class InstallationSteps extends React.Component {
             pageNum: 0,
             lastPage: 0,
             hosts: [],
+            iscsiTargetName: props.defaults.iscsiTargetName,
             sourceType: props.defaults.sourceType,
             targetVersion: props.defaults.targetVersion,
             clusterType: props.defaults.clusterType,
