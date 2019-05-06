@@ -186,7 +186,7 @@ export function rgwsVars(vars) {
     // RGW settings based on a high performance object workload, which is a typical
     // target for Ceph
 
-    // TODO: this currently uses static pgnum assignments
+    // FIXME: this currently uses static pgnum assignments
 
     let forYML = {};
 
@@ -200,6 +200,20 @@ export function rgwsVars(vars) {
         "defaults.rgw.buckets.index": { "pgnum": 32 }
     };
 
+    return forYML;
+}
+
+export function iscsiVars (vars) {
+    let forYML = {};
+    let iscsiTargets = [];
+
+    for (let host of vars.hosts) {
+        if (host.iscsi) {
+            iscsiTargets.push(host.subnet_details[vars.iscsiNetwork].addr);
+        }
+    }
+    forYML.gateway_iqn = vars.iscsiTargetName;
+    forYML.gateway_ip_list = iscsiTargets.join(',');
     return forYML;
 }
 
@@ -223,7 +237,7 @@ export function cephAnsibleSequence(roles) {
         }
     }
 
-    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw', 'ceph-grafana']; // ceph-ansible sequence in site-*.yml
+    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw', 'iscsi', 'ceph-grafana']; // ceph-ansible sequence in site-*.yml
     let sequence = [];
     for (let role of allRoles) {
         if (rolesIn.includes(role)) {
