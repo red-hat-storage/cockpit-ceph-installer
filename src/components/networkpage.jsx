@@ -10,12 +10,14 @@ export class NetworkPage extends React.Component {
         this.state = {
             publicNetwork: '',
             clusterNetwork: '',
-            rgwNetwork: ''
+            rgwNetwork: '',
+            iscsiNetwork: ''
         };
         this.cephHosts = [];
         this.internalNetworks = []; // suitable for cluster connectivity
         this.externalNetworks = []; // shared across all nodes
         this.s3Networks = []; // common to Radosgw hosts
+        this.iscsiNetworks = []; // common networks to iscsi target hosts
         this.subnetLookup = {}; // Used for speed/bandwidth metadata
     }
 
@@ -32,6 +34,8 @@ export class NetworkPage extends React.Component {
                 }
             }
 
+            let activeRoles = buildRoles(this.cephHosts);
+
             console.log("setting subnet array state variables");
             this.internalNetworks = commonSubnets(this.cephHosts, 'osd');
             this.externalNetworks = commonSubnets(this.cephHosts, 'all');
@@ -41,7 +45,7 @@ export class NetworkPage extends React.Component {
             netState['clusterNetwork'] = this.internalNetworks[0];
             netState['publicNetwork'] = this.externalNetworks[0];
 
-            if (buildRoles(this.cephHosts).includes('rgws')) {
+            if (activeRoles.includes('rgws')) {
                 console.log("determining the rgw networks");
                 this.s3Networks = commonSubnets(this.cephHosts, 'rgw');
                 netState['rgwNetwork'] = this.s3Networks[0];
@@ -49,6 +53,16 @@ export class NetworkPage extends React.Component {
                 console.log("no rgw role seen across the hosts");
                 this.s3Networks = [];
                 netState['rgwNetwork'] = '';
+            }
+
+            if (activeRoles.includes('iscsigws')) {
+                console.log("determining the iscsi networks");
+                this.iscsiNetworks = commonSubnets(this.cephHosts, 'iscsi');
+                netState['iscsiNetwork'] = this.iscsiNetworks[0];
+            } else {
+                console.log("no iscsi role seen across the hosts");
+                this.iscsiNetworks = [];
+                netState['iscsiNetwork'] = '';
             }
 
             this.setState(netState);
@@ -87,7 +101,7 @@ export class NetworkPage extends React.Component {
                         updateHandler={this.updateHandler} />
                     <NetworkOptions
                         title="Public Network"
-                        description="Subnets common to all hosts within the cluster"
+                        description="Subnets common to all hosts"
                         subnets={this.externalNetworks}
                         name="publicNetwork"
                         lookup={this.subnetLookup}
@@ -101,6 +115,15 @@ export class NetworkPage extends React.Component {
                         lookup={this.subnetLookup}
                         hosts={this.cephHosts}
                         updateHandler={this.updateHandler} />
+                    <NetworkOptions
+                        title="iSCSI Target Network"
+                        description="Subnets common to iSCSI hosts"
+                        subnets={this.iscsiNetworks}
+                        name="iscsiNetwork"
+                        lookup={this.subnetLookup}
+                        hosts={this.cephHosts}
+                        updateHandler={this.updateHandler} />
+
                 </div>
                 <div className="nav-button-container">
                     <UIButton primary btnLabel="Review &rsaquo;" action={this.updateParent} />
@@ -162,7 +185,7 @@ export class NetworkOptions extends React.Component {
                 <div className="float-left network-subnets">
                     <h4 className="textCenter" ><b>{this.props.title}</b></h4>
                     <p>{this.props.description}</p>
-                    <RadioSet config={radioConfig} callback={this.updateState} />
+                    <RadioSet config={radioConfig} default={radioConfig.default} callback={this.updateState} />
                     <SubnetMsg msg={this.state.msg} />
                 </div>
 
