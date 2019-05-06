@@ -22,6 +22,7 @@ export class ReviewPage extends React.Component {
 
         this.environmentData = {};
         this.clusterData = {};
+        this.networkData = {};
         this.validationData = {
             Error: 0,
             Warning: 0,
@@ -72,13 +73,19 @@ export class ReviewPage extends React.Component {
                 console.log(JSON.stringify(msgStats));
             }
             this.clusterData['OSD devices'] = osdCount(props.config.hosts, props.config.flashUsage);
-            this.clusterData['Public Network'] = props.config.publicNetwork;
-            this.clusterData['Cluster Network'] = props.config.clusterNetwork;
+            this.networkData['Public Network'] = props.config.publicNetwork;
+            this.networkData['Cluster Network'] = props.config.clusterNetwork;
 
             if (props.config.rgwNetwork) {
-                this.clusterData['S3 Network'] = props.config.rgwNetwork;
+                this.networkData['S3 Network'] = props.config.rgwNetwork;
             } else {
-                this.clusterData['S3 Network'] = '';
+                this.networkData['S3 Network'] = '';
+            }
+
+            if (props.config.iscsiNetwork) {
+                this.networkData['iSCSI Network'] = props.config.iscsiNetwork;
+            } else {
+                this.networkData['iSCSI Network'] = '';
             }
 
             if (props.config.metricsHost) {
@@ -100,14 +107,23 @@ export class ReviewPage extends React.Component {
                     <div className="review-table-whitespace" />
                     <StaticTable title="Cluster" data={this.clusterData} align="right" />
                     <div className="review-table-whitespace" />
-                    <StaticTable title="Cluster Readiness" data={this.validationData} align="right" />
+                    <table className="display-inline-block" style={{height: "auto"}}>
+                        <tr>
+                            <StaticTable title="Network" data={this.networkData} align="right" />
+                        </tr>
+                        <tr>
+                            <StaticTable title="Cluster Readiness" data={this.validationData} align="right" />
+                        </tr>
+                    </table>
+                    {/* <div className="review-table-whitespace" /> */}
                 </div>
                 <div className="host-review">
                     <HostListing
                         hosts={this.hostList}
-                        clusterNetwork={this.clusterData['Cluster Network']}
-                        publicNetwork={this.clusterData['Public Network']}
-                        s3Network={this.clusterData['S3 Network']} />
+                        clusterNetwork={this.networkData['Cluster Network']}
+                        publicNetwork={this.networkData['Public Network']}
+                        s3Network={this.networkData['S3 Network']}
+                        iscsiNetwork={this.networkData['iSCSI Network']} />
                 </div>
                 <div className="nav-button-container">
                     <UIButton primary btnLabel="Deploy &rsaquo;" action={this.props.action} />
@@ -169,12 +185,15 @@ class HostListing extends React.Component {
                                 console.log("net = " + JSON.stringify(host.subnet_details[this.props.clusterNetwork]));
                                 let clusterNetwork = host.subnet_details[this.props.clusterNetwork].addr + " | " + host.subnet_details[this.props.clusterNetwork].devices[0].replace('ansible_', '');
                                 let publicNetwork = host.subnet_details[this.props.publicNetwork].addr + " | " + host.subnet_details[this.props.publicNetwork].devices[0].replace('ansible_', '');
-                                let s3Network;
+
+                                let s3Network, iscsiNetwork;
                                 if (this.props.s3Network && roles.includes('rgws')) {
                                     s3Network = host.subnet_details[this.props.s3Network].addr + " | " + host.subnet_details[this.props.s3Network].devices[0].replace('ansible_', '');
-                                } else {
-                                    s3Network = 'N/A';
-                                }
+                                } else { s3Network = 'N/A' }
+                                if (this.props.iscsiNetwork && roles.includes('iscsigws')) {
+                                    iscsiNetwork = host.subnet_details[this.props.iscsiNetwork].addr + " | " + host.subnet_details[this.props.iscsiNetwork].devices[0].replace('ansible_', '');
+                                } else { iscsiNetwork = 'N/A' }
+
                                 return (
                                     <tr key={idx}>
                                         <td className="host-review-table-wide">
@@ -186,6 +205,7 @@ class HostListing extends React.Component {
                                         <td className="host-review-table-wide"><strong>Cluster Network</strong><br />{clusterNetwork}</td>
                                         <td className="host-review-table-wide"><strong>Public Network</strong><br />{publicNetwork}</td>
                                         <td className="host-review-table-wide"><strong>S3 Network</strong><br />{s3Network}</td>
+                                        <td className="host-review-table-wide"><strong>iSCSI Network</strong><br />{iscsiNetwork}</td>
                                     </tr>);
                             }
                         })}
