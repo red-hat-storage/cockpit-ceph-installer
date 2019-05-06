@@ -3,7 +3,7 @@ import React from 'react';
 
 import { UIButton } from './common/nextbutton.jsx';
 import '../app.scss';
-import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, cephAnsibleSequence } from '../services/ansibleMap.js';
+import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, iscsiVars, cephAnsibleSequence } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
@@ -294,7 +294,7 @@ export class DeployPage extends React.Component {
         var vars = allVars(this.state.settings);
         console.log("creating all.yml as " + JSON.stringify(vars));
         var chain = Promise.resolve();
-        let mons, mgrs, osds, rgws;
+        let mons, mgrs, osds, rgws, iscsi;
         chain = chain.then(() => storeGroupVars('all', vars, this.props.svctoken));
 
         for (let roleGroup of roleList) {
@@ -315,7 +315,7 @@ export class DeployPage extends React.Component {
                 chain = chain.then(() => storeGroupVars('osds', osds, this.props.svctoken));
                 break;
             case "mdss":
-                console.log("adding mds yml - TODO");
+                console.log("adding mds yml - Just using ceph-ansible defaults...FIXME?");
                 break;
             case "rgws":
                 console.log("adding rgws yml");
@@ -323,7 +323,9 @@ export class DeployPage extends React.Component {
                 chain = chain.then(() => storeGroupVars('rgws', rgws, this.props.svctoken));
                 break;
             case "iscsigws":
-                console.log("adding iscsi - TODO");
+                console.log("adding iscsigws yml");
+                iscsi = iscsiVars(this.state.settings);
+                chain = chain.then(() => storeGroupVars('iscsigws', iscsi, this.props.svctoken));
                 break;
             }
         }
