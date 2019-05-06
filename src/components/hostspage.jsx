@@ -35,6 +35,7 @@ export class HostsPage extends React.Component {
 
     nextAction = (event) => {
         let usable = true;
+        let iscsiTargetCounts = [0, 2, 4];
         let errMsgs = [];
 
         if (versionSupportsMetrics(this.props.targetVersion)) {
@@ -47,7 +48,7 @@ export class HostsPage extends React.Component {
             }
             if (metricsHost) {
                 // pass the metrics host name back to the parent state
-                // Note this will drive a state change to all child components
+                // Note this will drive a state change/re-render to all sibling components
                 this.props.metricsHostHandler(metricsHost);
             } else {
                 this.setState({
@@ -71,9 +72,11 @@ export class HostsPage extends React.Component {
                 errMsgs.push("Hosts must be in an 'OK' state to continue");
                 console.log("Debug: hosts are " + JSON.stringify(this.state.hosts));
             }
-
+            console.log("debug hosts " + JSON.stringify(this.state.hosts));
             let monCount = hostsWithRoleCount(this.state.hosts, 'mon');
             let osdHostCount = hostsWithRoleCount(this.state.hosts, 'osd');
+            let iscsiCount = hostsWithRoleCount(this.state.hosts, 'iscsi');
+            console.log("debug : # iscsi hosts is " + iscsiCount);
 
             switch (true) {
             case (monCount === 0):
@@ -89,6 +92,10 @@ export class HostsPage extends React.Component {
 
             if (osdHostCount === 0) {
                 errMsgs.push("OSD hosts are required");
+            }
+
+            if (!iscsiTargetCounts.includes(iscsiCount)) {
+                errMsgs.push("iscsi requires either " + iscsiTargetCounts.slice(1).join(' or ') + " hosts to provide path redundancy");
             }
 
             if (errMsgs.length > 0) {
