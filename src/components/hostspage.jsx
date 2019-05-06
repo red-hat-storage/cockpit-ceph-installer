@@ -355,7 +355,7 @@ export class HostsPage extends React.Component {
 
     updateHost = (hostname, role, checked) => {
         console.log("updating the role state for " + hostname + " role " + role + " state of " + checked);
-        var localState = this.state.hosts.splice(0);
+        var localState = this.state.hosts.slice(0);
         console.log("current hosts are: " + JSON.stringify(this.state.hosts));
         let hostObject = getHost(localState, hostname);
 
@@ -553,79 +553,84 @@ export class HostsPage extends React.Component {
     }
 
     render() {
-        var rows, metricsClass;
-        metricsClass = versionSupportsMetrics(this.props.targetVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
+        if (this.props.className == 'page') {
+            var rows, metricsClass;
+            metricsClass = versionSupportsMetrics(this.props.targetVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
 
-        if (this.state.hosts.length > 0) {
-            rows = this.state.hosts.map(host => {
-                return <HostDataRow
-                            key={host.hostname}
-                            hostData={host}
-                            roleChange={this.updateHost}
-                            deleteRow={this.deleteHost}
-                            retryHost={this.retryHost}
-                            targetVersion={this.props.targetVersion}
-                            modal={this.showModal} />;
-            });
+            if (this.state.hosts.length > 0) {
+                rows = this.state.hosts.map(host => {
+                    return <HostDataRow
+                                key={host.hostname}
+                                hostData={host}
+                                roleChange={this.updateHost}
+                                deleteRow={this.deleteHost}
+                                retryHost={this.retryHost}
+                                targetVersion={this.props.targetVersion}
+                                modal={this.showModal} />;
+                });
+            } else {
+                rows = emptyRow();
+            }
+
+            return (
+                <div id="hosts" className={this.props.className}>
+                    <h3>2. Host Definition</h3>
+                    <p>Hostnames or hostname masks can be used to assign roles to specific hosts. Click 'Add Hosts' to define
+                     the hosts and roles. This process checks that the hosts can be reached, and the roles requested align to
+                     best practice collocation rules. All hosts listed here, must be in an 'OK' state in order to continue. To
+                     remove or retry connectivity to a host, use the row's action icon.</p>
+                    <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+                    <GenericModal
+                        show={this.state.modalVisible}
+                        title={this.state.modalTitle}
+                        content={this.state.modalContent}
+                        closeHandler={this.hideModal} />
+                    <HostMask
+                        show={this.state.addHostsVisible}
+                        hosts={this.state.hosts}
+                        callback={this.addHostsToTable}
+                        clusterType={this.props.clusterType}
+                        targetVersion={this.props.targetVersion}
+                        closeHandler={this.hideAddHosts}
+                        installType={this.props.installType} />
+                    <div className="divCenter">
+                        <div className="add-hosts-offset" >
+                            <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
+                        </div>
+                    </div>
+                    <div className="divCenter">
+                        <div className="host-container">
+                            <table className="roleTable">
+                                <thead>
+                                    <tr>
+                                        <th className="thHostname">Hostname</th>
+                                        <th className="textCenter thRoleWidth">mon</th>
+                                        <th className="textCenter thRoleWidth">mds</th>
+                                        <th className="textCenter thRoleWidth">osd</th>
+                                        <th className="textCenter thRoleWidth">rgw</th>
+                                        <th className="textCenter thRoleWidth">iscsi</th>
+                                        <th className={ metricsClass }>metrics</th>
+                                        <th className="textCenter thStatusWidth">Status</th>
+                                        <th className="leftAligned thHostInfo">Info</th>
+                                        <th className="tdDeleteBtn" />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    { rows }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="nav-button-container">
+                        <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
+                        <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
+                    </div>
+                </div>
+            );
         } else {
-            rows = emptyRow();
+            console.log("Skipping render of hostspage - not active");
+            return (<div id="hosts" className={this.props.className} />);
         }
-
-        return (
-            <div id="hosts" className={this.props.className}>
-                <h3>2. Host Definition</h3>
-                <p>Hostnames or hostname masks can be used to assign roles to specific hosts. Click 'Add Hosts' to define
-                 the hosts and roles. This process checks that the hosts can be reached, and the roles requested align to
-                 best practice collocation rules. All hosts listed here, must be in an 'OK' state in order to continue. To
-                 remove or retry connectivity to a host, use the row's action icon.</p>
-                <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
-                <GenericModal
-                    show={this.state.modalVisible}
-                    title={this.state.modalTitle}
-                    content={this.state.modalContent}
-                    closeHandler={this.hideModal} />
-                <HostMask
-                    show={this.state.addHostsVisible}
-                    hosts={this.state.hosts}
-                    callback={this.addHostsToTable}
-                    clusterType={this.props.clusterType}
-                    targetVersion={this.props.targetVersion}
-                    closeHandler={this.hideAddHosts}
-                    installType={this.props.installType} />
-                <div className="divCenter">
-                    <div className="add-hosts-offset" >
-                        <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
-                    </div>
-                </div>
-                <div className="divCenter">
-                    <div className="host-container">
-                        <table className="roleTable">
-                            <thead>
-                                <tr>
-                                    <th className="thHostname">Hostname</th>
-                                    <th className="textCenter thRoleWidth">mon</th>
-                                    <th className="textCenter thRoleWidth">mds</th>
-                                    <th className="textCenter thRoleWidth">osd</th>
-                                    <th className="textCenter thRoleWidth">rgw</th>
-                                    <th className="textCenter thRoleWidth">iscsi</th>
-                                    <th className={ metricsClass }>metrics</th>
-                                    <th className="textCenter thStatusWidth">Status</th>
-                                    <th className="leftAligned thHostInfo">Info</th>
-                                    <th className="tdDeleteBtn" />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                { rows }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div className="nav-button-container">
-                    <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
-                    <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
-                </div>
-            </div>
-        );
     }
 }
 
