@@ -44,6 +44,7 @@ export class Application extends React.Component {
             ready: false
         };
         this.defaults = {
+            iscsiTargetName: "iqn.2003-01.com.redhat.iscsi-gw:ceph-igw",
             sourceType: "Red Hat",
             targetVersion: "RHCS 3",
             clusterType: "Production",
