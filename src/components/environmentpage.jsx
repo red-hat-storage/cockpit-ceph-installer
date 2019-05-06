@@ -121,7 +121,7 @@ export class EnvironmentPage extends React.Component {
                 <h3>1. Environment</h3>
                 Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.
                 <div >
-                    <Selector labelName="Installation Source" vertical value={this.state.installSource} options={Object.keys(this.installSource)} callback={this.installChange} />
+                    <Selector labelName="Installation Source" vertical value={this.state.sourceType} options={Object.keys(this.installSource)} callback={this.installChange} />
                     <Selector labelName="Target Version" vertical value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
                     <Selector labelName="Cluster Type" vertical value={this.state.clusterType} options={this.clusterTypes.options} tooltip={this.clusterTypes.tooltip} callback={this.clusterTypeChange} />
                 </div>
