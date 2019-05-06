@@ -354,6 +354,10 @@ export class ValidatePage extends React.Component {
                 "Production": 3,
                 "Development/POC": 1
             },
+            iscsiCount: {
+                "Production": [0, 2, 4],
+                "Development/POC": [0, 2]
+            },
             mons: {
                 "Production": [3, 5, 7],
                 "Development/POC": [1, 3]
@@ -415,6 +419,17 @@ export class ValidatePage extends React.Component {
                 msgLevel: 'error',
                 msgText: "You need at least " + minimum.osdHosts[this.props.clusterType] + " OSD hosts to continue"
             });
+            return;
+        }
+
+        // check for iscsi restrictions
+        let validISCSITargets = minimum.iscsiCount[this.props.clusterType]; // array
+        if (!validISCSITargets.includes(hostsWithRoleCount(candidateHosts, 'iscsi'))) {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "You need " + validISCSITargets.slice(1).join(' or ') + " hosts as iSCSI targets to continue"
+            });
+            return;
         }
 
         // the hosts provided must have a common subnet
