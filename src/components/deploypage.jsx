@@ -109,14 +109,12 @@ export class DeployPage extends React.Component {
         let currentState = this.state.roleState;
         let changesMade = false;
         let eventRoleName;
+        // all ceph-ansible roles are prefixed by ceph-
         let shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
 
-        if (['mon', 'mgr', 'osd', 'mds', 'rgw'].includes(shortName)) {
-            eventRoleName = shortName + "s";
-        } else {
-            eventRoleName = shortName;
-        }
+        eventRoleName = convertRole(shortName);
 
+        console.log("Debug: role sequence is " + JSON.stringify(this.roleSequence));
         switch (eventData.msg) {
         case "running":
             if (this.roleActive == null) {
@@ -127,27 +125,31 @@ export class DeployPage extends React.Component {
                 break;
             } else {
                 if (eventRoleName) {
-                    // console.log("current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
+                    console.log("Current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
 
                     // if the event role is not in the list AND we have seen the role-active name before
                     // - set the current role to complete and move to the next role in the ansible sequence
-                    if (!this.roleSequence.includes(shortName) && this.roleSeen.includes(this.roleActive.slice(0, -1))) {
+                    if (!this.roleSequence.includes(shortName) && this.roleSeen.includes(convertRole(this.roleActive))) {
                         currentState[this.roleActive] = 'complete';
-
-                        // FIXME: this won't work for iscsi
-
-                        let a = this.roleActive.slice(0, -1); // remove the 's'
+                        console.log("converting role active of " + this.roleActive);
+                        let a = convertRole(this.roleActive); // remove the 's'
                         let nextRole = this.roleSequence[this.roleSequence.indexOf(a) + 1];
+                        console.log("next role is " + nextRole);
                         let nextRoleName = convertRole(nextRole);
                         currentState[nextRoleName] = 'active';
+                        console.log("role active set to " + nextRoleName);
                         this.roleActive = nextRoleName;
                         changesMade = true;
-                        break;
                     }
 
                     // if the shortname is in the sequence, but not in last seen
-                    // - add it to last seen
+                    // - add it to last seen and move us along the breadcrumb trail
                     if (!this.roleSeen.includes(shortName) && this.roleSequence.includes(shortName)) {
+                        console.log("not seen this role " + shortName + " before, adding to our list ");
+                        currentState[this.roleActive] = 'complete';
+                        currentState[eventRoleName] = 'active';
+                        this.roleActive = eventRoleName;
+                        changesMade = true;
                         this.roleSeen.push(shortName);
                     }
                 }
@@ -802,30 +804,25 @@ export class BreadCrumbStatus extends React.Component {
         };
     }
 
-    componentWillReceiveProps (props) {
-        // console.log("DEBUG: " + JSON.stringify(props));
-        if (props.runStatus) {
-            if (props.runStatus.toLowerCase() === 'running' && this.state.roles.length === 0) {
-                // only set the roles when we first see the playbook running
-                let converted = props.sequence.map((role, i) => { return convertRole(role) });
-                this.setState({roles: converted});
-            }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.roles.length == 0) {
+            console.log("defining the role sequence for the breadcrumbs");
+            let converted = nextProps.sequence.map((role, i) => { return convertRole(role) });
+            return {roles: converted};
         }
     }
 
     render () {
         console.log("render all breadcrumbs - " + JSON.stringify(this.state.roles));
         var breadcrumbs;
-        if (this.props.runStatus != '') {
-            breadcrumbs = this.state.roles.map((role, i) => {
-                return <Breadcrumb
-                            key={i}
-                            label={role}
-                            state={this.props.roleState[role]} />;
-            });
-        } else {
-            breadcrumbs = (<div />);
-        }
+
+        breadcrumbs = this.state.roles.map((role, i) => {
+            return <Breadcrumb
+                        key={i}
+                        label={role}
+                        state={this.props.roleState[role]} />;
+        });
+
         return (
             <div className="display-block">
                 { breadcrumbs }
