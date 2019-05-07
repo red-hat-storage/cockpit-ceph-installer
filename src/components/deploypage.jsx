@@ -17,6 +17,7 @@ export class DeployPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            roleSequence: [],
             deployEnabled: true,
             backBtnEnabled: true,
             deployBtnText: 'Save',
@@ -51,7 +52,6 @@ export class DeployPage extends React.Component {
         ];
         this.startTime = 'N/A';
         this.endTime = null;
-        this.roleSequence = [];
         this.roleActive = null;
         this.roleSeen = [];
         this.mocked = false;
@@ -84,24 +84,24 @@ export class DeployPage extends React.Component {
                 });
     }
 
-    componentWillReceiveProps(props) {
-        const { settings } = this.state.settings;
-        if (JSON.stringify(props.settings) != JSON.stringify(settings)) {
-            this.setState({settings: props.settings});
-            let allRoles = buildRoles(props.settings.hosts);
-            if (allRoles.length > 0) {
-                let tmpRoleState = {};
-                for (let role of allRoles) {
-                    if (role == 'ceph-grafana') {
-                        tmpRoleState['metrics'] = 'pending';
-                    } else {
-                        tmpRoleState[role] = 'pending';
-                    }
-                    if (role == 'mons') { tmpRoleState['mgrs'] = 'pending' }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (JSON.stringify(nextProps.settings) != JSON.stringify(prevState.settings)) {
+            let allRoles = buildRoles(nextProps.settings.hosts);
+            let tmpRoleState = {};
+            for (let role of allRoles) {
+                if (role == 'ceph-grafana') {
+                    tmpRoleState['metrics'] = 'pending';
+                } else {
+                    tmpRoleState[role] = 'pending';
                 }
-                this.setState({roleState: tmpRoleState});
-                this.roleSequence = cephAnsibleSequence(allRoles);
+                if (role == 'mons') { tmpRoleState['mgrs'] = 'pending' }
             }
+
+            return {
+                settings: nextProps.settings,
+                roleState: tmpRoleState,
+                roleSequence: cephAnsibleSequence(allRoles)
+            };
         }
     }
 
@@ -114,7 +114,7 @@ export class DeployPage extends React.Component {
 
         eventRoleName = convertRole(shortName);
 
-        console.log("Debug: role sequence is " + JSON.stringify(this.roleSequence));
+        console.log("Debug: role sequence is " + JSON.stringify(this.state.roleSequence));
         switch (eventData.msg) {
         case "running":
             if (this.roleActive == null) {
@@ -129,11 +129,11 @@ export class DeployPage extends React.Component {
 
                     // if the event role is not in the list AND we have seen the role-active name before
                     // - set the current role to complete and move to the next role in the ansible sequence
-                    if (!this.roleSequence.includes(shortName) && this.roleSeen.includes(convertRole(this.roleActive))) {
+                    if (!this.state.roleSequence.includes(shortName) && this.roleSeen.includes(convertRole(this.roleActive))) {
                         currentState[this.roleActive] = 'complete';
                         console.log("converting role active of " + this.roleActive);
                         let a = convertRole(this.roleActive); // remove the 's'
-                        let nextRole = this.roleSequence[this.roleSequence.indexOf(a) + 1];
+                        let nextRole = this.state.roleSequence[this.state.roleSequence.indexOf(a) + 1];
                         console.log("next role is " + nextRole);
                         let nextRoleName = convertRole(nextRole);
                         currentState[nextRoleName] = 'active';
@@ -144,7 +144,7 @@ export class DeployPage extends React.Component {
 
                     // if the shortname is in the sequence, but not in last seen
                     // - add it to last seen and move us along the breadcrumb trail
-                    if (!this.roleSeen.includes(shortName) && this.roleSequence.includes(shortName)) {
+                    if (!this.roleSeen.includes(shortName) && this.state.roleSequence.includes(shortName)) {
                         console.log("not seen this role " + shortName + " before, adding to our list ");
                         currentState[this.roleActive] = 'complete';
                         currentState[eventRoleName] = 'active';
@@ -559,7 +559,7 @@ export class DeployPage extends React.Component {
                             </tr>
                         </tbody>
                     </table>
-                    <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.roleSequence } />
+                    <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.state.roleSequence } />
                     <div>
                         <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
                     </div>
