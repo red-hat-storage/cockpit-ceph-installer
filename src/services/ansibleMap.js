@@ -221,23 +221,27 @@ export function cephAnsibleSequence(roles) {
     // the goal here it to align to the execution sequence of the ceph-ansible playbook
     // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
 
-    // input  : ['mons','rgws','osds','ceph-grafana']
-    // output : ['mon','mgr','osd','rgw','ceph-grafana']
+    // input  : ['mons','rgws','osds','iscsigws', 'ceph-grafana']
+    // output : ['mon','mgr','osd','rgw','iscsi-gw', 'grafana']
 
     // FIXME: iscsi is not tested/validated at the moment
-
+    console.log("Debug: roles to convert to ansible sequence are : " + JSON.stringify(roles));
     let rolesIn = [];
     for (let r of roles) {
         switch (r) {
         case "ceph-grafana":
-            rolesIn.push(r);
+            rolesIn.push('grafana');
+            break;
+        case "iscsigws":
+            rolesIn.push('iscsi-gw');
             break;
         default:
             rolesIn.push(r.slice(0, -1)); // eg. mons becomes mon
         }
     }
 
-    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw', 'iscsi', 'ceph-grafana']; // ceph-ansible sequence in site-*.yml
+    // sequence of riles stripped of the ceph- prefix
+    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw', 'iscsi-gw', 'grafana']; // ceph-ansible sequence in site-*.yml
     let sequence = [];
     for (let role of allRoles) {
         if (rolesIn.includes(role)) {
@@ -245,6 +249,6 @@ export function cephAnsibleSequence(roles) {
             if (role == 'mon') { sequence.push('mgr') }
         }
     }
-
+    console.log("Debug: ansible sequence returned - " + JSON.stringify(sequence));
     return sequence;
 }
