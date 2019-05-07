@@ -43,9 +43,14 @@ Another gotcha to be aware of is the async nature of component state itself. Sta
 ## How stuff Works  
 ### Breadcrumbs on the Deploy page
 The playbook that ceph-ansible runs processes the roles in a specific sequence, so to implement a breadcrumb trail following the installation process the
-code in ansibleMap/cephAnsibleSequence arranges the chosen roles from the host definition in a sequence compatible with the install flow. Once we have this sequence we can check the role in a tasks output to indicate whereabouts we are in the installation process, giving us the breadcrumb effect.
+code in ansibleMap/cephAnsibleSequence arranges the chosen roles from the host definition in a sequence compatible with the install flow. Once we have this sequence we can check the role in a tasks output to indicate whereabouts we are in the installation process, giving us the breadcrumb effect.  
 
-### Hosts metadata
+The actual flow from ceph-ansible (May 2019) is as follows;  
+mons > mgrs > osds > mdss > rgws > nfs > rbdmirrors > clients > iscsigws > ceph-grafana (metrics)  
+
+The main code responsible for tracking is the setRoleState function in the DeployPage component.  
+
+### Host metadata
 Host hardware configuration is extracted from a playbook run that uses the ceph_check_role.py ansible library module. This module calls the same methods to build the configuration metadata that ansible calls itself from the "setup" module. The metadata returned passes through a Checker class to determine whether the host is 'worthy' given the set of roles associated with it. Within the app, a host is represented as a json object that looks like this;  
 ```
 insert code here
@@ -121,10 +126,36 @@ An example of an override file would be
 ```
 
 
-## Creating your test environment
-** insert content here! **
+## Development environment
+### Hacking on the plugin
+1. Ensure **tcp/9090** is available and accessible on your machine
+2. Install and enable cockpit
+```
+yum install -y cockpit cockpit-bridge
+systemctl enable --now cockpit.service
+```
+2. Install nodejs
+```
+yum install -y gcc-c++ make  
+curl -sL https://rpm.nodesource.com/setup_10.x | sudo -E bash -  
+yum install -y nodejs
+```
+
+3. Download the project archive. The project repo provides a package.json (for webpack) and babel config, so to build the plugin files just run  
+```
+# make 
+```
+
+4. Link your dist directory to one that cockpit will use. By default cockpit will look in the ```~/.local/share/cockpit``` directory for 
+user specific plugins - so this is where we want to place a symlink.
+```
+cd ~
+mkdir -p .local/share/cockpit
+ln -s <dist directory> ceph-installer
+```
+*above tested on CentOS7*
 
 ### Rebuilding the app
-The app is built by webpack, and the repo provides a Makefile courtesy of the cockpit plugin starter kit. These pieces make rebuilding the application very simple...just run make.  
+The app is built by webpack, and the repo provides a `Makefile` courtesy of the cockpit plugin starter kit. These pieces make rebuilding the application very simple...just run `make`!.  
   
-Once make completes, you’ll have the application artifacts compiled into the ‘dist’ folder. As long as your cockpit environment can see this folder, you’re good to go. For example, when you login to cockpit as root, if you place a symlink from `~/.local/share/cockpit/ceph-installer` to your `dist` directory you’ll see your changes by simply refreshing your browser to reload the app.  
+Once make completes, you’ll have the application artifacts compiled into the ‘dist’ folder. As long as your cockpit environment can see this folder, you’re good to go.  
