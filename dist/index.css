@@ -427,7 +427,7 @@ table.roleTable {
   visibility: hidden;
   white-space: nowrap;
   background-color: black;
-  opacity: 0.7;
+  opacity: 0.8;
   color: #fff;
   text-align: left;
   border-radius: 3px;
@@ -436,7 +436,8 @@ table.roleTable {
   z-index: 1;
   margin-left: 5px;
   top: -.4em;
-  left: 110%; }
+  left: 110%;
+  font-weight: normal; }
 
 .textInfo:hover .tooltipContent {
   visibility: visible; }
@@ -452,10 +453,10 @@ table.roleTable {
   float: left; }
 
 .network-subnets {
-  margin-left: 80px;
+  margin-left: 40px;
   border-top: 2px solid white;
   margin-top: 20px;
-  width: 280px; }
+  width: 210px; }
 
 .network-subnets:hover {
   border-top: 2px solid #39a5dc; }
@@ -833,7 +834,7 @@ table#add-hosts td {
 .host-review {
   margin-top: 10px;
   height: 200px;
-  width: 1100px;
+  width: 1215px;
   display: block; }
 
 table.host-review-table {
@@ -842,7 +843,7 @@ table.host-review-table {
 
 .host-review-table tr {
   border-top: 1px solid darkgray;
-  width: 1085px; }
+  width: 1200px; }
 
 .host-review-table tr:hover {
   background-color: #ebf8ff; }
