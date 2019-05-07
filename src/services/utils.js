@@ -50,19 +50,29 @@ export function convertRole(role) {
     case "rgw":
         role += 's';
         break;
+    case "mons":
+    case "mgrs":
+    case "osds":
+    case "mdss":
+    case "rgws":
+        role = role.slice(0, -1);
+        break;
     case "iscsi":
+    case "iscsi-gw":
         role = 'iscsigws';
+        break;
+    case "iscsigws":
+        role = 'iscsi';
         break;
     case "metrics":
         role = "ceph-grafana";
         break;
-    case "ceph-grafana":
+    case "grafana":
         // used by deploypage
         role = "metrics";
         break;
     default:
-        console.error("processing an unknown role type");
-        role = "??";
+        console.log("processing an unknown role type : " + role);
         break;
     }
     return role;
