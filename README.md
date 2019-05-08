@@ -131,28 +131,7 @@ ln -s ~/ceph-installer/dist/ ceph-installer
 
 ## Hack on it
 
-To hack on the UI plugin, you'll need a nodejs install. I'm using the latest stable (10.x) version.
+To hack on the UI plugin, you'll need a nodejs install for ReactJS and a cockpit environment. Take a look at the 
+[dev guide](DEVGUIDE.MD) for instructions covering how to set things up.
 
-1. Install nodejs
-```
-yum install -y gcc-c++ make  
-curl -sL https://rpm.nodesource.com/setup_10.x | sudo -E bash -  
-yum install -y nodejs
-```
-
-2. The project repo provides a package.json (for webpack) and babel config, so to build the plugin files just run  
-```
-# make 
-```
-
-3. Link your dist directory to one that cockpit will use. By default cockpit will look in the ```~/.local/share/cockpit``` directory for 
-user specific plugins - so this is where we want to place a symlink.
-```
-cd ~
-mkdir -p .local/share/cockpit
-ln -s <dist directory> ceph-installer
-```
-
-With this link in place, whenever you run ```make``` the dist files will be regenerated and cockpit will see updated code (well, after you refresh the browser!)  
-
-Nice and simple - thanks to the cockpit devs! The starter kit can be found [here](https://github.com/cockpit-project/starter-kit)
+For background, take a look at the great starter kit [docs](https://github.com/cockpit-project/starter-kit) that the cockpit devs have produced.
