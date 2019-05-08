@@ -132,6 +132,6 @@ ln -s ~/ceph-installer/dist/ ceph-installer
 ## Hack on it
 
 To hack on the UI plugin, you'll need a nodejs install for ReactJS and a cockpit environment. Take a look at the 
-[dev guide](DEVGUIDE.MD) for instructions covering how to set things up.
+[dev guide](DEVGUIDE.md) for instructions covering how to set things up.
 
 For background, take a look at the great starter kit [docs](https://github.com/cockpit-project/starter-kit) that the cockpit devs have produced.
