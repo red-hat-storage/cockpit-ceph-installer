@@ -22,13 +22,17 @@ import React from 'react';
 import './app.scss';
 // import ProgressTracker from './components/progresstracker.jsx';
 import InstallationSteps from './components/installationsteps.jsx';
-import { getSVCToken } from './services/utils.js';
+import { readFile } from './services/utils.js';
 import { GenericModal } from './components/common/modal.jsx';
 // import InfoBar from './components/infobar.jsx';
 
 const _ = cockpit.gettext;
 
 export class Application extends React.Component {
+    //
+    // Application "bootstrap". The cockpit menu option "Ceph Installer" starts
+    // this reactjs app. This page performs some initial setup then effectively
+    // hands off to the installationsteps page to build out the page components
     constructor() {
         super();
         this.state = {
@@ -36,16 +40,56 @@ export class Application extends React.Component {
             "svctoken": null,
             modalVisible: false,
             modalContent: '',
-            modalTitle: ''
+            modalTitle: '',
+            ready: false
+        };
+        this.defaults = {
+            iscsiTargetName: "iqn.2003-01.com.redhat.iscsi-gw:ceph-igw",
+            sourceType: "Red Hat",
+            targetVersion: "RHCS 3",
+            clusterType: "Production",
+            installType: "Container",
+            networkType: 'ipv4',
+            osdType: "Bluestore",
+            osdMode: "None",
+            flashUsage: "Journals/Logs",
         };
     }
 
-    componentDidMount() {
-        getSVCToken()
-                .done((content, tag) => { this.setState({svctoken: content}) })
+    componentWillMount() {
+        // count of the number of files we need to read before we should render anything
+        var filesRead = 0;
+
+        console.log("Loading svctoken for ansible-runner-service API");
+        readFile('/etc/ansible-runner-service/svctoken')
+                .then((content, tag) => {
+                    this.setState({
+                        svctoken: content
+                    });
+                    console.log("SVC token is : " + content);
+                    filesRead++;
+                    if (filesRead == 2) { this.setState({ready: true}) }
+                })
                 .fail((error) => {
                     console.error("Can't read the svctoken file");
                     console.error("Error : " + error.message);
+                });
+
+        console.log("Checking for local default cluster setting overrides");
+        readFile('/var/lib/cockpit/ceph-installer/defaults.json', 'JSON')
+                .then((overrides, tag) => {
+                    if (overrides) {
+                        console.log("Overrides are : " + JSON.stringify(overrides));
+                        Object.assign(this.defaults, overrides);
+                        console.log("Defaults are : " + JSON.stringify(this.defaults));
+                    } else {
+                        console.log("Unable to read local default overrides, using internal defaults");
+                    }
+                    filesRead++;
+                    if (filesRead == 2) { this.setState({ready: true}) }
+                })
+                .catch((e) => {
+                    console.error("Error reading overrides file: " + JSON.stringify(e));
                 });
     }
 
@@ -55,8 +99,7 @@ export class Application extends React.Component {
 
     showModal = (title, modalContent) => {
         // handle the show and hide of the app level modal
-        console.log("content: ");
-        console.log(modalContent);
+        console.log("Content: " + modalContent);
         this.setState({
             modalVisible: true,
             modalContent: modalContent,
@@ -66,20 +109,20 @@ export class Application extends React.Component {
 
     render() {
         console.log("in main render");
-        console.log("svctoken is " + this.state.svctoken);
-
-        return (
-            <div className="container-fluid">
-                <GenericModal
-                    show={this.state.modalVisible}
-                    title={this.state.modalTitle}
-                    content={this.state.modalContent}
-                    closeHandler={this.hideModal} />
-                <h2><b>Ceph Installer</b></h2>
-                {/* <ProgressTracker /> */}
-                <InstallationSteps svctoken={this.state.svctoken} modalHandler={this.showModal} />
-                {/* <InfoBar /> */}
-            </div>
-        );
+        if (!this.state.ready) {
+            return (<div />);
+        } else {
+            return (
+                <div className="container-fluid">
+                    <GenericModal
+                        show={this.state.modalVisible}
+                        title={this.state.modalTitle}
+                        content={this.state.modalContent}
+                        closeHandler={this.hideModal} />
+                    <h2><b>Ceph Installer</b></h2>
+                    <InstallationSteps svctoken={this.state.svctoken} defaults={this.defaults} modalHandler={this.showModal} />
+                </div>
+            );
+        }
     }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../app.scss';
 
-// export function NextButton (props) {
+// Common button components
 export class NextButton extends React.Component {
     render() {
         var btnState;

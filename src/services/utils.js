@@ -2,15 +2,21 @@
 import cockpit from 'cockpit';
 import { addGroup, deleteGroup, changeHost, getPlaybookState, getTaskEvents } from './apicalls.js';
 
-const validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi'];
+const validRoles = ['mon', 'osd', 'mds', 'rgw', 'mgr', 'iscsi', 'metrics'];
 
-export function getSVCToken () {
-    console.log("external function fetching svctoken from filesystem");
-    // var token_path = '/etc/hosts';
-    var tokenPath = '/etc/ansible-runner-service/svctoken';
+export function readFile (fileName, fileType) {
+    console.log("Fetching contents of '" + fileName + "'");
+    let spec = {
+        "superuser": "require"
+    };
+    if (fileType == 'JSON') { spec['syntax'] = JSON }
 
-    let promise = cockpit.file(tokenPath, {"superuser": "require"}).read();
+    let promise = cockpit.file(fileName, spec).read();
     return promise;
+}
+
+export function versionSupportsMetrics(version) {
+    return ["14 (Nautilus)", "RHCS 4"].includes(version);
 }
 
 export function buildRoles(hosts) {
@@ -44,12 +50,29 @@ export function convertRole(role) {
     case "rgw":
         role += 's';
         break;
+    case "mons":
+    case "mgrs":
+    case "osds":
+    case "mdss":
+    case "rgws":
+        role = role.slice(0, -1);
+        break;
     case "iscsi":
+    case "iscsi-gw":
         role = 'iscsigws';
         break;
+    case "iscsigws":
+        role = 'iscsi';
+        break;
+    case "metrics":
+        role = "ceph-grafana";
+        break;
+    case "grafana":
+        // used by deploypage
+        role = "metrics";
+        break;
     default:
-        console.error("processing an unknown role type");
-        role = "??";
+        console.log("processing an unknown role type : " + role);
         break;
     }
     return role;
@@ -160,7 +183,7 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
             groupChain = groupChain.then(() => addGroup(groups[g], svctoken));
         }
     }
-    console.log("DEBUG CHANGEHOST - groups are" + JSON.stringify(groups));
+    console.log("DEBUG toggleHostRole - groups are" + JSON.stringify(groups));
     groupChain
             .then(() => {
                 changeHost(hostname, ansibleRole, checked, svctoken)
@@ -229,7 +252,7 @@ export function checkPlaybook(playUUID, svctoken, activeCB, finishedCB) {
                     getTaskEvents(playUUID, "CEPH_CHECK_ROLE", svctoken)
                             .then((resp) => {
                                 activeCB(JSON.parse(resp), playUUID);
-                                finishedCB();
+                                finishedCB(response.msg);
                             });
                 }
             });
@@ -348,6 +371,10 @@ export function collocationOK(currentRoles, newRole, installType, clusterType) {
     console.log("checking for collocation violations");
     console.log("current roles " + currentRoles);
     console.log("new role is " + newRole);
+    if ((newRole == 'metrics' && currentRoles.length > 0) || (currentRoles.includes('ceph-grafana'))) {
+        console.log("request for metrics on a host with other ceph roles is denied");
+        return false;
+    }
     newRole = convertRole(newRole);
     if (installType.toLowerCase() == 'container') {
         return true;
@@ -402,6 +429,11 @@ export function commonSubnets(hostArray, role) {
                 break;
             case "rgw":
                 if (hostArray[idx].rgw) {
+                    subnets.push(hostArray[idx].subnets);
+                }
+                break;
+            case "iscsi":
+                if (hostArray[idx].iscsi) {
                     subnets.push(hostArray[idx].subnets);
                 }
                 break;
@@ -472,6 +504,6 @@ export function osdCount(hosts, flashUsage) {
             ctr += host.hdd;
         }
     }
-    console.log("detected " + ctr + "candidate disks for OSDs");
+    console.log("Detected " + ctr + " candidate disks for OSDs");
     return ctr;
 }

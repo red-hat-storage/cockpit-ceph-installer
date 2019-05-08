@@ -43,56 +43,65 @@ export class ValidatePage extends React.Component {
         this.roleSummary = '';
         this.eventLookup = {}; // lookup for probe results
         this.skipChecks = false;
+        this.playUUID = '';
     }
 
     processEventData = (eventData) => {
         console.log("processing event data for " + eventData.remote_addr);
         let eventHostname = eventData.remote_addr;
         let localState = JSON.parse(JSON.stringify(this.state.hosts));
-        let facts = eventData.res.data.summary_facts;
+        let probeTotal = localState.length - hostsWithRoleCount(localState, 'metrics');
+        if (!eventData.res.hasOwnProperty('data')) {
+            console.log("Skipping " + eventHostname + ", no data returned");
+        } else {
+            let facts = eventData.res.data.summary_facts;
 
-        let obj = {};
-        obj['vendor'] = facts.vendor;
-        obj['model'] = facts.model;
-        obj['cpuType'] = facts.cpu_type;
-        obj['subnets'] = facts.network.subnets;
-        obj['subnet_details'] = facts.network.subnet_details;
-        obj['hdd_devices'] = Object.keys(facts.hdd);
-        obj['hdd'] = obj.hdd_devices.length;
-        obj['ssd_devices'] = Object.keys(facts.ssd);
-        obj['ssd'] = obj.ssd_devices.length;
-        obj['capacity'] = facts.capacity;
-        obj['cpu'] = facts.cpu_core_count;
-        obj['ram'] = Math.round(facts.ram_mb / 1024);
+            let obj = {};
+            obj['vendor'] = facts.vendor;
+            obj['model'] = facts.model;
+            obj['cpuType'] = facts.cpu_type;
+            obj['subnets'] = facts.network.subnets;
+            obj['subnet_details'] = facts.network.subnet_details;
+            obj['hdd_devices'] = Object.keys(facts.hdd);
+            obj['hdd'] = obj.hdd_devices.length;
+            obj['ssd_devices'] = Object.keys(facts.ssd);
+            obj['ssd'] = obj.ssd_devices.length;
+            obj['capacity'] = facts.capacity;
+            obj['cpu'] = facts.cpu_core_count;
+            obj['ram'] = Math.round(facts.ram_mb / 1024);
 
-        console.log(JSON.stringify(eventData.res.data.status));
-        obj['ready'] = eventData.res.data.status;
-        obj['msgs'] = eventData.res.data.status_msgs;
-
-        obj['nic'] = countNICs(facts);
-
-        for (let i = 0; i < localState.length; i++) {
-            let host = localState[i];
-            if (host.hostname == eventHostname) {
-                console.log("updating state");
-                Object.assign(host, obj);
-                localState[i] = host;
-                let currentCount = this.state.probedCount + 1;
-                let level = (currentCount === localState.length) ? "success" : "active";
-
-                this.setState({
-                    hosts: localState,
-                    probedCount: currentCount,
-                    msgLevel: level,
-                    msgText: currentCount + "/" + localState.length + " probes complete",
-                    probeStatusMsg: currentCount + "/" + localState.length + " probes complete"
-                });
-                console.log("updating notification message " + currentCount);
-                break;
+            console.log(JSON.stringify(eventData.res.data.status));
+            obj['ready'] = eventData.res.data.status;
+            if (eventData.res.data.status.toLowerCase() == 'ok') {
+                obj['selected'] = true;
             }
-        }
+            obj['msgs'] = eventData.res.data.status_msgs;
 
-        this.roleSummary = JSON.stringify(allRoles(this.state.hosts));
+            obj['nic'] = countNICs(facts);
+
+            for (let i = 0; i < localState.length; i++) {
+                let host = localState[i];
+                if (host.hostname == eventHostname) {
+                    console.log("updating state");
+                    Object.assign(host, obj);
+                    localState[i] = host;
+                    let currentCount = this.state.probedCount + 1;
+                    let level = (currentCount === probeTotal) ? "success" : "active";
+
+                    this.setState({
+                        hosts: localState,
+                        probedCount: currentCount,
+                        msgLevel: level,
+                        msgText: currentCount + "/" + probeTotal + " probes complete",
+                        probeStatusMsg: currentCount + "/" + probeTotal + " probes complete"
+                    });
+                    console.log("updating notification message " + currentCount);
+                    break;
+                }
+            }
+
+            this.roleSummary = JSON.stringify(allRoles(this.state.hosts));
+        }
         // this.probeSummary = JSON.stringify(this.state.hosts);
     }
 
@@ -126,26 +135,38 @@ export class ValidatePage extends React.Component {
         });
     }
 
-    probeComplete = () => {
-        console.log("probe scan has completed");
-        this.setState({
-            probeEnabled: true,
-            ready: true,
-            probeStatusMsg: ''
-        });
+    probeComplete = (playbookStatus) => {
+        console.log("probe playbook complete : " + playbookStatus);
+        if (playbookStatus == 'failed') {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "Unexpected playbook failure. Check ansible-runner-service directory '" + this.playUUID + "' for details.",
+                probeEnabled: true,
+                pendingProbe: true,
+                ready: false,
+                probeStatusMsg: ''
+            });
+        } else {
+            this.setState({
+                probeEnabled: true,
+                ready: true,
+                probeStatusMsg: ''
+            });
+        }
         this.eventLookup = {};
     }
 
     probeHosts = () => {
         console.log("Request to probe hosts received");
+        let probeTotal = this.state.hosts.length - hostsWithRoleCount(this.state.hosts, 'metrics');
         this.setState({
             probeEnabled: false,
             pendingProbe: false,
             ready: false,
             probedCount: 0,
             msgLevel: 'active',
-            msgText: "0/" + this.state.hosts.length + " probes complete",
-            probeStatusMsg: "0/" + this.state.hosts.length + " probes complete"
+            msgText: "0/" + probeTotal + " probes complete",
+            probeStatusMsg: "0/" + probeTotal + " probes complete"
         });
 
         console.log("remove the status info for all the hosts");
@@ -160,7 +181,10 @@ export class ValidatePage extends React.Component {
         // pass it to the api request
         var rolesByHost = {};
         this.state.hosts.forEach((host, idx, hosts) => {
-            rolesByHost[host.hostname] = buildRoles([host]).join(',');
+            // ignore the metrics host for the probe
+            if (!host.metrics) {
+                rolesByHost[host.hostname] = buildRoles([host]).join(',');
+            }
         });
         console.log("roles :" + JSON.stringify(rolesByHost));
         // call the playbook
@@ -193,11 +217,11 @@ export class ValidatePage extends React.Component {
                     let response = JSON.parse(resp);
                     console.log("playbook execution started :" + response.status);
                     console.log("response object :" + JSON.stringify(response));
-                    let playUUID = response.data.play_uuid;
-                    console.log("tracking playbook with UUID :" + playUUID);
+                    this.playUUID = response.data.play_uuid;
+                    console.log("tracking playbook with UUID :" + this.playUUID);
 
                     console.log("starting progress tracker");
-                    checkPlaybook(playUUID, this.props.svctoken, this.updateProbeStatus, this.probeComplete);
+                    checkPlaybook(this.playUUID, this.props.svctoken, this.updateProbeStatus, this.probeComplete);
                 })
                 .catch((e) => {
                     let errorMsg;
@@ -330,6 +354,10 @@ export class ValidatePage extends React.Component {
                 "Production": 3,
                 "Development/POC": 1
             },
+            iscsiCount: {
+                "Production": [0, 2, 4],
+                "Development/POC": [0, 2]
+            },
             mons: {
                 "Production": [3, 5, 7],
                 "Development/POC": [1, 3]
@@ -360,7 +388,7 @@ export class ValidatePage extends React.Component {
         }
 
         for (let i = 0; i < this.state.hosts.length; i++) {
-            if (this.state.hosts[i].selected) {
+            if ((this.state.hosts[i].selected) || (this.state.hosts[i]['metrics'])) {
                 candidateHosts.push(JSON.parse(JSON.stringify(this.state.hosts[i])));
             } else {
                 hostsToDelete.push(this.state.hosts[i].hostname);
@@ -391,6 +419,17 @@ export class ValidatePage extends React.Component {
                 msgLevel: 'error',
                 msgText: "You need at least " + minimum.osdHosts[this.props.clusterType] + " OSD hosts to continue"
             });
+            return;
+        }
+
+        // check for iscsi restrictions
+        let validISCSITargets = minimum.iscsiCount[this.props.clusterType]; // array
+        if (!validISCSITargets.includes(hostsWithRoleCount(candidateHosts, 'iscsi'))) {
+            this.setState({
+                msgLevel: 'error',
+                msgText: "You need " + validISCSITargets.slice(1).join(' or ') + " hosts as iSCSI targets to continue"
+            });
+            return;
         }
 
         // the hosts provided must have a common subnet
@@ -470,80 +509,87 @@ export class ValidatePage extends React.Component {
     }
 
     render() {
-        console.log("rendering the validatepage");
+        if (this.props.className == 'page') {
+            console.log("rendering the validatepage");
 
-        // var spinner;
-        var rows;
-        var probeButtonClass;
-        var nextButtonClass;
-        if (this.state.hosts.length > 0) {
-            rows = this.state.hosts.map(host => {
-                return <HostDiscoveryRow
+            // var spinner;
+            var rows;
+            var probeButtonClass;
+            var nextButtonClass;
+            if (this.state.hosts.length > 0) {
+                rows = this.state.hosts.map(host => {
+                    // only show ceph nodes, ignoring the metrics host
+                    if (!host.metrics) {
+                        return <HostDiscoveryRow
                             key={host.hostname}
                             hostData={host}
                             updateRole={this.updateRole}
                             callback={this.toggleSingleRow} />;
-            });
-        } else {
-            rows = (<tbody />); // emptyRow();
-        }
+                    }
+                });
+            } else {
+                rows = (<tbody />); // emptyRow();
+            }
 
-        probeButtonClass = (this.state.pendingProbe) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
-        nextButtonClass = (this.state.ready) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
-        return (
-
-            <div id="validate" className={this.props.className} >
-                <h3>3. Validate Host Selection</h3>
-                The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
-                 probe the hosts to validate that their hardware configuration is compatible with
-                 their intended Ceph role. Once the probe is complete you must select the hosts to
-                 use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
-                <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
-                <div className="divCenter">
-                    <div>
-                        <div className="proby">
-                            <table id="probe-headings" className="probe-headings">
-                                <thead>
-                                    <tr>
-                                        <th className="tdSelector">
-                                            <div className="arrow-dummy" />
-                                            <HostSelector
-                                                name="*ALL*"
-                                                selected={this.state.selectAll}
-                                                callback={this.toggleAllRows} />
-                                        </th>
-                                        <th className="thHostname">Hostname</th>
-                                        <th className="textCenter thRoleWidth">mon</th>
-                                        <th className="textCenter thRoleWidth">mds</th>
-                                        <th className="textCenter thRoleWidth">osd</th>
-                                        <th className="textCenter thRoleWidth">rgw</th>
-                                        <th className="textCenter thRoleWidth">iscsi</th>
-                                        <th className="textCenter fact">CPU</th>
-                                        <th className="textCenter fact">RAM</th>
-                                        <th className="textCenter fact">NIC</th>
-                                        <th className="textCenter fact">HDD</th>
-                                        <th className="textCenter fact">SSD</th>
-                                        <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
-                                        <th className="leftAligned thHostInfo">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody />
-                            </table>
-                        </div>
-                        <div className="probe-container">
-                            <table id="probe-table" className="probe-table" >
-                                {rows}
-                            </table>
+            probeButtonClass = (this.state.pendingProbe) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
+            nextButtonClass = (this.state.ready) ? "nav-button btn btn-primary btn-lg" : "nav-button btn btn-lg";
+            return (
+                <div id="validate" className={this.props.className} >
+                    <h3>3. Validate Host Selection</h3>
+                    The hosts have been checked for DNS and passwordless SSH.<br />The next step is to
+                    probe the hosts that Ceph will use to validate that their hardware configuration is compatible with
+                    their intended Ceph role. Once the probe is complete you must select the hosts to
+                    use for deployment using the checkboxes (<i>only hosts in an 'OK' state can be selected</i>)<br /><br />
+                    <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+                    <div className="divCenter">
+                        <div>
+                            <div className="proby">
+                                <table id="probe-headings" className="probe-headings">
+                                    <thead>
+                                        <tr>
+                                            <th className="tdSelector">
+                                                <div className="arrow-dummy" />
+                                                <HostSelector
+                                                    name="*ALL*"
+                                                    selected={this.state.selectAll}
+                                                    callback={this.toggleAllRows} />
+                                            </th>
+                                            <th className="thHostname">Hostname</th>
+                                            <th className="textCenter thRoleWidth">mon</th>
+                                            <th className="textCenter thRoleWidth">mds</th>
+                                            <th className="textCenter thRoleWidth">osd</th>
+                                            <th className="textCenter thRoleWidth">rgw</th>
+                                            <th className="textCenter thRoleWidth">iscsi</th>
+                                            <th className="textCenter fact">CPU</th>
+                                            <th className="textCenter fact">RAM</th>
+                                            <th className="textCenter fact">NIC</th>
+                                            <th className="textCenter fact">HDD</th>
+                                            <th className="textCenter fact">SSD</th>
+                                            <th className="textCenter capacity">Raw Capacity<br />(HDD/SSD)</th>
+                                            <th className="leftAligned thHostInfo">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody />
+                                </table>
+                            </div>
+                            <div className="probe-container">
+                                <table id="probe-table" className="probe-table" >
+                                    {rows}
+                                </table>
+                            </div>
                         </div>
                     </div>
+                    <div className="nav-button-container">
+                        <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
+                        <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
+                        <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.prevPageHandler} />
+                    </div>
                 </div>
-                <div className="nav-button-container">
-                    <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
-                    <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
-                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.prevPageHandler} />
-                </div>
-            </div>
-        );
+            );
+        } else {
+            console.log("Skipping render of validatepage - not active");
+            return (<div id="validate" className={this.props.className} />);
+        }
     }
 }
 

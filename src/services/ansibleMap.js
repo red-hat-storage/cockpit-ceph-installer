@@ -43,7 +43,7 @@ export function osdsVars (vars) {
     let forYML = {
         osd_auto_discovery: false
     };
-    if (vars.osdMode != 'Standard') {
+    if (vars.osdMode == 'Encrypted') {
         forYML.dmcrypt = true;
     }
 
@@ -67,10 +67,19 @@ export function osdsVars (vars) {
         }
     }
 
-    if (mixed && vars.flashUsage.startsWith("Journal")) {
-        forYML.osd_scenario = 'non-collocated';
-    } else {
-        forYML.osd_scenario = "collocated";
+    switch (vars.targetVersion) {
+    case "RHCS 4":
+    case "14 (Nautilus)":
+        // ceph-volume based OSDs
+        forYML.osd_scenario = 'lvm';
+        break;
+    default:
+        // Older Ceph versions based on ceph-disk not ceph-volume
+        if (mixed && vars.flashUsage.startsWith("Journal")) {
+            forYML.osd_scenario = 'non-collocated';
+        } else {
+            forYML.osd_scenario = "collocated";
+        }
     }
 
     return forYML;
@@ -85,11 +94,17 @@ export function allVars (vars) {
         forYML.ceph_origin = "repository";
         forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
         forYML.ceph_stable_release = vars.targetVersion.split('(')[1].slice(0, -1).toLowerCase(); // nautilus
+        if (forYML.ceph_stable_release == 'nautilus') {
+            forYML.dashboard_enabled = true;
+        }
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
         forYML.ceph_origin = "repository";
         forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
+        if (forYML.ceph_rhcs_version == '4') {
+            forYML.dashboard_enabled = true;
+        }
         break;
     case "Distribution":
         forYML.ceph_origin = "distro";
@@ -154,29 +169,15 @@ export function monsVars (vars) {
 export function mgrsVars (vars) {
     let forYML = {};
 
-    const community_dashboard_versions = ["13", "14"];
-    const rhcs_dashboard_versions = ["4"];
+    let module_map = {
+        "12 (Luminous)" : ["prometheus", "status"],
+        "13 (Mimic)" : ["prometheus", "status", "dashboard"],
+        "14 (Nautilus)" : ["prometheus", "status", "dashboard", "pg_autoscaler"],
+        "RHCS 3": ["prometheus", "status"],
+        "RHCS 4": ["prometheus", "status", "dashboard", "pg_autoscaler"]
+    };
 
-    switch (vars.sourceType) {
-    case "Community":
-        if (community_dashboard_versions.includes(vars.targetVersion.split(' ')[0])) {
-            forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
-        } else {
-            forYML.ceph_mgr_modules = ["status", "prometheus"];
-        }
-        break;
-
-    case "Red Hat":
-        if (rhcs_dashboard_versions.includes(vars.targetVersion.split(' ')[1])) {
-            forYML.ceph_mgr_modules = ["dashboard", "status", "prometheus"];
-        } else {
-            forYML.ceph_mgr_modules = ["status", "prometheus"];
-        }
-        break;
-
-    default:
-        forYML.ceph_mgr_modules = ["status", "prometheus"];
-    }
+    forYML.ceph_mgr_modules = module_map[vars.targetVersion];
 
     return forYML;
 }
@@ -185,7 +186,7 @@ export function rgwsVars(vars) {
     // RGW settings based on a high performance object workload, which is a typical
     // target for Ceph
 
-    // TODO: this currently uses static pgnum assignments
+    // FIXME: this currently uses static pgnum assignments
 
     let forYML = {};
 
@@ -202,16 +203,45 @@ export function rgwsVars(vars) {
     return forYML;
 }
 
+export function iscsiVars (vars) {
+    let forYML = {};
+    let iscsiTargets = [];
+
+    for (let host of vars.hosts) {
+        if (host.iscsi) {
+            iscsiTargets.push(host.subnet_details[vars.iscsiNetwork].addr);
+        }
+    }
+    forYML.gateway_iqn = vars.iscsiTargetName;
+    forYML.gateway_ip_list = iscsiTargets.join(',');
+    return forYML;
+}
+
 export function cephAnsibleSequence(roles) {
     // the goal here it to align to the execution sequence of the ceph-ansible playbook
     // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
 
-    // FIXME: iscsi is not included at the moment
+    // input  : ['mons','rgws','osds','iscsigws', 'ceph-grafana']
+    // output : ['mon','mgr','osd','rgw','iscsi-gw', 'grafana']
+
+    // FIXME: iscsi is not tested/validated at the moment
+    console.log("Debug: roles to convert to ansible sequence are : " + JSON.stringify(roles));
     let rolesIn = [];
     for (let r of roles) {
-        rolesIn.push(r.slice(0, -1)); // drop the last char
+        switch (r) {
+        case "ceph-grafana":
+            rolesIn.push('grafana');
+            break;
+        case "iscsigws":
+            rolesIn.push('iscsi-gw');
+            break;
+        default:
+            rolesIn.push(r.slice(0, -1)); // eg. mons becomes mon
+        }
     }
-    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw']; // ceph-ansible sequence
+
+    // sequence of riles stripped of the ceph- prefix
+    let allRoles = ['mon', 'mgr', 'osd', 'mds', 'rgw', 'iscsi-gw', 'grafana']; // ceph-ansible sequence in site-*.yml
     let sequence = [];
     for (let role of allRoles) {
         if (rolesIn.includes(role)) {
@@ -219,6 +249,6 @@ export function cephAnsibleSequence(roles) {
             if (role == 'mon') { sequence.push('mgr') }
         }
     }
-
+    console.log("Debug: ansible sequence returned - " + JSON.stringify(sequence));
     return sequence;
 }

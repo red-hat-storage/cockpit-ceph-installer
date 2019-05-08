@@ -49,8 +49,11 @@ table#probe-table thead {
   height: 3em;
   display: block; }
 
-.emptyTable {
-  width: 758px;
+.emptyRow {
+  width: 100%; }
+
+.emptyCell {
+  width: 100%;
   display: inline-block;
   text-align: center; }
 
@@ -74,6 +77,10 @@ ul.dropdown-menu-tbl-right::after {
 .thHostname {
   padding-left: 5px;
   min-width: 140px; }
+
+.thMetricsWidth {
+  min-width: 61px;
+  padding-left: 15px; }
 
 .textinput {
   border-style: none;
@@ -157,7 +164,6 @@ table.roleTable thead, tr {
 
 table.roleTable tbody {
   height: 410px;
-  width: 773px;
   display: block;
   overflow-y: auto; }
 
@@ -394,6 +400,9 @@ table.roleTable {
 .visible {
   display: block; }
 
+.visible-cell {
+  display: table-cell; }
+
 .clickable {
   cursor: pointer; }
 
@@ -418,7 +427,7 @@ table.roleTable {
   visibility: hidden;
   white-space: nowrap;
   background-color: black;
-  opacity: 0.7;
+  opacity: 0.8;
   color: #fff;
   text-align: left;
   border-radius: 3px;
@@ -427,7 +436,8 @@ table.roleTable {
   z-index: 1;
   margin-left: 5px;
   top: -.4em;
-  left: 110%; }
+  left: 110%;
+  font-weight: normal; }
 
 .textInfo:hover .tooltipContent {
   visibility: visible; }
@@ -443,10 +453,10 @@ table.roleTable {
   float: left; }
 
 .network-subnets {
-  margin-left: 80px;
+  margin-left: 40px;
   border-top: 2px solid white;
   margin-top: 20px;
-  width: 280px; }
+  width: 210px; }
 
 .network-subnets:hover {
   border-top: 2px solid #39a5dc; }
@@ -752,7 +762,7 @@ table caption, .host-review-title {
   border: 1px solid darkgray; }
 
 .review-table-value {
-  width: 120px; }
+  width: 145px; }
 
 .review-table-container {
   position: relative;
@@ -824,7 +834,7 @@ table#add-hosts td {
 .host-review {
   margin-top: 10px;
   height: 200px;
-  width: 1100px;
+  width: 1215px;
   display: block; }
 
 table.host-review-table {
@@ -833,7 +843,7 @@ table.host-review-table {
 
 .host-review-table tr {
   border-top: 1px solid darkgray;
-  width: 1085px; }
+  width: 1200px; }
 
 .host-review-table tr:hover {
   background-color: #ebf8ff; }

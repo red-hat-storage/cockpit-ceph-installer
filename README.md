@@ -2,18 +2,23 @@
 This project aims to provide a simple means to deploy a Ceph cluster by 'teaming up' with the ansible-runner and runner-service projects. The goal is to use the cockpit UI to gather all the settings necessary to drive a ceph-ansible playbook to install your Ceph cluster. It also uses the ceph-check-role ansible module to handle the validation of role against host configuration.
 
 ## Project Status
-The plugin currently will 
-- create the ansible inventory file (hosts and groups)
-- probe and validate candidate hosts against their intended Ceph role
-- presents available networks for the public and cluster networks required by Ceph
-
-### What's left?
-1. The UI gathers the variables for ceph-ansible's site.yml, so these variables need to be committed to the filesystem
-2. The "Deploy" page needs to be completed. This is the final piece that starts the ceph-ansible site.yml playbook to perform the installation.
+The plugin currently 
+- creates the ansible inventory file (hosts and groups)
+- supports different ceph versions, bluestore and filestore, encrypted/non-encrypted
+- for a Nautilus target, a metrics hosts is required for full prometheus/grafana support  
+- probes and validates candidate hosts against their intended Ceph role(s)
+- presents ans selects available networks for the public, cluster and S3 networks
+- provides a review of the selections made
+- configuration options selected are committed to standard yml format ansible files (host & group vars)
+- initiates the ceph-ansible playbook and monitor progress
+- any deployment errors are shown in the UI
+- following a Nautilus based deployment, the user may click a link to go straight to Ceph's web management console
+- allows environment defaults to be overridden from `var/lib/cockpit/ceph-installer/defaults.json`  
+- supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways
 
 ## Curious, take a look...
 
-[![demo](screenshots/cockpit.gif)](https://youtu.be/6_RSUZzF2SA) 
+[![demo](screenshots/ceph-installer-2019-04.gif)](https://youtu.be/wIw7RjHPhzs)
 
 ## Take it for a testdrive
 ### 1. Create a test VM
@@ -119,17 +124,14 @@ cd /root/.local/share/cockpit
 ln -s ~/ceph-installer/dist/ ceph-installer
 ```
 4. point your browser at port 9090 of the machine, and login as root
-   - make sure runner-service has been started!
-
-### Gotcha's
-1. if you see "Problem fetching group listnot-found" in the browsers console..
-   - check that runner-service is running!
+   - make sure runner-service has been started - if not, the UI will tell you!
 
 
 -----------------------------------------------------------------------------------------------------------------
 
-Hack on it
+## Hack on it
 
-To develop you need more than the dist and src - you'll need the cockpit dev environment.
-More steps to come.
+To hack on the UI plugin, you'll need a nodejs install for ReactJS and a cockpit environment. Take a look at the 
+[dev guide](DEVGUIDE.md) for instructions covering how to set things up.
 
+For background, take a look at the great starter kit [docs](https://github.com/cockpit-project/starter-kit) that the cockpit devs have produced.

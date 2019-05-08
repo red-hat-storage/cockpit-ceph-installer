@@ -2,6 +2,8 @@ import React from 'react';
 import '../../app.scss';
 
 export class RoleCheckbox extends React.Component {
+    //
+    // checkbox based on Patternfly https://www.patternfly.org/pattern-library/forms-and-controls/data-input/#checkboxes
     constructor (props) {
         super(props);
 

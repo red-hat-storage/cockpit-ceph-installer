@@ -9,7 +9,7 @@ import { GenericModal, WindowTitle } from './common/modal.jsx';
 import { decodeAddError } from '../services/errorHandlers.js';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
-import { buildRoles, removeItem, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard } from '../services/utils.js';
+import { buildRoles, removeItem, versionSupportsMetrics, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard, hostsWithRole, activeRoleCount } from '../services/utils.js';
 /* eslint-enable */
 import '../app.scss';
 
@@ -35,8 +35,31 @@ export class HostsPage extends React.Component {
 
     nextAction = (event) => {
         let usable = true;
+        let iscsiTargetCounts = [0, 2, 4];
         let errMsgs = [];
 
+        if (versionSupportsMetrics(this.props.targetVersion)) {
+            let metricsHost = '';
+            for (let idx = 0; idx < this.state.hosts.length; idx++) {
+                if (this.state.hosts[idx]['metrics']) {
+                    metricsHost = this.state.hosts[idx]['hostname'];
+                    break;
+                }
+            }
+            if (metricsHost) {
+                // pass the metrics host name back to the parent state
+                // Note this will drive a state change/re-render to all sibling components
+                this.props.metricsHostHandler(metricsHost);
+            } else {
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: "To continue you must provide a host for metrics (grafana/prometheus)"
+                });
+                return;
+            }
+        }
+
+        // console.log("Debug: we have these hosts: " + JSON.stringify(this.state.hosts));
         if (this.state.hosts.length > 0) {
             // we must have hosts to process before moving on to validation
             var hostOKCount = 0;
@@ -47,10 +70,13 @@ export class HostsPage extends React.Component {
             });
             if (hostOKCount != this.state.hosts.length) {
                 errMsgs.push("Hosts must be in an 'OK' state to continue");
+                console.log("Debug: hosts are " + JSON.stringify(this.state.hosts));
             }
-
+            console.log("debug hosts " + JSON.stringify(this.state.hosts));
             let monCount = hostsWithRoleCount(this.state.hosts, 'mon');
             let osdHostCount = hostsWithRoleCount(this.state.hosts, 'osd');
+            let iscsiCount = hostsWithRoleCount(this.state.hosts, 'iscsi');
+            console.log("debug : # iscsi hosts is " + iscsiCount);
 
             switch (true) {
             case (monCount === 0):
@@ -68,12 +94,17 @@ export class HostsPage extends React.Component {
                 errMsgs.push("OSD hosts are required");
             }
 
+            if (!iscsiTargetCounts.includes(iscsiCount)) {
+                errMsgs.push("iscsi requires either " + iscsiTargetCounts.slice(1).join(' or ') + " hosts to provide path redundancy");
+            }
+
             if (errMsgs.length > 0) {
                 this.setState({
                     msgLevel: "error",
                     msgText: errMsgs.join('. ')
                 });
                 usable = false;
+                return;
             }
 
             if (usable) {
@@ -236,7 +267,12 @@ export class HostsPage extends React.Component {
             }
         }
 
-        this.setState({hosts: currentHosts}); // update the table to show the retry action
+        // update the table to show the retry action, and turn of any old error messages
+        this.setState({
+            hosts: currentHosts,
+            msgLevel: 'info',
+            msgText: ''
+        });
 
         var that = this;
         var tokenString = this.props.svctoken;
@@ -319,13 +355,22 @@ export class HostsPage extends React.Component {
 
     updateHost = (hostname, role, checked) => {
         console.log("updating the role state for " + hostname + " role " + role + " state of " + checked);
-        var localState = this.state.hosts.splice(0);
+        var localState = this.state.hosts.slice(0);
         console.log("current hosts are: " + JSON.stringify(this.state.hosts));
+        let hostObject = getHost(localState, hostname);
 
         if (checked) {
-            let hostObject = getHost(localState, hostname);
+            // host role has been checked
             console.log("host is: " + JSON.stringify(hostObject));
             let currentRoles = buildRoles([hostObject]);
+            if ((role == "metrics") && (hostsWithRoleCount(this.state.hosts, 'metrics') > 0)) {
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: "Only one host can hold the metrics role"
+                });
+                this.updateState(localState);
+                return;
+            }
             if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
                 console.log("current hosts are: " + JSON.stringify(localState));
                 this.setState({
@@ -335,14 +380,33 @@ export class HostsPage extends React.Component {
                 this.updateState(localState);
                 return;
             } else {
-                console.log("should turn of any collocation error message");
-                // this.setState({
-                //     msgLevel: 'info',
-                //     msgText: ''
-                // });
+                // collocation is OK, but are there any other issues to look for?
+                if ((role == 'metrics') && (hostsWithRoleCount(this.state.hosts, 'metrics') == 1)) {
+                    this.setState({
+                        msgLevel: 'error',
+                        msgText: "Only one host may have the metrics role"
+                    });
+                    this.updateState(localState);
+                    return;
+                }
+            }
+        } else {
+            // host role has been unchecked
+            console.log("unchecking a role");
+            if (activeRoleCount(hostObject) == 1) {
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: "Hosts must have at least one role. To remove the host, select 'Delete' from the action menu"
+                });
+                this.updateState(localState);
+                return;
             }
         }
 
+        this.setState({
+            msgLevel: 'info',
+            msgText: ''
+        });
         toggleHostRole(localState, this.updateState, hostname, role, checked, this.props.svctoken);
     }
 
@@ -375,6 +439,12 @@ export class HostsPage extends React.Component {
     deleteHost = (hostname) => {
         // delete a host from the state
         console.log("You clicked to delete host - " + hostname);
+
+        // turn off any old error messages
+        this.setState({
+            msgLevel: 'info',
+            msgText: ''
+        });
 
         var localState = JSON.parse(JSON.stringify(this.state.hosts));
 
@@ -420,14 +490,18 @@ export class HostsPage extends React.Component {
 
     componentWillReceiveProps(props) {
         // pick up the state change from the parent
-        console.log("hostspage receiving props update");
+        // console.log("Debug: hostspage receiving props update NEW: " + JSON.stringify(props.hosts));
         const { hosts } = this.state.hosts;
         if (props.hosts != hosts) {
-            console.log("hosts have changed, so sort them");
-            // sort the hosts by name, then update our state
-            var tempHosts = JSON.parse(JSON.stringify(props.hosts));
-            tempHosts.sort(sortByKey('hostname'));
-            this.setState({hosts: tempHosts});
+            if (props.hosts.length == 0) {
+                console.log("Hosts from parent is empty, skipping update of local state");
+            } else {
+                console.log("Applying update from parent hosts state to local state");
+                // sort the hosts by name, then update our state
+                var tempHosts = JSON.parse(JSON.stringify(props.hosts));
+                tempHosts.sort(sortByKey('hostname'));
+                this.setState({hosts: tempHosts});
+            }
         }
     }
 
@@ -453,7 +527,10 @@ export class HostsPage extends React.Component {
 
     showAddHosts = () => {
         console.log("Show add hosts modal");
-        this.setState({addHostsVisible: true});
+        this.setState({
+            msgLevel: 'info',
+            msgText: '',
+            addHostsVisible: true});
         // this.hostMaskInput.current.focus();
     }
 
@@ -476,74 +553,84 @@ export class HostsPage extends React.Component {
     }
 
     render() {
-        var rows;
-        if (this.state.hosts.length > 0) {
-            rows = this.state.hosts.map(host => {
-                return <HostDataRow
-                            key={host.hostname}
-                            hostData={host}
-                            roleChange={this.updateHost}
-                            deleteRow={this.deleteHost}
-                            retryHost={this.retryHost}
-                            modal={this.showModal} />;
-            });
-        } else {
-            rows = emptyRow();
-        }
+        if (this.props.className == 'page') {
+            var rows, metricsClass;
+            metricsClass = versionSupportsMetrics(this.props.targetVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
 
-        return (
-            <div id="hosts" className={this.props.className}>
-                <h3>2. Host Definition</h3>
-                <p>Enter the hostname or hostname mask to populate the host table. When you click 'Add', the mask will be
-                 expanded and the resulting hosts will be added to the Ansible inventory. During this process passwordless
-                 SSH is verified, with any errors detected shown below. Hosts in a 'NOTOK' state, will need to be resolved
-                 by either selecting <i>Retry</i> or <i>Delete</i> from the row's action icon.</p>
-                <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
-                <GenericModal
-                    show={this.state.modalVisible}
-                    title={this.state.modalTitle}
-                    content={this.state.modalContent}
-                    closeHandler={this.hideModal} />
-                <HostMask
-                    show={this.state.addHostsVisible}
-                    callback={this.addHostsToTable}
-                    clusterType={this.props.clusterType}
-                    closeHandler={this.hideAddHosts}
-                    installType={this.props.installType} />
-                <div className="divCenter">
-                    <div className="add-hosts-offset" >
-                        <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
+            if (this.state.hosts.length > 0) {
+                rows = this.state.hosts.map(host => {
+                    return <HostDataRow
+                                key={host.hostname}
+                                hostData={host}
+                                roleChange={this.updateHost}
+                                deleteRow={this.deleteHost}
+                                retryHost={this.retryHost}
+                                targetVersion={this.props.targetVersion}
+                                modal={this.showModal} />;
+                });
+            } else {
+                rows = emptyRow();
+            }
+
+            return (
+                <div id="hosts" className={this.props.className}>
+                    <h3>2. Host Definition</h3>
+                    <p>Hostnames or hostname masks can be used to assign roles to specific hosts. Click 'Add Hosts' to define
+                     the hosts and roles. This process checks that the hosts can be reached, and the roles requested align to
+                     best practice collocation rules. All hosts listed here, must be in an 'OK' state in order to continue. To
+                     remove or retry connectivity to a host, use the row's action icon.</p>
+                    <Notification ref="validationMessage" msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
+                    <GenericModal
+                        show={this.state.modalVisible}
+                        title={this.state.modalTitle}
+                        content={this.state.modalContent}
+                        closeHandler={this.hideModal} />
+                    <HostMask
+                        show={this.state.addHostsVisible}
+                        hosts={this.state.hosts}
+                        callback={this.addHostsToTable}
+                        clusterType={this.props.clusterType}
+                        targetVersion={this.props.targetVersion}
+                        closeHandler={this.hideAddHosts}
+                        installType={this.props.installType} />
+                    <div className="divCenter">
+                        <div className="add-hosts-offset" >
+                            <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
+                        </div>
+                    </div>
+                    <div className="divCenter">
+                        <div className="host-container">
+                            <table className="roleTable">
+                                <thead>
+                                    <tr>
+                                        <th className="thHostname">Hostname</th>
+                                        <th className="textCenter thRoleWidth">mon</th>
+                                        <th className="textCenter thRoleWidth">mds</th>
+                                        <th className="textCenter thRoleWidth">osd</th>
+                                        <th className="textCenter thRoleWidth">rgw</th>
+                                        <th className="textCenter thRoleWidth">iscsi</th>
+                                        <th className={ metricsClass }>metrics</th>
+                                        <th className="textCenter thStatusWidth">Status</th>
+                                        <th className="leftAligned thHostInfo">Info</th>
+                                        <th className="tdDeleteBtn" />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    { rows }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="nav-button-container">
+                        <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
+                        <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
                     </div>
                 </div>
-                <div className="divCenter">
-                    <div className="host-container">
-                        <table className="roleTable">
-                            <thead>
-                                <tr>
-                                    <th className="thHostname">Hostname</th>
-                                    <th className="textCenter thRoleWidth">mon</th>
-                                    <th className="textCenter thRoleWidth">mds</th>
-                                    <th className="textCenter thRoleWidth">osd</th>
-                                    <th className="textCenter thRoleWidth">rgw</th>
-                                    <th className="textCenter thRoleWidth">iscsi</th>
-                                    <th className="textCenter thStatusWidth">Status</th>
-                                    <th className="leftAligned thHostInfo">Info</th>
-                                    <th className="tdDeleteBtn" />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                { rows }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div className="nav-button-container">
-                    <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
-                    <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
-                </div>
-                {/* <NextButton disabled={!this.state.ready} action={this.nextAction} /> */}
-            </div>
-        );
+            );
+        } else {
+            console.log("Skipping render of hostspage - not active");
+            return (<div id="hosts" className={this.props.className} />);
+        }
     }
 }
 
@@ -587,6 +674,7 @@ class HostDataRow extends React.Component {
     }
 
     render() {
+        let metricsClass = versionSupportsMetrics(this.props.targetVersion) ? "thMetricsWidth visible-cell" : "hidden";
         return (
             <tr>
                 <td className="thHostname" >
@@ -607,6 +695,9 @@ class HostDataRow extends React.Component {
                 <td className="thRoleWidth">
                     <RoleCheckbox role="iscsi" checked={this.state.host.iscsi} callback={this.hostRoleChange} />
                 </td>
+                <td className={ metricsClass }>
+                    <RoleCheckbox role="metrics" checked={this.state.host.metrics} callback={this.hostRoleChange} />
+                </td>
                 <td className="textCenter hostStatusCell">
                     { this.colorify(this.state.host.status) }
                 </td>
@@ -615,7 +706,6 @@ class HostDataRow extends React.Component {
                 </td>
                 <td className="tdDeleteBtn">
                     <Kebab value={this.state.host.hostname} actions={this.actions} />
-                    {/* <button className="pficon-delete" value={this.state.host.hostname} onClick={this.props.deleteRow} /> */}
                 </td>
             </tr>
         );
@@ -735,6 +825,7 @@ class HostMask extends React.Component {
             osd: false,
             rgw: false,
             iscsi: false,
+            metrics: false,
             hostmask: '',
             hostmaskOK: false,
             msgLevel: 'info',
@@ -750,6 +841,7 @@ class HostMask extends React.Component {
             osd: false,
             rgw: false,
             iscsi: false,
+            metrics: false,
             hostmask: '',
             hostmaskOK: false,
             msgLevel: 'info',
@@ -761,7 +853,7 @@ class HostMask extends React.Component {
         console.log("Request to update " + roleName + " mask to " + checkedState);
         if (checkedState) {
             console.log("need to check collocation rules");
-            let roles = ['mon', 'mds', 'osd', 'rgw', 'iscsi'];
+            let roles = ['mon', 'mds', 'osd', 'rgw', 'iscsi', 'metrics'];
             let currentRoles = [];
 
             roles.forEach(role => {
@@ -774,9 +866,34 @@ class HostMask extends React.Component {
                 console.log("invalid roles - violates collocation rules");
                 this.setState({
                     msgLevel: 'error',
-                    msgText: 'Collocation of ' + currentRoles.join(', ') + " is not allowed "
+                    msgText: 'Collocation of ' + currentRoles.join(', ') + " with " + roleName + " is not allowed."
                 });
                 return;
+            } else {
+                if (roleName == 'metrics') {
+                    // check that the hostname is explicit
+                    console.log("check that the hostname " + this.state.hostmask + " is explicit");
+                    if ((this.state.hostmask.includes('[')) || (this.state.hostmask.includes("]"))) {
+                        this.setState({
+                            msgLevel: 'error',
+                            msgText: "A metrics role can only be applied to a single host, a range is not supported"
+                        });
+                        return;
+                    }
+                    console.log("check that the metrics role hasn't already been selected");
+                    if (hostsWithRoleCount(this.props.hosts, roleName) > 0) {
+                        this.setState({
+                            msgLevel: 'error',
+                            msgText: "A metrics role has already been selected"
+                        });
+                        return;
+                    }
+                }
+                // turn off any prior error message
+                this.setState({
+                    msgLevel: 'info',
+                    msgText: ''
+                });
             }
         }
 
@@ -792,8 +909,8 @@ class HostMask extends React.Component {
     }
 
     checkMaskValid = () => {
-        let i = this.props.installType;
-        console.log("type of install " + i);
+        // let i = this.props.installType;
+        console.log("type of install " + this.props.installType);
         console.log("state is :" + JSON.stringify(this.state));
         console.log("check the mask info is usable to populate the table");
         // check that at least one role is selected and we have a hostmask
@@ -814,20 +931,22 @@ class HostMask extends React.Component {
             return;
         }
 
-        let flags = ['mon', 'mds', 'osd', 'rgw', 'iscsi'];
+        let flags = ['mon', 'mds', 'osd', 'rgw', 'iscsi', 'metrics'];
 
-        let rolesOK = false;
+        let rolesSelected = false;
+
         for (var property in this.state) {
+            // skip other properties
             if (!(flags.includes(property))) {
                 continue;
             }
             if (this.state[property]) {
                 console.log("at least one role is selected");
-                rolesOK = true;
+                rolesSelected = true;
                 break;
             }
         }
-        if (rolesOK) {
+        if (rolesSelected) {
             console.log("Ok to expand and populate the table");
             this.reset();
             this.props.callback(this.state);
@@ -846,15 +965,24 @@ class HostMask extends React.Component {
     }
 
     // componentWillReceiveProps(props) {
-    //     console.log("HostMask component received " + JSON.stringify(props));
-    //     if (props.show) {
-    //         console.log("revealed add hosts and set focus");
-    //         this.refs.hostInput.setFocus();
+    //     if (versionSupportsMetrics(this.props.targetVersion)) {
+    //         this.setState({metrics: false});
     //     }
     // }
 
     render() {
         let showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
+        let metrics_cbox = (<td />);
+        let metrics_label = (<td />);
+        if (versionSupportsMetrics(this.props.targetVersion)) {
+            console.log("enabling selection of metrics role - grafana/prometheus");
+            metrics_cbox = (
+                <td>
+                    <RoleCheckbox role='metrics' checked={this.state.metrics} callback={this.updateRole} />
+                </td>);
+            metrics_label = (<td style={{minWidth: "60px"}}>Metrics (grafana/prometheus)</td>);
+        }
+
         return (
             <div className={showHideClass}>
                 <div className="hostMask modal-main">
@@ -900,6 +1028,8 @@ class HostMask extends React.Component {
                                                     <RoleCheckbox role='rgw' checked={this.state.rgw} callback={this.updateRole} />
                                                 </td>
                                                 <td style={{minWidth: "60px"}}>rgw</td>
+                                                { metrics_cbox }
+                                                { metrics_label }
                                             </tr>
                                         </tbody>
                                     </table>
@@ -954,7 +1084,7 @@ export class HostInfo extends React.Component {
 
         return (
             <div>
-                <span className="leftAligned">{this.props.info}</span>
+                <span className="leftAligned">{this.props.info} &nbsp;</span>
                 { helper }
             </div>
         );

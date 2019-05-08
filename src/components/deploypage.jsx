@@ -3,19 +3,23 @@ import React from 'react';
 
 import { UIButton } from './common/nextbutton.jsx';
 import '../app.scss';
-import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, cephAnsibleSequence } from '../services/ansibleMap.js';
+import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, iscsiVars, cephAnsibleSequence } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
 import { GenericModal } from './common/modal.jsx';
-// import { buildRoles, copyToClipboard, currentTime } from '../services/utils.js';
-import { buildRoles, currentTime, convertRole } from '../services/utils.js';
+import { buildRoles, currentTime, convertRole, versionSupportsMetrics } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
+    //
+    // Implements the deployment page that handles the creation of the ansible artifacts and
+    // the UI monitoring of playbook execution
     constructor(props) {
         super(props);
         this.state = {
+            roleSequence: [],
             deployEnabled: true,
+            backBtnEnabled: true,
             deployBtnText: 'Save',
             statusMsg: '',
             deployActive: false,
@@ -48,7 +52,6 @@ export class DeployPage extends React.Component {
         ];
         this.startTime = 'N/A';
         this.endTime = null;
-        this.roleSequence = [];
         this.roleActive = null;
         this.roleSeen = [];
         this.mocked = false;
@@ -60,8 +63,7 @@ export class DeployPage extends React.Component {
     }
 
     componentDidMount() {
-        console.log("deploypage mounted to the DOM");
-        console.log("checking for mock data");
+        console.log("checking for mock data for the deployment");
 
         cockpit.file("/var/lib/cockpit/ceph-installer/mockdata/deploypage.json").read()
                 .done((content, tag) => {
@@ -82,20 +84,24 @@ export class DeployPage extends React.Component {
                 });
     }
 
-    componentWillReceiveProps(props) {
-        const { settings } = this.state.settings;
-        if (JSON.stringify(props.settings) != JSON.stringify(settings)) {
-            this.setState({settings: props.settings});
-            let allRoles = buildRoles(props.settings.hosts);
-            if (allRoles.length > 0) {
-                let tmpRoleState = {};
-                for (let role of allRoles) {
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (JSON.stringify(nextProps.settings) != JSON.stringify(prevState.settings)) {
+            let allRoles = buildRoles(nextProps.settings.hosts);
+            let tmpRoleState = {};
+            for (let role of allRoles) {
+                if (role == 'ceph-grafana') {
+                    tmpRoleState['metrics'] = 'pending';
+                } else {
                     tmpRoleState[role] = 'pending';
-                    if (role == 'mons') { tmpRoleState['mgrs'] = 'pending' }
                 }
-                this.setState({roleState: tmpRoleState});
-                this.roleSequence = cephAnsibleSequence(allRoles);
+                if (role == 'mons') { tmpRoleState['mgrs'] = 'pending' }
             }
+
+            return {
+                settings: nextProps.settings,
+                roleState: tmpRoleState,
+                roleSequence: cephAnsibleSequence(allRoles)
+            };
         }
     }
 
@@ -103,13 +109,12 @@ export class DeployPage extends React.Component {
         let currentState = this.state.roleState;
         let changesMade = false;
         let eventRoleName;
-        let shortName = eventData.data.role.replace("ceph-", '');
+        // all ceph-ansible roles are prefixed by ceph-
+        let shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
 
-        if (this.roleSequence.includes(shortName)) {
-            eventRoleName = shortName + "s";
-        } else {
-            eventRoleName = shortName;
-        }
+        eventRoleName = convertRole(shortName);
+
+        console.log("Debug: role sequence is " + JSON.stringify(this.state.roleSequence));
         switch (eventData.msg) {
         case "running":
             if (this.roleActive == null) {
@@ -120,31 +125,38 @@ export class DeployPage extends React.Component {
                 break;
             } else {
                 if (eventRoleName) {
-                    // console.log("current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
+                    console.log("Current role active: " + this.roleActive + ", eventRoleName: " + eventRoleName + ", shortName: " + shortName);
 
-                    // if the event role is not in the list AND we have seen the role-active name
-                    // - set the current role to complete and move pending to the next
-                    if (!this.roleSequence.includes(shortName) && this.roleSeen.includes(this.roleActive.slice(0, -1))) {
+                    // if the event role is not in the list AND we have seen the role-active name before
+                    // - set the current role to complete and move to the next role in the ansible sequence
+                    if (!this.state.roleSequence.includes(shortName) && this.roleSeen.includes(convertRole(this.roleActive))) {
                         currentState[this.roleActive] = 'complete';
-                        // FIXME: this won't work for iscsi
-                        let a = this.roleActive.slice(0, -1); // remove the 's'
-                        let nextRole = this.roleSequence[this.roleSequence.indexOf(a) + 1];
-                        currentState[nextRole + 's'] = 'active';
-                        this.roleActive = nextRole + 's';
+                        console.log("converting role active of " + this.roleActive);
+                        let a = convertRole(this.roleActive); // remove the 's'
+                        let nextRole = this.state.roleSequence[this.state.roleSequence.indexOf(a) + 1];
+                        console.log("next role is " + nextRole);
+                        let nextRoleName = convertRole(nextRole);
+                        currentState[nextRoleName] = 'active';
+                        console.log("role active set to " + nextRoleName);
+                        this.roleActive = nextRoleName;
                         changesMade = true;
-                        break;
                     }
 
                     // if the shortname is in the sequence, but not in last seen
-                    // - add it to last seen
-                    if (!this.roleSeen.includes(shortName) && this.roleSequence.includes(shortName)) {
+                    // - add it to last seen and move us along the breadcrumb trail
+                    if (!this.roleSeen.includes(shortName) && this.state.roleSequence.includes(shortName)) {
+                        console.log("not seen this role " + shortName + " before, adding to our list ");
+                        currentState[this.roleActive] = 'complete';
+                        currentState[eventRoleName] = 'active';
+                        this.roleActive = eventRoleName;
+                        changesMade = true;
                         this.roleSeen.push(shortName);
                     }
                 }
             }
             break;
         case "failed":
-            currentState[this.roleActive] = 'failed'; // mark current breadcrumb as complete
+            currentState[this.roleActive] = 'failed'; // mark current breadcrumb as failed
             changesMade = true;
             break;
         case "successful":
@@ -160,9 +172,23 @@ export class DeployPage extends React.Component {
     }
 
     formattedOutput = (output) => {
+        var urlRegex = /(https?:\/\/[^\s]+)/g;
         var cmdOutput = output.map((textLine, idx) => {
-            return (<div key={idx} className="code">{textLine}</div>);
+            let match = urlRegex.exec(textLine);
+            let parts;
+            if (match) {
+                parts = textLine.split(match[0]);
+                return (
+                    <div key={idx} className="code">
+                        { parts[0] }
+                        <a href={match[0]} rel="noopener noreferrer" target="_blank"> {match[0]} </a>
+                        { parts[1] }
+                    </div>);
+            } else {
+                return (<div key={idx} className="code">{ textLine }</div>);
+            }
         });
+
         return (
             <div>
                 { cmdOutput }
@@ -172,44 +198,67 @@ export class DeployPage extends React.Component {
 
     fetchCephState = () => {
         console.log("querying events for " + this.playbookUUID);
+        var foundEvents = [];
+        var content = [];
+
         if (this.mocked) {
             // just return the mocked data output
             console.log("using mocked data");
             console.log("calling the main app modal");
-            let content = this.formattedOutput(this.mockCephOutput);
-            this.props.modalHandler(content);
+            this.props.modalHandler("Ceph Cluster Status", this.formattedOutput(this.mockCephOutput));
         } else {
             console.log("fetching event data from the playbook run");
             getEvents(this.playbookUUID, this.props.svctoken)
                     .then((resp) => {
                         let response = JSON.parse(resp);
-                        let foundEvent;
+                        let matchCount = (versionSupportsMetrics(this.props.settings.targetVersion)) ? 2 : 1;
+                        console.log("Debug: Looking for " + matchCount + " job events in the playbook stream");
+                        // process the events in reverse order, since what we're looking for is at the end of the run
                         let evtIDs = Object.keys(response.data.events).reverse();
                         for (let evt of evtIDs) {
                             let thisEvent = response.data.events[evt];
-                            if (thisEvent['event'] === 'runner_on_ok' && thisEvent['task'].startsWith('show ceph status for')) {
+                            let task = thisEvent['task'];
+                            if ((thisEvent['event'] === 'runner_on_ok') &&
+                                (task.startsWith('show ceph status for') || task.startsWith('print dashboard URL'))) {
                                 console.log("ceph status event " + JSON.stringify(thisEvent));
-                                foundEvent = evt;
-                                break;
+                                foundEvents.push(evt);
+                                if (foundEvents.length == matchCount) {
+                                    console.log("Debug: found all required matches");
+                                    break;
+                                }
                             }
                         }
-                        if (foundEvent) {
-                            getJobEvent(this.playbookUUID, foundEvent, this.props.svctoken)
-                                    .then((resp) => {
-                                        let response = JSON.parse(resp);
-                                        let output = response.data.event_data.res.msg;
-                                        let content = this.formattedOutput(output);
-                                        this.props.modalHandler("Ceph Cluster Status", content);
-                                    })
-                                    .catch(e => {
-                                        console.error("Error fetching job event: " + e.message);
-                                    });
+                        if (foundEvents) {
+                            // build iterable containing all the promises
+                            let events = [];
+                            for (let eventID of foundEvents) {
+                                let promise = getJobEvent(this.playbookUUID, eventID, this.props.svctoken);
+                                events.push(promise);
+                            }
+                            // wait for all promises to resolve
+                            Promise.all(events).then((values) => {
+                                // values will be a list of response objects
+                                console.log(JSON.stringify(values));
+                                for (let resp of values) {
+                                    let response = JSON.parse(resp);
+                                    let output = response.data.event_data.res.msg;
+
+                                    if (Array.isArray(output)) {
+                                        // put multi-line output first
+                                        content.unshift(...output);
+                                    } else {
+                                        // place single line output at the end
+                                        content.push(output);
+                                    }
+                                }
+                                this.props.modalHandler("Ceph Cluster Status", this.formattedOutput(content));
+                            });
                         } else {
-                            console.log("playbook didn't have a show ceph status task");
+                            console.log("No events to provide end of install information");
                         }
                     })
                     .catch(e => {
-                        console.error("Unable to fetch events for play " + this.playbookUUID);
+                        console.error("Unable to fetch events for playbook run " + this.playbookUUID);
                     });
         }
     }
@@ -246,7 +295,7 @@ export class DeployPage extends React.Component {
         var vars = allVars(this.state.settings);
         console.log("creating all.yml as " + JSON.stringify(vars));
         var chain = Promise.resolve();
-        let mons, mgrs, osds, rgws;
+        let mons, mgrs, osds, rgws, iscsi;
         chain = chain.then(() => storeGroupVars('all', vars, this.props.svctoken));
 
         for (let roleGroup of roleList) {
@@ -267,7 +316,7 @@ export class DeployPage extends React.Component {
                 chain = chain.then(() => storeGroupVars('osds', osds, this.props.svctoken));
                 break;
             case "mdss":
-                console.log("adding mds yml - TODO");
+                console.log("adding mds yml - Just using ceph-ansible defaults...FIXME?");
                 break;
             case "rgws":
                 console.log("adding rgws yml");
@@ -275,7 +324,9 @@ export class DeployPage extends React.Component {
                 chain = chain.then(() => storeGroupVars('rgws', rgws, this.props.svctoken));
                 break;
             case "iscsigws":
-                console.log("adding iscsi - TODO");
+                console.log("adding iscsigws yml");
+                iscsi = iscsiVars(this.state.settings);
+                chain = chain.then(() => storeGroupVars('iscsigws', iscsi, this.props.svctoken));
                 break;
             }
         }
@@ -320,6 +371,7 @@ export class DeployPage extends React.Component {
                 deployActive: true,
                 deployBtnText: 'Running',
                 deployEnabled: false,
+                backBtnEnabled: false
             });
             this.startPlaybook();
         }
@@ -374,13 +426,20 @@ export class DeployPage extends React.Component {
 
                 let playStatus = this.state.status.msg.toUpperCase();
                 console.log("Last status is " + playStatus);
+
                 let buttonText;
-                buttonText = (playStatus == "SUCCESSFUL") ? "Complete" : "Retry";
+                if (playStatus == "SUCCESSFUL") {
+                    buttonText = "Complete";
+                    this.setState({backBtnEnabled: false}); // disables the back button!
+                } else {
+                    buttonText = "Retry";
+                }
+
                 this.endTime = currentTime();
                 this.setState({
                     deployActive: false,
-                    deployBtnText: buttonText,
-                    deployEnabled: true
+                    deployEnabled: true,
+                    deployBtnText: buttonText
                 });
             }
         } else {
@@ -437,85 +496,87 @@ export class DeployPage extends React.Component {
     }
 
     render() {
-        console.log("in deploypage render method");
+        if (this.props.className == 'page') {
+            console.log("in deploypage render method");
 
-        var deployBtnClass;
-        var msgClass;
-        var msgText;
-        msgText = this.state.status.msg.charAt(0).toUpperCase() + this.state.status.msg.slice(1);
-        switch (this.state.status.msg) {
-        case "failed":
-            msgClass = "runtime-table-value align-left errorText";
-            break;
-        case "successful":
-            msgClass = "runtime-table-value align-left success";
-            break;
-        default:
-            msgClass = "runtime-table-value align-left";
+            var deployBtnClass;
+            var msgClass;
+            var msgText;
+            msgText = this.state.status.msg.charAt(0).toUpperCase() + this.state.status.msg.slice(1);
+            switch (this.state.status.msg) {
+            case "failed":
+                msgClass = "runtime-table-value align-left errorText bold-text";
+                break;
+            case "successful":
+                msgClass = "runtime-table-value align-left success bold-text";
+                break;
+            default:
+                msgClass = "runtime-table-value align-left";
+            }
+
+            switch (this.state.deployBtnText) {
+            case "Failed":
+            case "Retry":
+                deployBtnClass = "nav-button btn btn-primary btn-lg";
+                break;
+            case "Complete":
+                deployBtnClass = "nav-button btn btn-success btn-lg";
+                break;
+            default:
+                deployBtnClass = "nav-button btn btn-primary btn-lg";
+                break;
+            }
+
+            return (
+                <div id="deploy" className={this.props.className}>
+                    <h3>6. Deploy the Cluster</h3>
+                    You are now ready to start the deployment process. Click 'Save' to commit your choices, then 'Deploy' to begin the
+                    installation process. <br />
+                    <table className="runtime-table">
+                        <tbody>
+                            <tr>
+                                <td className="runtime-table-label">Start Time</td>
+                                <td className="runtime-table-value align-left">{this.state.startTime}</td>
+                                <td className="runtime-table-spacer">&nbsp;</td>
+                                <td className="runtime-table-label">Completed</td>
+                                <td className="runtime-table-nbr align-right">{this.state.status.data.ok}</td>
+                            </tr>
+                            <tr>
+                                <td className="runtime-table-label">Status</td>
+                                <td className={msgClass}>{msgText}</td>
+                                <td className="runtime-table-spacer">&nbsp;</td>
+                                <td className="runtime-table-label">Skipped</td>
+                                <td className="runtime-table-nbr align-right">{this.state.status.data.skipped}</td>
+                            </tr>
+                            <tr>
+                                <td className="runtime-table-label">Run Time</td>
+                                <td className="runtime-table-value align-left">
+                                    <ElapsedTime ref="timer" active={this.state.deployActive} callback={this.storeRuntime} />
+                                </td>
+                                <td className="runtime-table-spacer">&nbsp;</td>
+                                <td className="runtime-table-label">Failures</td>
+                                <td className="runtime-table-nbr align-right">{this.state.status.data.failed}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.state.roleSequence } />
+                    <div>
+                        <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
+                    </div>
+                    <div id="deploy-container">
+                        <TaskStatus visible={this.state.showTaskStatus} status={this.state.status} />
+                        <FailureSummary visible={!this.state.showTaskStatus} status={this.state.status} />
+                    </div>
+                    <div className="nav-button-container">
+                        <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
+                        <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.backBtnEnabled} action={this.previousPage} />
+                    </div>
+                </div>
+            );
+        } else {
+            console.log("Skipping render of deploypage - not active");
+            return (<div id="deploy" className={this.props.className} />);
         }
-
-        switch (this.state.deployBtnText) {
-        case "Failed":
-        case "Retry":
-            deployBtnClass = "nav-button btn btn-primary btn-lg";
-            break;
-        case "Complete":
-            deployBtnClass = "nav-button btn btn-success btn-lg";
-            break;
-        default:
-            deployBtnClass = "nav-button btn btn-primary btn-lg";
-            break;
-        }
-        // console.log("btn class string is " + deployBtnClass);
-
-        return (
-
-            <div id="deploy" className={this.props.className}>
-
-                <h3>6. Deploy the Cluster</h3>
-                You are now ready to start the deployment process. Click 'Save' to commit your choices, then 'Deploy' to begin the
-                installation process. <br />
-                <table className="runtime-table">
-                    <tbody>
-                        <tr>
-                            <td className="runtime-table-label">Start Time</td>
-                            <td className="runtime-table-value align-left">{this.state.startTime}</td>
-                            <td className="runtime-table-spacer">&nbsp;</td>
-                            <td className="runtime-table-label">Completed</td>
-                            <td className="runtime-table-nbr align-right">{this.state.status.data.ok}</td>
-                        </tr>
-                        <tr>
-                            <td className="runtime-table-label">Status</td>
-                            <td className={msgClass}>{msgText}</td>
-                            <td className="runtime-table-spacer">&nbsp;</td>
-                            <td className="runtime-table-label">Skipped</td>
-                            <td className="runtime-table-nbr align-right">{this.state.status.data.skipped}</td>
-                        </tr>
-                        <tr>
-                            <td className="runtime-table-label">Run Time</td>
-                            <td className="runtime-table-value align-left">
-                                <ElapsedTime ref="timer" active={this.state.deployActive} callback={this.storeRuntime} />
-                            </td>
-                            <td className="runtime-table-spacer">&nbsp;</td>
-                            <td className="runtime-table-label">Failures</td>
-                            <td className="runtime-table-nbr align-right">{this.state.status.data.failed}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <BreadCrumbStatus runStatus={ this.state.status.msg } roleState={ this.state.roleState } sequence={ this.roleSequence } />
-                <div>
-                    <Selector labelName="Filter by:&nbsp;&nbsp;" noformat options={this.deploySelector} callback={this.deploymentSwitcher} />
-                </div>
-                <div id="deploy-container">
-                    <TaskStatus visible={this.state.showTaskStatus} status={this.state.status} />
-                    <FailureSummary visible={!this.state.showTaskStatus} status={this.state.status} />
-                </div>
-                <div className="nav-button-container">
-                    <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
-                    <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.deployEnabled} action={this.previousPage} />
-                </div>
-            </div>
-        );
     }
 }
 
@@ -743,30 +804,25 @@ export class BreadCrumbStatus extends React.Component {
         };
     }
 
-    componentWillReceiveProps (props) {
-        // console.log("DEBUG: " + JSON.stringify(props));
-        if (props.runStatus) {
-            if (props.runStatus.toLowerCase() === 'running' && this.state.roles.length === 0) {
-                // only set the roles when we first see the playbook running
-                let converted = props.sequence.map((role, i) => { return convertRole(role) });
-                this.setState({roles: converted});
-            }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.roles.length == 0) {
+            console.log("defining the role sequence for the breadcrumbs");
+            let converted = nextProps.sequence.map((role, i) => { return convertRole(role) });
+            return {roles: converted};
         }
     }
 
     render () {
         console.log("render all breadcrumbs - " + JSON.stringify(this.state.roles));
         var breadcrumbs;
-        if (this.props.runStatus != '') {
-            breadcrumbs = this.state.roles.map((role, i) => {
-                return <Breadcrumb
-                            key={i}
-                            label={role}
-                            state={this.props.roleState[role]} />;
-            });
-        } else {
-            breadcrumbs = (<div />);
-        }
+
+        breadcrumbs = this.state.roles.map((role, i) => {
+            return <Breadcrumb
+                        key={i}
+                        label={role}
+                        state={this.props.roleState[role]} />;
+        });
+
         return (
             <div className="display-block">
                 { breadcrumbs }

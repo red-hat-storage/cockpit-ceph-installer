@@ -2,6 +2,8 @@ import React from 'react';
 import '../../app.scss';
 
 export class GenericModal extends React.Component {
+    //
+    // generic modal component, with title bar and close button
     constructor(props) {
         super(props);
         this.state = {};

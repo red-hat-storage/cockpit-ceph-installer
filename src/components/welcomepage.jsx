@@ -5,6 +5,8 @@ import { checkAPI } from '../services/apicalls.js';
 import '../app.scss';
 
 export class WelcomePage extends React.Component {
+    //
+    // Initial welcome page presented prior to the configuration pages
     constructor(props) {
         super(props);
         this.state = {
@@ -23,7 +25,7 @@ export class WelcomePage extends React.Component {
     }
 
     checkRunnerAvailable = () => {
-        console.log("check the ansible-runner-service API is there");
+        console.log("checking the ansible-runner-service API is there");
 
         checkAPI()
                 .then((resp) => {
@@ -49,9 +51,9 @@ export class WelcomePage extends React.Component {
                 <h3>Welcome</h3>
                 This installation process provides a guided workflow to help you install
                 your Ceph cluster. <br />
-                The main components of the installation workflow are represented above. Once a
-                step is complete, you automatically move on to the next step but can return to
-                a prior steps by simply clicking the relevant step number above.
+                The main components of the installation workflow are represented above. Each page in
+                 this process has navigation buttons placed at the bottom right of the window, enabling you to
+                 proceed and return to prior steps in the workflow.
                 <p />
                 <GenericModal
                     show={this.state.modalVisible}
@@ -64,8 +66,7 @@ export class WelcomePage extends React.Component {
                         <tr>
                             <td className="tdTitles" >Environment</td>
                             <td>The target environment defines the high level scope of the installation. Within this
-                            option you declare items such as;
-                            <ul>
+                            option you declare items such as;<ul>
                                 <li>installation source</li>
                                 <li>OSD type <i>(e.g &apos;legacy&apos; filestore or bluestore)</i></li>
                                 <li>data security features <i>(e.g. encryption)</i></li>
@@ -74,11 +75,11 @@ export class WelcomePage extends React.Component {
                         </tr>
                         <tr>
                             <td className="tdTitles">Hosts</td>
-                            <td>Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd or rgw</td>
+                            <td>Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd, rgw or mds</td>
                         </tr>
                         <tr>
                             <td className="tdTitles">Validation</td>
-                            <td>Validate the configuration of the candidate hosts against the required Ceph roles using established
+                            <td>Validate the configuration of the candidate Ceph hosts against the required Ceph roles using established
                             best practice guidelines
                             </td>
                         </tr>
@@ -92,7 +93,7 @@ export class WelcomePage extends React.Component {
                         </tr>
                         <tr>
                             <td className="tdTitles">Deploy</td>
-                            <td>Start the installation process and monitor progress</td>
+                            <td>Save your selections, start the deployment process and monitor installation progress.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -101,7 +102,6 @@ export class WelcomePage extends React.Component {
                     <UIButton primary btnLabel="Environment &rsaquo;" action={this.checkRunnerAvailable} />
                 </div>
             </div>
-            //   &#x41;
         );
     }
 }
