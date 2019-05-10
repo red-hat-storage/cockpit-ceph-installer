@@ -111,8 +111,11 @@ export class DeployPage extends React.Component {
         let currentState = this.state.roleState;
         let changesMade = false;
         let eventRoleName;
-        // all ceph-ansible roles are prefixed by ceph-
-        let shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
+        let shortName;
+
+        // all ceph-ansible roles are prefixed by ceph- eg. ceph-mon or ceph-grafana
+        let taskRole = (eventData.data.role || eventData.data.task_metadata.role);
+        shortName = (taskRole) ? taskRole.replace("ceph-", '') : '';
 
         eventRoleName = convertRole(shortName);
 
@@ -591,8 +594,9 @@ export class TaskStatus extends React.Component {
         } else {
             let taskInfo;
             let timeStamp;
-            if (this.props.status.data.role) {
-                taskInfo = '[ ' + this.props.status.data.role + ' ] ' + this.props.status.data.task;
+            let taskRole = (this.props.status.data.role || this.props.status.data.task_metadata.role);
+            if (taskRole) {
+                taskInfo = '[ ' + taskRole + ' ] ' + this.props.status.data.task;
             } else {
                 taskInfo = this.props.status.data.task;
             }
@@ -613,7 +617,7 @@ export class TaskStatus extends React.Component {
                         <span className="task-label bold-text">Started:</span><span>{timeStamp}</span>
                     </div>
                     <div>
-                        <span className="task-label bold-text">Role:</span><span>{this.props.status.data.role}</span>
+                        <span className="task-label bold-text">Role:</span><span>{taskRole}</span>
                     </div>
                     <div>
                         <span className="task-label bold-text">Pattern:</span><span>{this.props.status.data.task_metadata.play_pattern}</span>
