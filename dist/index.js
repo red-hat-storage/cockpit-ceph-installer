@@ -22747,10 +22747,11 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setRoleState", function (eventData) {
       var currentState = _this.state.roleState;
       var changesMade = false;
-      var eventRoleName; // all ceph-ansible roles are prefixed by ceph-
+      var eventRoleName;
+      var shortName; // all ceph-ansible roles are prefixed by ceph- eg. ceph-mon or ceph-grafana
 
-      var shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
-
+      var taskRole = eventData.data.role || eventData.data.task_metadata.role;
+      shortName = taskRole ? taskRole.replace("ceph-", '') : '';
       eventRoleName = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(shortName);
       console.log("Debug: role sequence is " + JSON.stringify(_this.state.roleSequence));
 
@@ -23580,9 +23581,10 @@ function (_React$Component2) {
       } else {
         var taskInfo;
         var timeStamp;
+        var taskRole = this.props.status.data.role || this.props.status.data.task_metadata.role;
 
-        if (this.props.status.data.role) {
-          taskInfo = '[ ' + this.props.status.data.role + ' ] ' + this.props.status.data.task;
+        if (taskRole) {
+          taskInfo = '[ ' + taskRole + ' ] ' + this.props.status.data.task;
         } else {
           taskInfo = this.props.status.data.task;
         }
@@ -23602,7 +23604,7 @@ function (_React$Component2) {
           className: "task-label bold-text"
         }, "Started:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, timeStamp)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           className: "task-label bold-text"
-        }, "Role:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, this.props.status.data.role)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        }, "Role:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, taskRole)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           className: "task-label bold-text"
         }, "Pattern:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, this.props.status.data.task_metadata.play_pattern)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           className: "task-label bold-text"
@@ -26956,7 +26958,7 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateRole", function (hostname, role, checked) {
       console.log("updating host " + hostname + " details for role " + role + " status of " + checked);
 
-      var localState = _this.state.hosts.splice(0);
+      var localState = _this.state.hosts.slice(0);
 
       if (checked) {
         var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["getHost"])(localState, hostname);
@@ -28190,7 +28192,7 @@ function deleteGroup(groupName) {
   return http.request({
     path: url,
     body: {},
-    method: "delete"
+    method: "DELETE"
   });
 }
 function getGroups() {
@@ -28219,7 +28221,7 @@ function deleteHost(hostName) {
   return http.request({
     path: url,
     body: {},
-    method: "delete"
+    method: "DELETE"
   });
 }
 function changeHost(hostname, role, checked) {
@@ -28256,7 +28258,7 @@ function removeRole(hostName, roleName) {
   return http.request({
     path: url,
     body: {},
-    method: "delete"
+    method: "DELETE"
   });
 }
 function runPlaybook(playbookName, data) {
@@ -28433,7 +28435,7 @@ function buildRoles(hosts) {
         var ansibleGroup = convertRole(roleName);
 
         if (host[roleName] && !roleList.includes(ansibleGroup)) {
-          roleList.push(convertRole(roleName));
+          roleList.push(ansibleGroup);
         }
       });
     };
@@ -28510,7 +28512,7 @@ function convertRole(role) {
 }
 function getHost(hosts, hostname) {
   /* return the host object from the given hosts array */
-  console.log("scanning for " + hostname);
+  console.log("scanning for " + hostname + " in " + JSON.stringify(hosts));
 
   for (var i = 0; i < hosts.length; i++) {
     console.log("checking .. " + JSON.stringify(hosts[i]));
@@ -28610,7 +28612,9 @@ function hostsWithRole(hosts, role) {
 function toggleHostRole(hosts, callback, hostname, role, checked) {
   // change roles for a host
   // Used in hostspage and validatepage
+  console.log("Debug: toggle host called for role " + role);
   var ansibleRole = convertRole(role);
+  console.log("debug: " + role + " = " + ansibleRole);
   console.log("processing against a hosts array of " + JSON.stringify(hosts));
   var groupRemoval = false;
 
@@ -28704,6 +28708,9 @@ function toggleHostRole(hosts, callback, hostname, role, checked) {
           console.log("failed to remove group: " + err);
         });
       }
+    }).catch(function (e) {
+      // Problem returned from the changeHost request..blocked method?
+      console.error("Problem making a changeHost request: " + JSON.stringify(e));
     });
   });
   groupChain.catch(function (err) {
