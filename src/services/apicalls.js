@@ -34,7 +34,7 @@ export function deleteGroup(groupName) {
     return http.request({
         path: url,
         body: {},
-        method: "delete"
+        method: "DELETE"
     });
 }
 
@@ -65,7 +65,7 @@ export function deleteHost(hostName) {
     return http.request({
         path: url,
         body: {},
-        method: "delete"
+        method: "DELETE"
     });
 }
 
@@ -104,7 +104,7 @@ export function removeRole(hostName, roleName) {
     return http.request({
         path: url,
         body: {},
-        method: "delete"
+        method: "DELETE"
     });
 }
 
