@@ -1,7 +1,6 @@
 import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
 import { GenericModal } from './common/modal.jsx';
-import { checkAPI } from '../services/apicalls.js';
 import '../app.scss';
 
 export class WelcomePage extends React.Component {
@@ -22,26 +21,6 @@ export class WelcomePage extends React.Component {
             modalVisible: false,
             modalContent: ''
         });
-    }
-
-    checkRunnerAvailable = () => {
-        console.log("checking the ansible-runner-service API is there");
-
-        checkAPI()
-                .then((resp) => {
-                    console.log("API Ok, so let's get started!");
-                    this.props.action();
-                })
-                .catch(error => {
-                    console.log("error " + error.message);
-                    let errMsg = "Unable to access the ansible-runner-service API. Please check that the service is started, and retry.";
-                    this.setState({
-                        modalVisible: true,
-                        modalContent: errMsg,
-                        modalTitle: "Environment Error"
-                    });
-                }
-                );
     }
 
     render() {
@@ -99,7 +78,7 @@ export class WelcomePage extends React.Component {
                 </table>
 
                 <div className="nav-button-container">
-                    <UIButton primary btnLabel="Environment &rsaquo;" action={this.checkRunnerAvailable} />
+                    <UIButton primary btnLabel="Environment &rsaquo;" action={this.props.action} />
                 </div>
             </div>
         );
