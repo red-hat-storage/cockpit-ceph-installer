@@ -23,6 +23,7 @@ import './app.scss';
 // import ProgressTracker from './components/progresstracker.jsx';
 import InstallationSteps from './components/installationsteps.jsx';
 import { readFile } from './services/utils.js';
+import { checkAPI } from './services/apicalls.js';
 import { GenericModal } from './components/common/modal.jsx';
 // import InfoBar from './components/infobar.jsx';
 
@@ -37,7 +38,6 @@ export class Application extends React.Component {
         super();
         this.state = {
             'hostname': _("Unknown"),
-            "svctoken": null,
             modalVisible: false,
             modalContent: '',
             modalTitle: '',
@@ -56,23 +56,72 @@ export class Application extends React.Component {
         };
     }
 
+    checkReady = (errorMsgs) => {
+        if (errorMsgs.length == 0) {
+            this.setState({ready: true});
+        } else {
+            // errors encountered, better give the user the bad news
+            let msgs = errorMsgs.map((msg, key) => {
+                return (<li key={key}>{msg}</li>);
+            });
+            let errorText = (
+                <span>The following environment errors were detected; <br />
+                    {msgs}
+                    <br />
+                    The installer is unable to continue, until these issues are resolved. To retry, refresh the page.
+                </span>);
+            this.showModal("Environment Error", errorText);
+        }
+    }
+
     componentWillMount() {
         // count of the number of files we need to read before we should render anything
-        var filesRead = 0;
-
-        console.log("Loading svctoken for ansible-runner-service API");
-        readFile('/etc/ansible-runner-service/svctoken')
+        var actions = 0;
+        var errorMsgs = [];
+        readFile('/etc/ansible-runner-service/certs/client/client.crt')
                 .then((content, tag) => {
-                    this.setState({
-                        svctoken: content
-                    });
-                    console.log("SVC token is : " + content);
-                    filesRead++;
-                    if (filesRead == 2) { this.setState({ready: true}) }
+                    if ((!content) && (tag == '-')) {
+                        // crt file missing
+                        console.error("Error: client crt file is missing. Has generate_certs.sh been run?");
+                        errorMsgs.push("client .crt file is missing. Has generate_certs.sh been run?");
+                    } else {
+                        console.log("client crt file accessible");
+                        // Could check the internal format is PEM?
+                    }
+                    actions++;
+                    if (actions == 4) {
+                        this.checkReady(errorMsgs);
+                    }
+                });
+        readFile('/etc/ansible-runner-service/certs/client/client.key')
+                .then((content, tag) => {
+                    if ((!content) && (tag == '-')) {
+                        // crt file missing
+                        console.error("Error: client key file is missing. Has generate_certs.sh been run?");
+                        errorMsgs.push("client .key file is missing. Has generate_certs.sh been run?");
+                    } else {
+                        console.log("client key file accessible");
+                        // Could check the internal format is PEM?
+                    }
+                    actions++;
+                    if (actions == 4) {
+                        this.checkReady(errorMsgs);
+                    }
+                });
+
+        checkAPI()
+                .then((resp) => {
+                    console.log("API responded and ready");
                 })
-                .fail((error) => {
-                    console.error("Can't read the svctoken file");
-                    console.error("Error : " + error.message);
+                .catch(error => {
+                    console.log("error " + JSON.stringify(error));
+                    errorMsgs.push("unable to access the ansible-runner-service API. Are the client files in place? Is the service running?");
+                })
+                .finally(() => {
+                    actions++;
+                    if (actions == 4) {
+                        this.checkReady(errorMsgs);
+                    }
                 });
 
         console.log("Checking for local default cluster setting overrides");
@@ -85,10 +134,13 @@ export class Application extends React.Component {
                     } else {
                         console.log("Unable to read local default overrides, using internal defaults");
                     }
-                    filesRead++;
-                    if (filesRead == 2) { this.setState({ready: true}) }
+                    actions++;
+                    if (actions == 4) {
+                        this.checkReady(errorMsgs);
+                    }
                 })
                 .catch((e) => {
+                    errorMsgs.push("invalid format of configuration override file");
                     console.error("Error reading overrides file: " + JSON.stringify(e));
                 });
     }
@@ -99,7 +151,7 @@ export class Application extends React.Component {
 
     showModal = (title, modalContent) => {
         // handle the show and hide of the app level modal
-        console.log("Content: " + modalContent);
+        // console.log("Content: " + modalContent);
         this.setState({
             modalVisible: true,
             modalContent: modalContent,
@@ -109,20 +161,21 @@ export class Application extends React.Component {
 
     render() {
         console.log("in main render");
-        if (!this.state.ready) {
-            return (<div />);
-        } else {
-            return (
-                <div className="container-fluid">
-                    <GenericModal
-                        show={this.state.modalVisible}
-                        title={this.state.modalTitle}
-                        content={this.state.modalContent}
-                        closeHandler={this.hideModal} />
-                    <h2><b>Ceph Installer</b></h2>
-                    <InstallationSteps svctoken={this.state.svctoken} defaults={this.defaults} modalHandler={this.showModal} />
-                </div>
-            );
+        var installPages = (<div />);
+        if (this.state.ready) {
+            installPages = (<InstallationSteps defaults={this.defaults} modalHandler={this.showModal} />);
         }
+
+        return (
+            <div className="container-fluid">
+                <GenericModal
+                    show={this.state.modalVisible}
+                    title={this.state.modalTitle}
+                    content={this.state.modalContent}
+                    closeHandler={this.hideModal} />
+                <h2><b>Ceph Installer</b></h2>
+                { installPages }
+            </div>
+        );
     }
 }
