@@ -107,12 +107,13 @@ Here's an example of the hosts array, that holds host objects.
 
 
 ## External Files  
-The app makes use of 2 files that are read from the hosts local filesystem during the initial load of the app.jsx code.  
-`/etc/ansible-runner-service/svctoken`  
-This is the jwt created for local access to the ansible runner service API endpoint. The token is created by the ansible runner service, and can only be used for 127.0.0.1 api calls - but by using the token the cockpit code doesn’t have to worry about login credentials and token expiration.
-  
-***NB.** this will change in the next couple of weeks as the ansible-runner-server replaces JWT with mutual TLS auth (courtesy of nginx)*
-  
+The app makes use of 3 files that are read from the hosts local filesystem during the initial load of the app.jsx code.  
+
+`/etc/ansible-runner-service/certs/client/client.crt`  
+`/etc/ansible-runner-service/certs/client/client.key`  
+These are the client certificate files that provide TLS mutual auth to the ansible runner service. If these files are missing, app.jsx flags an
+ error and prevents the rest of the application components from loading.
+   
 `/var/lib/cockpit/ceph-installer/defaults.json`  
 The environment page uses a set of defaults for installation source, osd type etc. These defaults can be overridden by supplying a defaults.json file that declares these variables. App.jsx attempts to read the defaults.json file, and if it’s found and valid it will override your settings with the application defaults (defined in app.jsx)
   
@@ -167,7 +168,9 @@ When the app loads into cockpit, it first verifies the environment is set up cor
 - client key file accessible (should be in /etc/ansible-runner-service/certs/client/)
 - API responded and ready (this is a call to the /api endpoint on port 5001 of the cockpit host)
 
-Missing client files indicate that the generate_certs.sh script hasn't been run, or the locations/names of the files has been changed by the user
+If you see the above messages, all is right with the world. The installationsteps page will load fully and populate the child pages.  
+
+Missing client files indicate that the generate_certs.sh script hasn't been run, or the locations/names of the files has been changed by the user.
 API access issues could relate to the runner-service container not running, or access to the port is blocked by the firewall.
 
 The startup also attempts to apply and overrides to the defaults set in the code. If there is a valid defaults.json (it must be JSON) you should see the
@@ -178,7 +181,7 @@ The startup also attempts to apply and overrides to the defaults set in the code
 ```  
 So if you see unexpected settings in the Environment page, check that the defaults override file is set up correctly. 
 
-However, if you see the above messages, all is right with the world. The installationsteps page will load fully and populate the child pages.
+
 
 ### Playbook execution
 The console log will show the play UUID of the executing playbook which will correspond to a `/usr/share/ansible-runner-service/artifacts/<playUUID>`
