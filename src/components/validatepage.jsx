@@ -264,7 +264,7 @@ export class ValidatePage extends React.Component {
     updateRole = (hostname, role, checked) => {
         console.log("updating host " + hostname + " details for role " + role + " status of " + checked);
 
-        var localState = this.state.hosts.splice(0);
+        var localState = this.state.hosts.slice(0);
         if (checked) {
             let hostObject = getHost(localState, hostname);
             console.log("host is: " + JSON.stringify(hostObject));
