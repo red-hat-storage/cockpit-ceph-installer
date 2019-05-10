@@ -27,7 +27,7 @@ export function buildRoles(hosts) {
         validRoles.forEach(function(roleName, index, array) {
             let ansibleGroup = convertRole(roleName);
             if (host[roleName] && !roleList.includes(ansibleGroup)) {
-                roleList.push(convertRole(roleName));
+                roleList.push(ansibleGroup);
             }
         });
     }
@@ -80,7 +80,7 @@ export function convertRole(role) {
 
 export function getHost(hosts, hostname) {
     /* return the host object from the given hosts array */
-    console.log("scanning for " + hostname);
+    console.log("scanning for " + hostname + " in " + JSON.stringify(hosts));
 
     for (let i = 0; i < hosts.length; i++) {
         console.log("checking .. " + JSON.stringify(hosts[i]));
@@ -151,8 +151,9 @@ export function hostsWithRole(hosts, role) {
 export function toggleHostRole(hosts, callback, hostname, role, checked) {
     // change roles for a host
     // Used in hostspage and validatepage
-
+    console.log("Debug: toggle host called for role " + role);
     let ansibleRole = convertRole(role);
+    console.log("debug: " + role + " = " + ansibleRole);
     console.log("processing against a hosts array of " + JSON.stringify(hosts));
     var groupRemoval = false;
 
@@ -225,6 +226,10 @@ export function toggleHostRole(hosts, callback, hostname, role, checked) {
                                     console.log("failed to remove group: " + err);
                                 });
                             }
+                        })
+                        .catch(e => {
+                            // Problem returned from the changeHost request..blocked method?
+                            console.error("Problem making a changeHost request: " + JSON.stringify(e));
                         });
             });
     groupChain.catch(err => {
