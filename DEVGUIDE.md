@@ -159,3 +159,32 @@ ln -s <dist directory> ceph-installer
 The app is built by webpack, and the repo provides a `Makefile` courtesy of the cockpit plugin starter kit. These pieces make rebuilding the application very simple...just run `make`!.  
   
 Once make completes, you’ll have the application artifacts compiled into the ‘dist’ folder. As long as your cockpit environment can see this folder, you’re good to go.  
+
+## Debuging from the browsers console log
+### Startup
+When the app loads into cockpit, it first verifies the environment is set up correctly. In the client's browser log you should see the following events
+- client crt file accessible (should be in /etc/ansible-runner-service/certs/client/)
+- client key file accessible (should be in /etc/ansible-runner-service/certs/client/)
+- API responded and ready (this is a call to the /api endpoint on port 5001 of the cockpit host)
+
+Missing client files indicate that the generate_certs.sh script hasn't been run, or the locations/names of the files has been changed by the user
+API access issues could relate to the runner-service container not running, or access to the port is blocked by the firewall.
+
+The startup also attempts to apply and overrides to the defaults set in the code. If there is a valid defaults.json (it must be JSON) you should see the
+ the following
+```
+ Overrides are : {"clusterType":"Development/POC","sourceType":"Community","targetVersion":"14 (Nautilus)"}
+ Defaults are : {"iscsiTargetName":"iqn.2003-01.com.redhat.iscsi-gw:ceph-igw","sourceType":"Community","targetVersion":"14 (Nautilus)","clusterType":"Development/POC","installType":"Container","networkType":"ipv4","osdType":"Bluestore","osdMode":"None","flashUsage":"Journals/Logs"}
+```  
+So if you see unexpected settings in the Environment page, check that the defaults override file is set up correctly. 
+
+However, if you see the above messages, all is right with the world. The installationsteps page will load fully and populate the child pages.
+
+### Playbook execution
+The console log will show the play UUID of the executing playbook which will correspond to a `/usr/share/ansible-runner-service/artifacts/<playUUID>`
+This directory will hold a subdir called job_events which correspond to all the tasks. Other files of interest are rc, status and stdout.  
+- rc ... will show the return code of the run
+- stdout .. contains all the content that would have been seen at the terminal from a run at the CLI
+- status .. text description - showing wither successful, failed or canceled.
+
+When playbooks run, the UI polls the events API endpoint every 2 seconds. This interval is hardcoded.
