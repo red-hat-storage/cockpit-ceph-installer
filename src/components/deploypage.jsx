@@ -102,6 +102,8 @@ export class DeployPage extends React.Component {
                 roleState: tmpRoleState,
                 roleSequence: cephAnsibleSequence(allRoles)
             };
+        } else {
+            return null;
         }
     }
 
@@ -208,7 +210,7 @@ export class DeployPage extends React.Component {
             this.props.modalHandler("Ceph Cluster Status", this.formattedOutput(this.mockCephOutput));
         } else {
             console.log("fetching event data from the playbook run");
-            getEvents(this.playbookUUID, this.props.svctoken)
+            getEvents(this.playbookUUID)
                     .then((resp) => {
                         let response = JSON.parse(resp);
                         let matchCount = (versionSupportsMetrics(this.props.settings.targetVersion)) ? 2 : 1;
@@ -232,7 +234,7 @@ export class DeployPage extends React.Component {
                             // build iterable containing all the promises
                             let events = [];
                             for (let eventID of foundEvents) {
-                                let promise = getJobEvent(this.playbookUUID, eventID, this.props.svctoken);
+                                let promise = getJobEvent(this.playbookUUID, eventID);
                                 events.push(promise);
                             }
                             // wait for all promises to resolve
@@ -296,7 +298,7 @@ export class DeployPage extends React.Component {
         console.log("creating all.yml as " + JSON.stringify(vars));
         var chain = Promise.resolve();
         let mons, mgrs, osds, rgws, iscsi;
-        chain = chain.then(() => storeGroupVars('all', vars, this.props.svctoken));
+        chain = chain.then(() => storeGroupVars('all', vars));
 
         for (let roleGroup of roleList) {
             switch (roleGroup) {
@@ -304,16 +306,16 @@ export class DeployPage extends React.Component {
                 console.log("adding mons + mgrs");
                 mons = monsVars(this.state.settings);
                 console.log("mon vars " + JSON.stringify(mons));
-                chain = chain.then(() => storeGroupVars('mons', mons, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('mons', mons));
                 mgrs = mgrsVars(this.state.settings);
                 console.log("mgr vars " + JSON.stringify(mgrs));
-                chain = chain.then(() => storeGroupVars('mgrs', mgrs, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('mgrs', mgrs));
                 break;
             case "osds":
                 console.log("adding osds");
                 osds = osdsVars(this.state.settings);
                 console.log("osd vars " + JSON.stringify(osds));
-                chain = chain.then(() => storeGroupVars('osds', osds, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('osds', osds));
                 break;
             case "mdss":
                 console.log("adding mds yml - Just using ceph-ansible defaults...FIXME?");
@@ -321,12 +323,12 @@ export class DeployPage extends React.Component {
             case "rgws":
                 console.log("adding rgws yml");
                 rgws = rgwsVars(this.state.settings);
-                chain = chain.then(() => storeGroupVars('rgws', rgws, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('rgws', rgws));
                 break;
             case "iscsigws":
                 console.log("adding iscsigws yml");
                 iscsi = iscsiVars(this.state.settings);
-                chain = chain.then(() => storeGroupVars('iscsigws', iscsi, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('iscsigws', iscsi));
                 break;
             }
         }
@@ -337,7 +339,7 @@ export class DeployPage extends React.Component {
             for (let host of this.state.settings.hosts) {
                 if (host.osd) {
                     let osd_metadata = hostVars(host, this.state.settings.flashUsage);
-                    chain = chain.then(() => storeHostVars(host.hostname, 'osds', osd_metadata, this.props.svctoken));
+                    chain = chain.then(() => storeHostVars(host.hostname, 'osds', osd_metadata));
                 }
             }
         }
@@ -396,7 +398,7 @@ export class DeployPage extends React.Component {
                 playbookName = 'site.yml';
             }
             console.log("Attempting to start playbook " + playbookName);
-            runPlaybook(playbookName, varOverrides, this.props.svctoken)
+            runPlaybook(playbookName, varOverrides)
                     .then((resp) => {
                         let response = JSON.parse(resp);
                         if (response.status == "STARTED") {
@@ -444,7 +446,7 @@ export class DeployPage extends React.Component {
             }
         } else {
             // this is a real run
-            getPlaybookState(this.playbookUUID, this.props.svctoken)
+            getPlaybookState(this.playbookUUID)
                     .then((resp) => {
                         // process the response
                         let response = JSON.parse(resp);
@@ -809,6 +811,8 @@ export class BreadCrumbStatus extends React.Component {
             console.log("defining the role sequence for the breadcrumbs");
             let converted = nextProps.sequence.map((role, i) => { return convertRole(role) });
             return {roles: converted};
+        } else {
+            return null;
         }
     }
 
