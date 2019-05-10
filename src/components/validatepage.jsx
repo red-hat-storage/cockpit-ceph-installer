@@ -121,7 +121,7 @@ export class ValidatePage extends React.Component {
                 this.eventLookup[eventID] = "";
                 console.log("processing " + eventID);
                 // this.refs.validationMessage.forceUpdateHandler();
-                getJobEvent(playUUID, eventID, this.props.svctoken)
+                getJobEvent(playUUID, eventID)
                         .then((resp) => {
                             let event = JSON.parse(resp);
                             // ignore verbose type events
@@ -212,7 +212,7 @@ export class ValidatePage extends React.Component {
 
         console.log("playbook vars are:" + JSON.stringify(playbookVars));
 
-        runPlaybook("checkrole.yml", playbookVars, this.props.svctoken)
+        runPlaybook("checkrole.yml", playbookVars)
                 .then((resp) => {
                     let response = JSON.parse(resp);
                     console.log("playbook execution started :" + response.status);
@@ -221,7 +221,7 @@ export class ValidatePage extends React.Component {
                     console.log("tracking playbook with UUID :" + this.playUUID);
 
                     console.log("starting progress tracker");
-                    checkPlaybook(this.playUUID, this.props.svctoken, this.updateProbeStatus, this.probeComplete);
+                    checkPlaybook(this.playUUID, this.updateProbeStatus, this.probeComplete);
                 })
                 .catch((e) => {
                     let errorMsg;
@@ -264,7 +264,6 @@ export class ValidatePage extends React.Component {
     updateRole = (hostname, role, checked) => {
         console.log("updating host " + hostname + " details for role " + role + " status of " + checked);
 
-        var svctoken = this.props.svctoken;
         var localState = this.state.hosts.splice(0);
         if (checked) {
             let hostObject = getHost(localState, hostname);
@@ -283,7 +282,7 @@ export class ValidatePage extends React.Component {
             }
         }
 
-        toggleHostRole(localState, this.updateState, hostname, role, checked, svctoken);
+        toggleHostRole(localState, this.updateState, hostname, role, checked);
     }
 
     hostOK (host) {
@@ -456,7 +455,7 @@ export class ValidatePage extends React.Component {
             // run the delete hosts serially, but in the background
 
             for (let hostName of hostsToDelete) {
-                chain = chain.then(() => deleteHost(hostName, this.props.svctoken));
+                chain = chain.then(() => deleteHost(hostName));
             }
         }
         chain.then(() => {

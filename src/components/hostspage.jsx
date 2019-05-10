@@ -69,7 +69,7 @@ export class HostsPage extends React.Component {
                 }
             });
             if (hostOKCount != this.state.hosts.length) {
-                errMsgs.push("Hosts must be in an 'OK' state to continue");
+                errMsgs.push("All hosts must be in an 'OK' state to continue");
                 console.log("Debug: hosts are " + JSON.stringify(this.state.hosts));
             }
             console.log("debug hosts " + JSON.stringify(this.state.hosts));
@@ -147,11 +147,10 @@ export class HostsPage extends React.Component {
         this.setState({ready: false});
 
         console.log("required ansible groups: " + rolesString);
-        var tokenString = this.props.svctoken;
         var ansibleRoles;
         var createGroups = [];
 
-        getGroups(this.props.svctoken)
+        getGroups()
                 .done(resp => {
                     ansibleRoles = JSON.parse(resp)['data']['groups'];
                 })
@@ -162,7 +161,7 @@ export class HostsPage extends React.Component {
                         let groupName = roleList[i];
                         if (!ansibleRoles.includes(groupName)) {
                             // need to create a group
-                            createGroups.push(addGroup(groupName, tokenString));
+                            createGroups.push(addGroup(groupName));
                         }
                     }
                 })
@@ -187,7 +186,7 @@ export class HostsPage extends React.Component {
                                 var sequence = Promise.resolve();
                                 newHosts.forEach(function(hostName) {
                                     sequence = sequence.then(() => {
-                                        return addHost(hostName, rolesString, tokenString);
+                                        return addHost(hostName, rolesString);
                                     }).then((resp) => {
                                         console.log(resp);
                                         let r = JSON.parse(resp);
@@ -275,14 +274,13 @@ export class HostsPage extends React.Component {
         });
 
         var that = this;
-        var tokenString = this.props.svctoken;
         var roleList = buildRoles([currentHosts[ptr]]);
         if (roleList.includes('mons')) {
             console.log("adding mgrs to role list since we have a mon");
             roleList.push('mgrs');
         }
 
-        addHost(hostName, roleList.join(','), tokenString)
+        addHost(hostName, roleList.join(','))
                 .then((resp) => {
                     console.log("Add OK");
                     let r = JSON.parse(resp);
@@ -407,7 +405,7 @@ export class HostsPage extends React.Component {
             msgLevel: 'info',
             msgText: ''
         });
-        toggleHostRole(localState, this.updateState, hostname, role, checked, this.props.svctoken);
+        toggleHostRole(localState, this.updateState, hostname, role, checked);
     }
 
     deleteHostEntry = (idx) => {
@@ -430,7 +428,7 @@ export class HostsPage extends React.Component {
     deleteGroups = (groupsToRemove) => {
         console.log("We need to remove the following groups: " + groupsToRemove.join(',') + " - " + JSON.stringify(groupsToRemove));
         var delChain = Promise.resolve();
-        groupsToRemove.forEach(group => delChain.then(() => deleteGroup(group, this.props.svctoken)));
+        groupsToRemove.forEach(group => delChain.then(() => deleteGroup(group)));
         delChain.catch(err => {
             console.error("Failed to remove group. Error: " + JSON.stringify(err));
         });
@@ -469,7 +467,7 @@ export class HostsPage extends React.Component {
         if (localState[idx].status == 'OK') {
             // OK state means we've added the host to the inventory, so we need
             // to delete from the inventory AND the UI state
-            deleteHost(hostname, this.props.svctoken)
+            deleteHost(hostname)
                     .then((resp) => {
                         this.deleteHostEntry(idx);
                     })
