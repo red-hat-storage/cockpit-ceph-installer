@@ -45,8 +45,8 @@ Another gotcha to be aware of is the async nature of component state itself. Sta
 The playbook that ceph-ansible runs processes the roles in a specific sequence, so to implement a breadcrumb trail following the installation process the
 code in ansibleMap/cephAnsibleSequence arranges the chosen roles from the host definition in a sequence compatible with the install flow. Once we have this sequence we can check the role in a tasks output to indicate whereabouts we are in the installation process, giving us the breadcrumb effect.  
 
-The actual flow from ceph-ansible (May 2019) is as follows;  
-mons > mgrs > osds > mdss > rgws > nfs > rbdmirrors > clients > iscsigws > ceph-grafana (metrics)  
+The actual flow from ceph-ansible (June 2019) is as follows;  
+mons > mgrs > osds > mdss > rgws > nfs > rbdmirrors > clients > iscsigws > grafana-server (metrics)  
 
 The main code responsible for tracking is the setRoleState function in the DeployPage component.  
 
