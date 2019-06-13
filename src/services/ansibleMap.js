@@ -135,7 +135,6 @@ export function allVars (vars) {
     forYML.cluster_network = vars.clusterNetwork;
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
-    forYML.disk_list = {rc: 0}; // workaround for osd_run_sh template error?
 
     // wishlist for a simplified rgw install
     // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
@@ -156,6 +155,11 @@ export function allVars (vars) {
     //     }
     // }
 
+    return forYML;
+}
+export function dashboardVars (vars) {
+    let forYML = {};
+    forYML.grafana_server_group_name = "grafana-server";
     return forYML;
 }
 
@@ -221,7 +225,7 @@ export function cephAnsibleSequence(roles) {
     // the goal here it to align to the execution sequence of the ceph-ansible playbook
     // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
 
-    // input  : ['mons','rgws','osds','iscsigws', 'ceph-grafana']
+    // input  : ['mons','rgws','osds','iscsigws', 'grafana-server']
     // output : ['mon','mgr','osd','rgw','iscsi-gw', 'grafana']
 
     // FIXME: iscsi is not tested/validated at the moment
@@ -229,7 +233,7 @@ export function cephAnsibleSequence(roles) {
     let rolesIn = [];
     for (let r of roles) {
         switch (r) {
-        case "ceph-grafana":
+        case "grafana-server":
             rolesIn.push('grafana');
             break;
         case "iscsigws":

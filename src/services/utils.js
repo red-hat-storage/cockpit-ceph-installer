@@ -65,7 +65,7 @@ export function convertRole(role) {
         role = 'iscsi';
         break;
     case "metrics":
-        role = "ceph-grafana";
+        role = "grafana-server";
         break;
     case "grafana":
         // used by deploypage
@@ -376,7 +376,7 @@ export function collocationOK(currentRoles, newRole, installType, clusterType) {
     console.log("checking for collocation violations");
     console.log("current roles " + currentRoles);
     console.log("new role is " + newRole);
-    if ((newRole == 'metrics' && currentRoles.length > 0) || (currentRoles.includes('ceph-grafana'))) {
+    if ((newRole == 'metrics' && currentRoles.length > 0) || (currentRoles.includes('grafana-server'))) {
         console.log("request for metrics on a host with other ceph roles is denied");
         return false;
     }

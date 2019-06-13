@@ -3,7 +3,7 @@ import React from 'react';
 
 import { UIButton } from './common/nextbutton.jsx';
 import '../app.scss';
-import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, iscsiVars, cephAnsibleSequence } from '../services/ansibleMap.js';
+import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, iscsiVars, cephAnsibleSequence, dashboardVars } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
@@ -89,7 +89,7 @@ export class DeployPage extends React.Component {
             let allRoles = buildRoles(nextProps.settings.hosts);
             let tmpRoleState = {};
             for (let role of allRoles) {
-                if (role == 'ceph-grafana') {
+                if (role == 'grafana-server') {
                     tmpRoleState['metrics'] = 'pending';
                 } else {
                     tmpRoleState[role] = 'pending';
@@ -113,9 +113,20 @@ export class DeployPage extends React.Component {
         let eventRoleName;
         let shortName;
 
-        // all ceph-ansible roles are prefixed by ceph- eg. ceph-mon or ceph-grafana
+        // Most roles are prefixed by ceph- but we need to handle the exceptions too
         let taskRole = (eventData.data.role || eventData.data.task_metadata.role);
-        shortName = (taskRole) ? taskRole.replace("ceph-", '') : '';
+        switch (taskRole) {
+        case "grafana-server":
+            shortName = 'grafana';
+            break;
+        default:
+            if (taskRole) {
+                shortName = taskRole.replace("ceph-", "");
+            } else {
+                shortName = '';
+            }
+            break;
+        }
 
         eventRoleName = convertRole(shortName);
 
@@ -300,7 +311,7 @@ export class DeployPage extends React.Component {
         var vars = allVars(this.state.settings);
         console.log("creating all.yml as " + JSON.stringify(vars));
         var chain = Promise.resolve();
-        let mons, mgrs, osds, rgws, iscsi;
+        let mons, mgrs, osds, rgws, iscsi, dashboards;
         chain = chain.then(() => storeGroupVars('all', vars));
 
         for (let roleGroup of roleList) {
@@ -332,6 +343,11 @@ export class DeployPage extends React.Component {
                 console.log("adding iscsigws yml");
                 iscsi = iscsiVars(this.state.settings);
                 chain = chain.then(() => storeGroupVars('iscsigws', iscsi));
+                break;
+            case "grafana-server":
+                console.log("adding dashboards.yml");
+                dashboards = dashboardVars(this.state.settings);
+                chain = chain.then(() => storeGroupVars('dashboards', dashboards));
                 break;
             }
         }
@@ -844,9 +860,6 @@ export class Breadcrumb extends React.Component {
         console.log("rendering a breadcrumb");
         var status;
         switch (this.props.state) {
-        case "pending":
-            status = "grey";
-            break;
         case "active":
             status = "blue";
             break;
@@ -855,6 +868,9 @@ export class Breadcrumb extends React.Component {
             break;
         case "failed":
             status = "red";
+            break;
+        default:
+            status = "grey";
             break;
         }
 
