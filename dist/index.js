@@ -22748,10 +22748,25 @@ function (_React$Component) {
       var currentState = _this.state.roleState;
       var changesMade = false;
       var eventRoleName;
-      var shortName; // all ceph-ansible roles are prefixed by ceph- eg. ceph-mon or ceph-grafana
+      var shortName; // Most roles are prefixed by ceph- but we need to handle the exceptions too
 
       var taskRole = eventData.data.role || eventData.data.task_metadata.role;
-      shortName = taskRole ? taskRole.replace("ceph-", '') : '';
+
+      switch (taskRole) {
+        case "grafana-server":
+          shortName = 'grafana';
+          break;
+
+        default:
+          if (taskRole) {
+            shortName = taskRole.replace("ceph-", "");
+          } else {
+            shortName = '';
+          }
+
+          break;
+      }
+
       eventRoleName = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(shortName);
       console.log("Debug: role sequence is " + JSON.stringify(_this.state.roleSequence));
 
@@ -23018,7 +23033,7 @@ function (_React$Component) {
       var vars = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["allVars"])(_this.state.settings);
       console.log("creating all.yml as " + JSON.stringify(vars));
       var chain = Promise.resolve();
-      var mons, mgrs, osds, rgws, iscsi;
+      var mons, mgrs, osds, rgws, iscsi, dashboards;
       chain = chain.then(function () {
         return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('all', vars);
       });
@@ -23071,6 +23086,14 @@ function (_React$Component) {
               iscsi = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["iscsiVars"])(_this.state.settings);
               chain = chain.then(function () {
                 return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('iscsigws', iscsi);
+              });
+              break;
+
+            case "grafana-server":
+              console.log("adding dashboard.yml");
+              dashboards = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["dashboardVars"])(_this.state.settings);
+              chain = chain.then(function () {
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('dashboards', dashboards);
               });
               break;
           }
@@ -23521,7 +23544,7 @@ function (_React$Component) {
           for (var _iterator6 = allRoles[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
             var role = _step6.value;
 
-            if (role == 'ceph-grafana') {
+            if (role == 'grafana-server') {
               tmpRoleState['metrics'] = 'pending';
             } else {
               tmpRoleState[role] = 'pending';
@@ -23894,10 +23917,6 @@ function (_React$Component6) {
       var status;
 
       switch (this.props.state) {
-        case "pending":
-          status = "grey";
-          break;
-
         case "active":
           status = "blue";
           break;
@@ -23908,6 +23927,10 @@ function (_React$Component6) {
 
         case "failed":
           status = "red";
+          break;
+
+        default:
+          status = "grey";
           break;
       }
 
@@ -26368,8 +26391,8 @@ function (_React$Component) {
         this.clusterData['Hosts'] = props.config.hosts.length;
         var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["buildRoles"])(props.config.hosts);
 
-        if (roleList.includes('ceph-grafana')) {
-          roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["removeItem"])(roleList, 'ceph-grafana');
+        if (roleList.includes('grafana-server')) {
+          roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["removeItem"])(roleList, 'grafana-server');
         }
 
         this.clusterData['Roles'] = roleList.join(', ');
@@ -26735,7 +26758,7 @@ function (_React$Component) {
       var localState = JSON.parse(JSON.stringify(_this.state.hosts));
       var probeTotal = localState.length - Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(localState, 'metrics');
 
-      if (!eventData.res.hasOwnProperty('data')) {
+      if (!eventData.hasOwnProperty('res') || !eventData.res.hasOwnProperty('data')) {
         console.log("Skipping " + eventHostname + ", no data returned");
       } else {
         var facts = eventData.res.data.summary_facts;
@@ -27781,7 +27804,7 @@ document.addEventListener("DOMContentLoaded", function () {
 /*!************************************!*\
   !*** ./src/services/ansibleMap.js ***!
   \************************************/
-/*! exports provided: hostVars, osdsVars, allVars, monsVars, mgrsVars, rgwsVars, iscsiVars, cephAnsibleSequence */
+/*! exports provided: hostVars, osdsVars, allVars, dashboardVars, monsVars, mgrsVars, rgwsVars, iscsiVars, cephAnsibleSequence */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -27789,6 +27812,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hostVars", function() { return hostVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "osdsVars", function() { return osdsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "allVars", function() { return allVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dashboardVars", function() { return dashboardVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "monsVars", function() { return monsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mgrsVars", function() { return mgrsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgwsVars", function() { return rgwsVars; });
@@ -27966,11 +27990,7 @@ function allVars(vars) {
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
-  forYML.ip_version = vars.networkType;
-  forYML.disk_list = {
-    rc: 0
-  }; // workaround for osd_run_sh template error?
-  // wishlist for a simplified rgw install
+  forYML.ip_version = vars.networkType; // wishlist for a simplified rgw install
   // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
   // if (rgwHostIdx.length > 0) {
   //     // Additional OSD tuning for Object workloads
@@ -27988,6 +28008,11 @@ function allVars(vars) {
   //     }
   // }
 
+  return forYML;
+}
+function dashboardVars(vars) {
+  var forYML = {};
+  forYML.grafana_server_group_name = "grafana-server";
   return forYML;
 }
 function monsVars(vars) {
@@ -28065,7 +28090,7 @@ function iscsiVars(vars) {
 function cephAnsibleSequence(roles) {
   // the goal here it to align to the execution sequence of the ceph-ansible playbook
   // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
-  // input  : ['mons','rgws','osds','iscsigws', 'ceph-grafana']
+  // input  : ['mons','rgws','osds','iscsigws', 'grafana-server']
   // output : ['mon','mgr','osd','rgw','iscsi-gw', 'grafana']
   // FIXME: iscsi is not tested/validated at the moment
   console.log("Debug: roles to convert to ansible sequence are : " + JSON.stringify(roles));
@@ -28079,7 +28104,7 @@ function cephAnsibleSequence(roles) {
       var r = _step3.value;
 
       switch (r) {
-        case "ceph-grafana":
+        case "grafana-server":
           rolesIn.push('grafana');
           break;
 
@@ -28495,7 +28520,7 @@ function convertRole(role) {
       break;
 
     case "metrics":
-      role = "ceph-grafana";
+      role = "grafana-server";
       break;
 
     case "grafana":
@@ -28881,7 +28906,7 @@ function collocationOK(currentRoles, newRole, installType, clusterType) {
   console.log("current roles " + currentRoles);
   console.log("new role is " + newRole);
 
-  if (newRole == 'metrics' && currentRoles.length > 0 || currentRoles.includes('ceph-grafana')) {
+  if (newRole == 'metrics' && currentRoles.length > 0 || currentRoles.includes('grafana-server')) {
     console.log("request for metrics on a host with other ceph roles is denied");
     return false;
   }
