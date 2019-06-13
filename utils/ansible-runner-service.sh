@@ -191,29 +191,28 @@ environment_ok() {
 }
 
 usage() {
-    echo -e "\nansible-runner-service -h -v -s -k"
+    echo -e "Usage: ansible-runner-service [-hvsk]"
     echo -e "\t-h ... display usage information"
     echo -e "\t-v ... verbose mode"
     echo -e "\t-s ... start ansible runner service container (default)"
     echo -e "\t-k ... stop/kill the ansible runner service container\n"
     echo "The service uses mutual TLS auth and will set up self-signed certs if they are not provided."
-    echo "Default locations are as follows;"
+    echo "Certs are stored in the following locations;"
     echo -e "\t server certs ... $SERVERCERTS"
     echo -e "\t client certs ... $CLIENTCERTS\n"
     echo "Self signed certificates use defaults for server/client identity and certificate password. To"
     echo "override the defaults, simply set the environment variables before invoking this utility"
     echo -e "\t CERT_IDENTITY ... server certificate id (subject)"
     echo -e "\t CERT_IDENTITY_CLIENT ... server certificate id (subject)"
-    echo -e "\t CERT_PASSWORD ... password used to lock and access the server cert"
+    echo -e "\t CERT_PASSWORD ... password used to lock and access the server cert\n"
+    echo "e.g."
+    echo "> CERT_PASSWORD='supersecret' ./ansible-runner-service.sh -v -s"
 }
 
 is_running() {
-    if $VERBOSE; then 
-        echo "Checking container is active"
-    fi
+    if $VERBOSE; then echo "Checking container is active"; fi
 
     docker ps | grep runner-service > /dev/null 2>&1
-    
 }
 
 start_runner_service() {
