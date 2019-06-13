@@ -51,7 +51,7 @@ export class ValidatePage extends React.Component {
         let eventHostname = eventData.remote_addr;
         let localState = JSON.parse(JSON.stringify(this.state.hosts));
         let probeTotal = localState.length - hostsWithRoleCount(localState, 'metrics');
-        if (!eventData.res.hasOwnProperty('data')) {
+        if (!eventData.hasOwnProperty('res') || !eventData.res.hasOwnProperty('data')) {
             console.log("Skipping " + eventHostname + ", no data returned");
         } else {
             let facts = eventData.res.data.summary_facts;
