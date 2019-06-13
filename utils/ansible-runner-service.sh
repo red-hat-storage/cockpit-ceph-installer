@@ -11,7 +11,7 @@ ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
-IMAGE="ansible_runner_service"
+CONTAINER_IMAGE="ansible_runner_service"
 
 create_server_certs() {
 
@@ -78,7 +78,7 @@ fetch_container() {
     docker images | grep runner-service > /dev/null 2>&1
     if [[ ?$ -ne 0 ]]; then
         echo "Fetching ansible runner service container. Please wait..."
-        docker pull "$PROJECT/$IMAGE:latest"
+        docker pull "$PROJECT/$CONTAINER_IMAGE:latest"
         if [[ $? -ne 0 ]]; then 
             echo "Failed to fetch the container. Unable to continue"
             exit 4
@@ -92,7 +92,7 @@ start_container() {
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project
                -v /etc/ansible-runner-service:/etc/ansible-runner-service 
-               --name runner-service $PROJECT/$IMAGE > /dev/null 2>&1
+               --name runner-service $PROJECT/$CONTAINER_IMAGE > /dev/null 2>&1
     if [[ $? -ne 0 ]]; then 
         echo "Failed to start the container"
         exit 8
@@ -119,12 +119,37 @@ setup_dirs() {
         mkdir -p /usr/share/ansible-runner-service/{artifacts,env,inventory,project}
         chcon -Rt container_file_t /usr/share/ansible-runner-service
     fi
+
+}
+
+# Unused
+check_context() {
+    # $1 = directory to check
+    # $2 = context to match against
+    local dir_context=$(ls -dZ $1 | cut -d':' -f3)
+    if $VERBOSE; then echo "path $1 has context $dir_context"; fi
+    [ "$dir_context" == $2 ]
+}
+
+set_selinux() {
+
+    # etc and /usr/share dirs must have a container context
+    for path in '/etc/ansible-runner-service' '/usr/share/ceph-ansible'; do
+        echo "Applying SELINUX container_file_t context to '$path'"
+        chcon -Rt container_file_t $path > /dev/null 2>&1
+        if [ $? -ne 0 ]; then 
+            echo "Unable to set SELINUX context on $path. Can not continue"
+            exit
+        fi
+    done
+
 }
 
 environment_ok() {
     local errors=''
     local out=''
     echo "Checking environment"
+
     # must run as root
     if [ $(whoami) != 'root' ]; then 
         errors+="\tScript must run as the root user\n"
@@ -206,6 +231,10 @@ start_runner_service() {
     setup_dirs
 
     create_certs
+
+    if [ $(getenforce) == "Enforcing" ]; then 
+        set_selinux
+    fi
 
     fetch_container
 
