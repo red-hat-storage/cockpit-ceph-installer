@@ -6,7 +6,7 @@
 # Cert identity and password may be overridden by environment variables - see help
 
 VERBOSE=false
-PREREQS="docker openssl"
+PREREQS="docker openssl curl"
 ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
@@ -59,41 +59,45 @@ create_client_certs() {
     
     if $VERBOSE; then echo "Signing the client certificate with our CA cert"; fi
     openssl x509 -req -days 365 -in $CLIENTCERTS/client.csr -CA $SERVERCERTS/ca.crt \
-        -CAkey $SERVERCERTS/ca.key -CAcreateserial -out $BASE_PATH/client/client.crt \
+        -CAkey $SERVERCERTS/ca.key -CAcreateserial -out $CLIENTCERTS/client.crt \
         -passin pass:$CERT_PASSWORD
 }
 
 create_certs() {
-    echo "Checking SSL Certificate configuration"
-    if [ ! -d "$ETCDIR/certs/server/ca.crt" ]; then
+    echo "Checking SSL certificate configuration"
+    if [ ! -f "$SERVERCERTS/ca.crt" ]; then
         create_server_certs
     fi
 
-    if [ ! -d "$ETCDIR/certs/client/client.crt" ]; then 
+    if [ ! -f "$CLIENTCERTS/client.crt" ]; then 
         create_client_certs
     fi
 }
 
 fetch_container() {
-    docker images | grep runner-service > /dev/null 2>&1
-    if [[ ?$ -ne 0 ]]; then
+    docker images | grep ansible_runner_service > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
         echo "Fetching ansible runner service container. Please wait..."
         docker pull "$PROJECT/$CONTAINER_IMAGE:latest"
         if [[ $? -ne 0 ]]; then 
             echo "Failed to fetch the container. Unable to continue"
             exit 4
         fi
+    else
+        echo "Using the ansible_runner_service container already downloaded"
     fi
 }
 
 start_container() {
-    echo "Starting container"
+    echo "Starting runner-service container"
     docker run --rm -d --network=host -p 5001:5001/tcp \
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
-               -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project
-               -v /etc/ansible-runner-service:/etc/ansible-runner-service 
+               -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
+               -v /etc/ansible-runner-service:/etc/ansible-runner-service \
                --name runner-service $PROJECT/$CONTAINER_IMAGE > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then 
+    if [ $? -eq 0 ]; then 
+        echo "Started runner-service container"
+    else
         echo "Failed to start the container"
         exit 8
     fi
@@ -148,7 +152,7 @@ set_selinux() {
 environment_ok() {
     local errors=''
     local out=''
-    echo "Checking environment"
+    echo "Checking environment is ready"
 
     # must run as root
     if [ $(whoami) != 'root' ]; then 
@@ -173,6 +177,12 @@ environment_ok() {
     if [[ ! -d "/usr/share/ceph-ansible" ]]; then 
         errors+="\tceph-ansible is not installed.\n"
     fi
+
+    docker ps > /dev/null 2>&1
+    if [ $? -ne 0 ]; then 
+        errors+="\tdocker daemon not running"
+    fi
+
 
     # set variables according to environment vars
     local HOST=$(hostname)
@@ -215,6 +225,28 @@ is_running() {
     docker ps | grep runner-service > /dev/null 2>&1
 }
 
+check_access() {
+    echo "Waiting for runner-service container to respond"
+    local ctr=1
+    local limit=10
+    while [ $ctr -le $limit ]; do 
+        HTTP_STATUS=$(curl -s -i -k \
+                        -o /dev/null \
+                        -w "%{http_code}" \
+                        --key $CLIENTCERTS/client.key \
+                        --cert $CLIENTCERTS/client.crt \
+                        https://localhost:5001/api/v1/playbooks -X GET)
+        if [ "$HTTP_STATUS" -ne 0 ]; then
+            break
+        fi
+        if $VERBOSE; then echo "- probe ($ctr/$limit)"; fi
+        sleep 1
+        ((ctr++))
+    done
+
+    return $HTTP_STATUS
+}
+
 start_runner_service() {
 
     if ! environment_ok; then 
@@ -222,8 +254,8 @@ start_runner_service() {
         exit
     fi
 
-    if ! is_running; then
-        echo "Runner service is already running"
+    if is_running; then
+        echo "runner-service container is already running"
         exit
     fi
 
@@ -238,6 +270,20 @@ start_runner_service() {
     fetch_container
 
     start_container
+
+    check_access
+    CURL_RC=$?
+    case $CURL_RC in 
+        0)
+            echo "Unable to connect to the container"
+            ;;
+        200)
+            echo "runner-service container is available and responding to requests"
+            ;;
+        *)
+            echo "runner-service container responded with unexpected status code: $CURL_RC"
+            ;;
+    esac
 
 }
 
@@ -255,6 +301,7 @@ main() {
                 ;;
             s)
                 start_runner_service
+                exit
                 ;;  
             k)
                 is_running
