@@ -2,7 +2,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: starter-kit 1.0\n"
+"Project-Id-Version: ceph-installer 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-29 00:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -14,16 +14,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/index.html:20
-msgid "Cockpit Starter Kit"
-msgstr "Cockpit Bausatz"
+msgid "Ceph Installer"
+msgstr "Installationsprogramm"
 
 #: src/app.jsx:42
 msgid "Running on $0"
 msgstr "Läuft auf $0"
 
 #: src/manifest.json
-msgid "Starter Kit"
-msgstr "Bausatz"
+msgid "Ceph Installer"
+msgstr "Installationsprogramm"
 
 #: src/app.jsx:29
 msgid "Unknown"

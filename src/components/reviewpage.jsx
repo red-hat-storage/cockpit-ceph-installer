@@ -43,8 +43,8 @@ export class ReviewPage extends React.Component {
 
             this.clusterData['Hosts'] = props.config.hosts.length;
             let roleList = buildRoles(props.config.hosts);
-            if (roleList.includes('ceph-grafana')) {
-                roleList = removeItem(roleList, 'ceph-grafana');
+            if (roleList.includes('grafana-server')) {
+                roleList = removeItem(roleList, 'grafana-server');
             }
             this.clusterData['Roles'] = roleList.join(', ');
             for (let role of roleList) {

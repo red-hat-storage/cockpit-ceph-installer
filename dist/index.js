@@ -21311,7 +21311,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_installationsteps_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/installationsteps.jsx */ "./src/components/installationsteps.jsx");
 /* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/utils.js */ "./src/services/utils.js");
-/* harmony import */ var _components_common_modal_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/common/modal.jsx */ "./src/components/common/modal.jsx");
+/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./services/apicalls.js */ "./src/services/apicalls.js");
+/* harmony import */ var _components_common_modal_jsx__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/common/modal.jsx */ "./src/components/common/modal.jsx");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21356,6 +21357,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
+
  // import InfoBar from './components/infobar.jsx';
 
 var _ = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.gettext;
@@ -21375,6 +21377,24 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Application).call(this));
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkReady", function (errorMsgs) {
+      if (errorMsgs.length == 0) {
+        _this.setState({
+          ready: true
+        });
+      } else {
+        // errors encountered, better give the user the bad news
+        var msgs = errorMsgs.map(function (msg, key) {
+          return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("li", {
+            key: key
+          }, msg);
+        });
+        var errorText = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, "The following environment errors were detected; ", react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("br", null), msgs, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("br", null), "The installer is unable to continue, until these issues are resolved. To retry, refresh the page.");
+
+        _this.showModal("Environment Error", errorText);
+      }
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "hideModal", function () {
       _this.setState({
         modalVisible: false
@@ -21383,8 +21403,7 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "showModal", function (title, modalContent) {
       // handle the show and hide of the app level modal
-      console.log("Content: " + modalContent);
-
+      // console.log("Content: " + modalContent);
       _this.setState({
         modalVisible: true,
         modalContent: modalContent,
@@ -21394,7 +21413,6 @@ function (_React$Component) {
 
     _this.state = {
       'hostname': _("Unknown"),
-      "svctoken": null,
       modalVisible: false,
       modalContent: '',
       modalTitle: '',
@@ -21420,24 +21438,49 @@ function (_React$Component) {
       var _this2 = this;
 
       // count of the number of files we need to read before we should render anything
-      var filesRead = 0;
-      console.log("Loading svctoken for ansible-runner-service API");
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/ansible-runner-service/svctoken').then(function (content, tag) {
-        _this2.setState({
-          svctoken: content
-        });
-
-        console.log("SVC token is : " + content);
-        filesRead++;
-
-        if (filesRead == 2) {
-          _this2.setState({
-            ready: true
-          });
+      var actions = 0;
+      var errorMsgs = [];
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/ansible-runner-service/certs/client/client.crt').then(function (content, tag) {
+        if (!content && tag == '-') {
+          // crt file missing
+          console.error("Error: client crt file is missing. Has generate_certs.sh been run?");
+          errorMsgs.push("client .crt file is missing. Has generate_certs.sh been run?");
+        } else {
+          console.log("client crt file accessible"); // Could check the internal format is PEM?
         }
-      }).fail(function (error) {
-        console.error("Can't read the svctoken file");
-        console.error("Error : " + error.message);
+
+        actions++;
+
+        if (actions == 4) {
+          _this2.checkReady(errorMsgs);
+        }
+      });
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/ansible-runner-service/certs/client/client.key').then(function (content, tag) {
+        if (!content && tag == '-') {
+          // crt file missing
+          console.error("Error: client key file is missing. Has generate_certs.sh been run?");
+          errorMsgs.push("client .key file is missing. Has generate_certs.sh been run?");
+        } else {
+          console.log("client key file accessible"); // Could check the internal format is PEM?
+        }
+
+        actions++;
+
+        if (actions == 4) {
+          _this2.checkReady(errorMsgs);
+        }
+      });
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["checkAPI"])().then(function (resp) {
+        console.log("API responded and ready");
+      }).catch(function (error) {
+        console.log("error " + JSON.stringify(error));
+        errorMsgs.push("unable to access the ansible-runner-service API. Are the client files in place? Is the service running?");
+      }).finally(function () {
+        actions++;
+
+        if (actions == 4) {
+          _this2.checkReady(errorMsgs);
+        }
       });
       console.log("Checking for local default cluster setting overrides");
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/var/lib/cockpit/ceph-installer/defaults.json', 'JSON').then(function (overrides, tag) {
@@ -21449,14 +21492,13 @@ function (_React$Component) {
           console.log("Unable to read local default overrides, using internal defaults");
         }
 
-        filesRead++;
+        actions++;
 
-        if (filesRead == 2) {
-          _this2.setState({
-            ready: true
-          });
+        if (actions == 4) {
+          _this2.checkReady(errorMsgs);
         }
       }).catch(function (e) {
+        errorMsgs.push("invalid format of configuration override file");
         console.error("Error reading overrides file: " + JSON.stringify(e));
       });
     }
@@ -21464,23 +21506,23 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       console.log("in main render");
+      var installPages = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null);
 
-      if (!this.state.ready) {
-        return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null);
-      } else {
-        return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
-          className: "container-fluid"
-        }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_components_common_modal_jsx__WEBPACK_IMPORTED_MODULE_5__["GenericModal"], {
-          show: this.state.modalVisible,
-          title: this.state.modalTitle,
-          content: this.state.modalContent,
-          closeHandler: this.hideModal
-        }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("b", null, "Ceph Installer")), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_components_installationsteps_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
-          svctoken: this.state.svctoken,
+      if (this.state.ready) {
+        installPages = react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_components_installationsteps_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
           defaults: this.defaults,
           modalHandler: this.showModal
-        }));
+        });
       }
+
+      return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+        className: "container-fluid"
+      }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_components_common_modal_jsx__WEBPACK_IMPORTED_MODULE_6__["GenericModal"], {
+        show: this.state.modalVisible,
+        title: this.state.modalTitle,
+        content: this.state.modalContent,
+        closeHandler: this.hideModal
+      }), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h2", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("b", null, "Ceph Installer")), installPages);
     }
   }]);
 
@@ -22705,9 +22747,25 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setRoleState", function (eventData) {
       var currentState = _this.state.roleState;
       var changesMade = false;
-      var eventRoleName; // all ceph-ansible roles are prefixed by ceph-
+      var eventRoleName;
+      var shortName; // Most roles are prefixed by ceph- but we need to handle the exceptions too
 
-      var shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
+      var taskRole = eventData.data.role || eventData.data.task_metadata.role;
+
+      switch (taskRole) {
+        case "grafana-server":
+          shortName = 'grafana';
+          break;
+
+        default:
+          if (taskRole) {
+            shortName = taskRole.replace("ceph-", "");
+          } else {
+            shortName = '';
+          }
+
+          break;
+      }
 
       eventRoleName = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(shortName);
       console.log("Debug: role sequence is " + JSON.stringify(_this.state.roleSequence));
@@ -22817,7 +22875,7 @@ function (_React$Component) {
         _this.props.modalHandler("Ceph Cluster Status", _this.formattedOutput(_this.mockCephOutput));
       } else {
         console.log("fetching event data from the playbook run");
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getEvents"])(_this.playbookUUID, _this.props.svctoken).then(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getEvents"])(_this.playbookUUID).then(function (resp) {
           var response = JSON.parse(resp);
           var matchCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.settings.targetVersion) ? 2 : 1;
           console.log("Debug: Looking for " + matchCount + " job events in the playbook stream"); // process the events in reverse order, since what we're looking for is at the end of the run
@@ -22864,7 +22922,7 @@ function (_React$Component) {
 
             for (var _i = 0; _i < foundEvents.length; _i++) {
               var eventID = foundEvents[_i];
-              var promise = Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getJobEvent"])(_this.playbookUUID, eventID, _this.props.svctoken);
+              var promise = Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getJobEvent"])(_this.playbookUUID, eventID);
               events.push(promise);
             } // wait for all promises to resolve
 
@@ -22975,9 +23033,9 @@ function (_React$Component) {
       var vars = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["allVars"])(_this.state.settings);
       console.log("creating all.yml as " + JSON.stringify(vars));
       var chain = Promise.resolve();
-      var mons, mgrs, osds, rgws, iscsi;
+      var mons, mgrs, osds, rgws, iscsi, dashboards;
       chain = chain.then(function () {
-        return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('all', vars, _this.props.svctoken);
+        return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('all', vars);
       });
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
@@ -22993,12 +23051,12 @@ function (_React$Component) {
               mons = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["monsVars"])(_this.state.settings);
               console.log("mon vars " + JSON.stringify(mons));
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('mons', mons, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('mons', mons);
               });
               mgrs = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["mgrsVars"])(_this.state.settings);
               console.log("mgr vars " + JSON.stringify(mgrs));
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('mgrs', mgrs, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('mgrs', mgrs);
               });
               break;
 
@@ -23007,7 +23065,7 @@ function (_React$Component) {
               osds = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["osdsVars"])(_this.state.settings);
               console.log("osd vars " + JSON.stringify(osds));
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('osds', osds, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('osds', osds);
               });
               break;
 
@@ -23019,7 +23077,7 @@ function (_React$Component) {
               console.log("adding rgws yml");
               rgws = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["rgwsVars"])(_this.state.settings);
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('rgws', rgws, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('rgws', rgws);
               });
               break;
 
@@ -23027,7 +23085,15 @@ function (_React$Component) {
               console.log("adding iscsigws yml");
               iscsi = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["iscsiVars"])(_this.state.settings);
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('iscsigws', iscsi, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('iscsigws', iscsi);
+              });
+              break;
+
+            case "grafana-server":
+              console.log("adding dashboard.yml");
+              dashboards = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["dashboardVars"])(_this.state.settings);
+              chain = chain.then(function () {
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('dashboards', dashboards);
               });
               break;
           }
@@ -23062,7 +23128,7 @@ function (_React$Component) {
             if (host.osd) {
               var osd_metadata = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["hostVars"])(host, _this.state.settings.flashUsage);
               chain = chain.then(function () {
-                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeHostVars"])(host.hostname, 'osds', osd_metadata, _this.props.svctoken);
+                return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeHostVars"])(host.hostname, 'osds', osd_metadata);
               });
             }
           };
@@ -23156,7 +23222,7 @@ function (_React$Component) {
         }
 
         console.log("Attempting to start playbook " + playbookName);
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["runPlaybook"])(playbookName, varOverrides, _this.props.svctoken).then(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["runPlaybook"])(playbookName, varOverrides).then(function (resp) {
           var response = JSON.parse(resp);
 
           if (response.status == "STARTED") {
@@ -23215,7 +23281,7 @@ function (_React$Component) {
         }
       } else {
         // this is a real run
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getPlaybookState"])(_this.playbookUUID, _this.props.svctoken).then(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getPlaybookState"])(_this.playbookUUID).then(function (resp) {
           // process the response
           var response = JSON.parse(resp);
 
@@ -23478,7 +23544,7 @@ function (_React$Component) {
           for (var _iterator6 = allRoles[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
             var role = _step6.value;
 
-            if (role == 'ceph-grafana') {
+            if (role == 'grafana-server') {
               tmpRoleState['metrics'] = 'pending';
             } else {
               tmpRoleState[role] = 'pending';
@@ -23508,6 +23574,8 @@ function (_React$Component) {
           roleState: tmpRoleState,
           roleSequence: Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["cephAnsibleSequence"])(allRoles)
         };
+      } else {
+        return null;
       }
     }
   }]);
@@ -23536,9 +23604,10 @@ function (_React$Component2) {
       } else {
         var taskInfo;
         var timeStamp;
+        var taskRole = this.props.status.data.role || this.props.status.data.task_metadata.role;
 
-        if (this.props.status.data.role) {
-          taskInfo = '[ ' + this.props.status.data.role + ' ] ' + this.props.status.data.task;
+        if (taskRole) {
+          taskInfo = '[ ' + taskRole + ' ] ' + this.props.status.data.task;
         } else {
           taskInfo = this.props.status.data.task;
         }
@@ -23558,7 +23627,7 @@ function (_React$Component2) {
           className: "task-label bold-text"
         }, "Started:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, timeStamp)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           className: "task-label bold-text"
-        }, "Role:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, this.props.status.data.role)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+        }, "Role:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, taskRole)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           className: "task-label bold-text"
         }, "Pattern:"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", null, this.props.status.data.task_metadata.play_pattern)), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           className: "task-label bold-text"
@@ -23822,6 +23891,8 @@ function (_React$Component5) {
         return {
           roles: converted
         };
+      } else {
+        return null;
       }
     }
   }]);
@@ -23846,10 +23917,6 @@ function (_React$Component6) {
       var status;
 
       switch (this.props.state) {
-        case "pending":
-          status = "grey";
-          break;
-
         case "active":
           status = "blue";
           break;
@@ -23860,6 +23927,10 @@ function (_React$Component6) {
 
         case "failed":
           status = "red";
+          break;
+
+        default:
+          status = "grey";
           break;
       }
 
@@ -24224,7 +24295,7 @@ function (_React$Component) {
         });
 
         if (hostOKCount != _this.state.hosts.length) {
-          errMsgs.push("Hosts must be in an 'OK' state to continue");
+          errMsgs.push("All hosts must be in an 'OK' state to continue");
           console.log("Debug: hosts are " + JSON.stringify(_this.state.hosts));
         }
 
@@ -24312,10 +24383,9 @@ function (_React$Component) {
       });
 
       console.log("required ansible groups: " + rolesString);
-      var tokenString = _this.props.svctoken;
       var ansibleRoles;
       var createGroups = [];
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["getGroups"])(_this.props.svctoken).done(function (resp) {
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["getGroups"])().done(function (resp) {
         ansibleRoles = JSON.parse(resp)['data']['groups'];
       }).then(function () {
         console.log("existing roles from runner-service: " + ansibleRoles);
@@ -24325,7 +24395,7 @@ function (_React$Component) {
 
           if (!ansibleRoles.includes(groupName)) {
             // need to create a group
-            createGroups.push(Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addGroup"])(groupName, tokenString));
+            createGroups.push(Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addGroup"])(groupName));
           }
         }
       }).then(function () {
@@ -24350,7 +24420,7 @@ function (_React$Component) {
           var sequence = Promise.resolve();
           newHosts.forEach(function (hostName) {
             sequence = sequence.then(function () {
-              return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, rolesString, tokenString);
+              return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, rolesString);
             }).then(function (resp) {
               console.log(resp);
               var r = JSON.parse(resp);
@@ -24446,7 +24516,6 @@ function (_React$Component) {
 
       var that = _assertThisInitialized(_assertThisInitialized(_this));
 
-      var tokenString = _this.props.svctoken;
       var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([currentHosts[ptr]]);
 
       if (roleList.includes('mons')) {
@@ -24454,7 +24523,7 @@ function (_React$Component) {
         roleList.push('mgrs');
       }
 
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, roleList.join(','), tokenString).then(function (resp) {
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, roleList.join(',')).then(function (resp) {
         console.log("Add OK");
         var r = JSON.parse(resp);
         hostStatus = r.status;
@@ -24553,7 +24622,7 @@ function (_React$Component) {
         msgText: ''
       });
 
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, _this.props.svctoken);
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHostEntry", function (idx) {
@@ -24581,7 +24650,7 @@ function (_React$Component) {
       var delChain = Promise.resolve();
       groupsToRemove.forEach(function (group) {
         return delChain.then(function () {
-          return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteGroup"])(group, _this.props.svctoken);
+          return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteGroup"])(group);
         });
       });
       delChain.catch(function (err) {
@@ -24643,7 +24712,7 @@ function (_React$Component) {
       if (localState[idx].status == 'OK') {
         // OK state means we've added the host to the inventory, so we need
         // to delete from the inventory AND the UI state
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteHost"])(hostname, _this.props.svctoken).then(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteHost"])(hostname).then(function (resp) {
           _this.deleteHostEntry(idx);
         }).catch(function (error) {
           console.error("Error " + error + " deleting " + hostname);
@@ -25784,8 +25853,7 @@ function (_React$Component) {
         hosts: this.state.hosts,
         targetVersion: this.state.targetVersion,
         installType: this.state.installType,
-        clusterType: this.state.clusterType,
-        svctoken: this.props.svctoken
+        clusterType: this.state.clusterType
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_validatepage_jsx__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: this.page['validate'],
         action: this.nextHandler,
@@ -25794,8 +25862,7 @@ function (_React$Component) {
         clusterType: this.state.clusterType,
         installType: this.state.installType,
         osdType: this.state.osdType,
-        flashUsage: this.state.flashUsage,
-        svctoken: this.props.svctoken
+        flashUsage: this.state.flashUsage
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_networkpage_jsx__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: this.page['network'],
         action: this.nextHandler,
@@ -25813,8 +25880,7 @@ function (_React$Component) {
         prevPage: this.prevPageHandler,
         settings: this.state,
         deployHandler: this.deployHandler,
-        modalHandler: this.props.modalHandler,
-        svctoken: this.props.svctoken
+        modalHandler: this.props.modalHandler
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_infobar_jsx__WEBPACK_IMPORTED_MODULE_10__["default"], {
         info: this.infoText[this.state.pageNum] || ''
       }));
@@ -26325,8 +26391,8 @@ function (_React$Component) {
         this.clusterData['Hosts'] = props.config.hosts.length;
         var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["buildRoles"])(props.config.hosts);
 
-        if (roleList.includes('ceph-grafana')) {
-          roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["removeItem"])(roleList, 'ceph-grafana');
+        if (roleList.includes('grafana-server')) {
+          roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["removeItem"])(roleList, 'grafana-server');
         }
 
         this.clusterData['Roles'] = roleList.join(', ');
@@ -26692,7 +26758,7 @@ function (_React$Component) {
       var localState = JSON.parse(JSON.stringify(_this.state.hosts));
       var probeTotal = localState.length - Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["hostsWithRoleCount"])(localState, 'metrics');
 
-      if (!eventData.res.hasOwnProperty('data')) {
+      if (!eventData.hasOwnProperty('res') || !eventData.res.hasOwnProperty('data')) {
         console.log("Skipping " + eventHostname + ", no data returned");
       } else {
         var facts = eventData.res.data.summary_facts;
@@ -26762,7 +26828,7 @@ function (_React$Component) {
           _this.eventLookup[eventID] = "";
           console.log("processing " + eventID); // this.refs.validationMessage.forceUpdateHandler();
 
-          Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_6__["getJobEvent"])(playUUID, eventID, _this.props.svctoken).then(function (resp) {
+          Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_6__["getJobEvent"])(playUUID, eventID).then(function (resp) {
             var event = JSON.parse(resp); // ignore verbose type events
 
             if (event.data.event != "verbose") {
@@ -26862,14 +26928,14 @@ function (_React$Component) {
         deployment: _this.props.installType.toLowerCase()
       };
       console.log("playbook vars are:" + JSON.stringify(playbookVars));
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_6__["runPlaybook"])("checkrole.yml", playbookVars, _this.props.svctoken).then(function (resp) {
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_6__["runPlaybook"])("checkrole.yml", playbookVars).then(function (resp) {
         var response = JSON.parse(resp);
         console.log("playbook execution started :" + response.status);
         console.log("response object :" + JSON.stringify(response));
         _this.playUUID = response.data.play_uuid;
         console.log("tracking playbook with UUID :" + _this.playUUID);
         console.log("starting progress tracker");
-        Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["checkPlaybook"])(_this.playUUID, _this.props.svctoken, _this.updateProbeStatus, _this.probeComplete);
+        Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["checkPlaybook"])(_this.playUUID, _this.updateProbeStatus, _this.probeComplete);
       }).catch(function (e) {
         var errorMsg;
         console.error("Problem starting the playbook: response was - " + JSON.stringify(e));
@@ -26914,9 +26980,8 @@ function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateRole", function (hostname, role, checked) {
       console.log("updating host " + hostname + " details for role " + role + " status of " + checked);
-      var svctoken = _this.props.svctoken;
 
-      var localState = _this.state.hosts.splice(0);
+      var localState = _this.state.hosts.slice(0);
 
       if (checked) {
         var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["getHost"])(localState, hostname);
@@ -26939,7 +27004,7 @@ function (_React$Component) {
         }
       }
 
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked, svctoken);
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "toggleAllRows", function (event) {
@@ -27130,7 +27195,7 @@ function (_React$Component) {
         var _loop = function _loop() {
           var hostName = hostsToDelete[_i];
           chain = chain.then(function () {
-            return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_6__["deleteHost"])(hostName, _this.props.svctoken);
+            return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_6__["deleteHost"])(hostName);
           });
         };
 
@@ -27599,9 +27664,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/nextbutton.jsx */ "./src/components/common/nextbutton.jsx");
 /* harmony import */ var _common_modal_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./common/modal.jsx */ "./src/components/common/modal.jsx");
-/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_3__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27626,7 +27690,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
-
 var WelcomePage =
 /*#__PURE__*/
 function (_React$Component) {
@@ -27645,24 +27708,6 @@ function (_React$Component) {
       _this.setState({
         modalVisible: false,
         modalContent: ''
-      });
-    });
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkRunnerAvailable", function () {
-      console.log("checking the ansible-runner-service API is there");
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_3__["checkAPI"])().then(function (resp) {
-        console.log("API Ok, so let's get started!");
-
-        _this.props.action();
-      }).catch(function (error) {
-        console.log("error " + error.message);
-        var errMsg = "Unable to access the ansible-runner-service API. Please check that the service is started, and retry.";
-
-        _this.setState({
-          modalVisible: true,
-          modalContent: errMsg,
-          modalTitle: "Environment Error"
-        });
       });
     });
 
@@ -27703,7 +27748,7 @@ function (_React$Component) {
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__["UIButton"], {
         primary: true,
         btnLabel: "Environment \u203A",
-        action: this.checkRunnerAvailable
+        action: this.props.action
       })));
     }
   }]);
@@ -27759,7 +27804,7 @@ document.addEventListener("DOMContentLoaded", function () {
 /*!************************************!*\
   !*** ./src/services/ansibleMap.js ***!
   \************************************/
-/*! exports provided: hostVars, osdsVars, allVars, monsVars, mgrsVars, rgwsVars, iscsiVars, cephAnsibleSequence */
+/*! exports provided: hostVars, osdsVars, allVars, dashboardVars, monsVars, mgrsVars, rgwsVars, iscsiVars, cephAnsibleSequence */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -27767,6 +27812,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hostVars", function() { return hostVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "osdsVars", function() { return osdsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "allVars", function() { return allVars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dashboardVars", function() { return dashboardVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "monsVars", function() { return monsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mgrsVars", function() { return mgrsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgwsVars", function() { return rgwsVars; });
@@ -27944,11 +27990,7 @@ function allVars(vars) {
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
-  forYML.ip_version = vars.networkType;
-  forYML.disk_list = {
-    rc: 0
-  }; // workaround for osd_run_sh template error?
-  // wishlist for a simplified rgw install
+  forYML.ip_version = vars.networkType; // wishlist for a simplified rgw install
   // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
   // if (rgwHostIdx.length > 0) {
   //     // Additional OSD tuning for Object workloads
@@ -27966,6 +28008,11 @@ function allVars(vars) {
   //     }
   // }
 
+  return forYML;
+}
+function dashboardVars(vars) {
+  var forYML = {};
+  forYML.grafana_server_group_name = "grafana-server";
   return forYML;
 }
 function monsVars(vars) {
@@ -28043,7 +28090,7 @@ function iscsiVars(vars) {
 function cephAnsibleSequence(roles) {
   // the goal here it to align to the execution sequence of the ceph-ansible playbook
   // roles coming in will be suffixed with 's', since thats the ceph-ansible group/role name
-  // input  : ['mons','rgws','osds','iscsigws', 'ceph-grafana']
+  // input  : ['mons','rgws','osds','iscsigws', 'grafana-server']
   // output : ['mon','mgr','osd','rgw','iscsi-gw', 'grafana']
   // FIXME: iscsi is not tested/validated at the moment
   console.log("Debug: roles to convert to ansible sequence are : " + JSON.stringify(roles));
@@ -28057,7 +28104,7 @@ function cephAnsibleSequence(roles) {
       var r = _step3.value;
 
       switch (r) {
-        case "ceph-grafana":
+        case "grafana-server":
           rolesIn.push('grafana');
           break;
 
@@ -28143,6 +28190,12 @@ var http = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.http({
   "address": apiHost,
   "port": apiPort,
   "tls": {
+    "certificate": {
+      "file": "/etc/ansible-runner-service/certs/client/client.crt"
+    },
+    "key": {
+      "file": "/etc/ansible-runner-service/certs/client/client.key"
+    },
     "validate": false // localhost isn't tls validated anyway
 
   }
@@ -28152,33 +28205,28 @@ function now() {
   var t = new Date();
   return t.toString().split(" ")[4] + "," + t.getMilliseconds();
 }
-function addGroup(groupName, svcToken) {
+function addGroup(groupName) {
   console.log("requesting new group " + groupName + " @ " + now());
-  var promise = http.post('/api/v1/groups/' + groupName, null, {
-    Authorization: svcToken
-  });
+  var promise = http.post('/api/v1/groups/' + groupName); //, null, { Authorization: svcToken });
+
   return promise;
 }
-function deleteGroup(groupName, svcToken) {
+function deleteGroup(groupName) {
   console.log("attempting to remove " + groupName + " @ " + now());
   var url = "/api/v1/groups/" + groupName;
   return http.request({
     path: url,
     body: {},
-    method: "delete",
-    headers: {
-      Authorization: svcToken
-    }
+    method: "DELETE"
   });
 }
-function getGroups(svcToken) {
+function getGroups() {
   console.log("fetching defined groups @ " + now());
-  var promise = http.get('/api/v1/groups', null, {
-    Authorization: svcToken
-  });
+  var promise = http.get('/api/v1/groups'); //, null, { Authorization: svcToken });
+
   return promise;
 }
-function addHost(hostName, groupNames, svcToken) {
+function addHost(hostName, groupNames) {
   console.log("Adding host to the ansible inventory @ " + now());
   var groups = groupNames.replace(',', '*').split('*');
   var groupString = groups[0];
@@ -28187,120 +28235,95 @@ function addHost(hostName, groupNames, svcToken) {
     groupString += '?others=' + groups[1];
   }
 
-  var url = 'api/v1/hosts/' + hostName + '/groups/' + groupString;
-  var promise = http.post(url, null, {
-    Authorization: svcToken
-  });
+  var url = '/api/v1/hosts/' + hostName + '/groups/' + groupString;
+  var promise = http.post(url); //, null, { Authorization: svcToken });
+
   return promise;
 }
-function deleteHost(hostName, svcToken) {
+function deleteHost(hostName) {
   console.log("removing " + hostName + " from the inventory @ " + now());
   var url = "/api/v1/hosts/" + hostName;
   return http.request({
     path: url,
     body: {},
-    method: "delete",
-    headers: {
-      Authorization: svcToken
-    }
+    method: "DELETE"
   });
 }
-function changeHost(hostname, role, checked, svctoken) {
+function changeHost(hostname, role, checked) {
   console.log("changeHost: changing host state for " + hostname + " role=" + role + " @ " + now());
 
   if (!checked) {
     if (role == 'mons') {
       console.log("requesting mgr to be removed");
-      return removeRole(hostname, 'mgrs', svctoken).then(function (_) {
-        return removeRole(hostname, role, svctoken);
+      return removeRole(hostname, 'mgrs').then(function (_) {
+        return removeRole(hostname, role);
       });
     } else {
-      return removeRole(hostname, role, svctoken);
+      return removeRole(hostname, role);
     }
   } else {
     if (role == 'mons') {
       console.log("requesting mons role");
-      return addRole(hostname, 'mgrs', svctoken).then(function (_) {
-        return addRole(hostname, role, svctoken);
+      return addRole(hostname, 'mgrs').then(function (_) {
+        return addRole(hostname, role);
       });
     } else {
-      return addRole(hostname, role, svctoken);
+      return addRole(hostname, role);
     }
   }
 }
-function addRole(hostName, roleName, svcToken) {
+function addRole(hostName, roleName) {
   console.log("Adding role " + roleName + " to " + hostName + " @ " + now());
   var url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
-  return http.post(url, null, {
-    Authorization: svcToken
-  });
+  return http.post(url); //, null, { Authorization: svcToken });
 }
-function removeRole(hostName, roleName, svcToken) {
+function removeRole(hostName, roleName) {
   console.log("Removing role " + roleName + " from " + hostName + " @ " + now());
   var url = "/api/v1/hosts/" + hostName + "/groups/" + roleName;
   return http.request({
     path: url,
     body: {},
-    method: "delete",
-    headers: {
-      Authorization: svcToken
-    }
+    method: "DELETE"
   });
 }
-function runPlaybook(playbookName, data, svcToken) {
+function runPlaybook(playbookName, data) {
   console.log("starting playbook " + playbookName + " @ " + now());
   var url = "/api/v1/playbooks/" + playbookName;
-  return http.post(url, data, {
-    Authorization: svcToken
-  });
+  return http.post(url, data); //, { Authorization: svcToken });
 }
-function getPlaybookState(playUUID, svcToken) {
+function getPlaybookState(playUUID) {
   console.log("checking playbook with UUID " + playUUID + " @ " + now());
   var url = "/api/v1/playbooks/" + playUUID;
-  return http.get(url, null, {
-    Authorization: svcToken
-  });
+  return http.get(url); //, null, { Authorization: svcToken });
 }
-function getTaskEvents(playUUID, taskName, svcToken) {
+function getTaskEvents(playUUID, taskName) {
   console.log("looking for job events");
   var url = "/api/v1/jobs/" + playUUID + "/events?task=" + taskName;
-  return http.get(url, null, {
-    Authorization: svcToken
-  });
+  return http.get(url); //, null, { Authorization: svcToken });
 }
-function getEvents(playUUID, svcToken) {
+function getEvents(playUUID) {
   console.log("fetching events from play with UUID " + playUUID);
   var url = "/api/v1/jobs/" + playUUID + "/events";
-  return http.get(url, null, {
-    Authorization: svcToken
-  });
+  return http.get(url); //, null, {Authorization: svcToken});
 }
-function getJobEvent(playUUID, eventUUID, svcToken) {
+function getJobEvent(playUUID, eventUUID) {
   console.log("fetching event ID " + eventUUID);
   var url = "/api/v1/jobs/" + playUUID + "/events/" + eventUUID;
-  return http.get(url, null, {
-    Authorization: svcToken
-  });
+  return http.get(url); //, null, {Authorization: svcToken});
 }
-function storeGroupVars(groupName, vars, svcToken) {
+function storeGroupVars(groupName, vars) {
   console.log("Storing group vars for group " + groupName + " @ " + now());
   var url = "/api/v1/groupvars/" + groupName;
-  return http.post(url, vars, {
-    Authorization: svcToken
-  });
+  return http.post(url, vars); //, { Authorization: svcToken });
 }
-function storeHostVars(hostName, groupName, vars, svcToken) {
+function storeHostVars(hostName, groupName, vars) {
   console.log("storing host vars for host " + hostName + " @ " + now());
   var url = "/api/v1/hostvars/" + hostName + "/groups/" + groupName;
-  return http.post(url, vars, {
-    Authorization: svcToken
-  });
+  return http.post(url, vars); //, { Authorization: svcToken });
 }
-function checkAPI(svcToken) {
+function checkAPI() {
   console.log("checking API is there @ " + now());
-  return http.get("api", null, {
-    Authorization: svcToken
-  });
+  return http.get("/api"); // , null, {Authorization: svcToken});
 }
 
 /***/ }),
@@ -28437,7 +28460,7 @@ function buildRoles(hosts) {
         var ansibleGroup = convertRole(roleName);
 
         if (host[roleName] && !roleList.includes(ansibleGroup)) {
-          roleList.push(convertRole(roleName));
+          roleList.push(ansibleGroup);
         }
       });
     };
@@ -28497,7 +28520,7 @@ function convertRole(role) {
       break;
 
     case "metrics":
-      role = "ceph-grafana";
+      role = "grafana-server";
       break;
 
     case "grafana":
@@ -28514,7 +28537,7 @@ function convertRole(role) {
 }
 function getHost(hosts, hostname) {
   /* return the host object from the given hosts array */
-  console.log("scanning for " + hostname);
+  console.log("scanning for " + hostname + " in " + JSON.stringify(hosts));
 
   for (var i = 0; i < hosts.length; i++) {
     console.log("checking .. " + JSON.stringify(hosts[i]));
@@ -28611,10 +28634,12 @@ function hostsWithRole(hosts, role) {
   console.log("there are " + hostIndices.length + " hosts with the role " + role);
   return hostIndices;
 }
-function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
+function toggleHostRole(hosts, callback, hostname, role, checked) {
   // change roles for a host
   // Used in hostspage and validatepage
+  console.log("Debug: toggle host called for role " + role);
   var ansibleRole = convertRole(role);
+  console.log("debug: " + role + " = " + ansibleRole);
   console.log("processing against a hosts array of " + JSON.stringify(hosts));
   var groupRemoval = false;
 
@@ -28647,7 +28672,7 @@ function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
   if (!groupRemoval) {
     var _loop2 = function _loop2(g) {
       groupChain = groupChain.then(function () {
-        return Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["addGroup"])(groups[g], svctoken);
+        return Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["addGroup"])(groups[g]);
       });
     };
 
@@ -28658,7 +28683,7 @@ function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
 
   console.log("DEBUG toggleHostRole - groups are" + JSON.stringify(groups));
   groupChain.then(function () {
-    Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["changeHost"])(hostname, ansibleRole, checked, svctoken).then(function (resp) {
+    Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["changeHost"])(hostname, ansibleRole, checked).then(function (resp) {
       console.log("changeHost call completed, updating internal host information"); // console.log("Updated host entry in inventory");
       // console.log("BEFORE hosts look like this " + JSON.stringify(hosts));
 
@@ -28693,7 +28718,7 @@ function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
         var _loop3 = function _loop3(i) {
           console.log("Issuing delete for group " + groups[i]);
           chain = chain.then(function () {
-            return Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["deleteGroup"])(groups[i], svctoken);
+            return Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["deleteGroup"])(groups[i]);
           }).then(function () {});
         };
 
@@ -28708,29 +28733,32 @@ function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
           console.log("failed to remove group: " + err);
         });
       }
+    }).catch(function (e) {
+      // Problem returned from the changeHost request..blocked method?
+      console.error("Problem making a changeHost request: " + JSON.stringify(e));
     });
   });
   groupChain.catch(function (err) {
     console.log("problem adding groups to the inventory: " + err);
   });
 }
-function checkPlaybook(playUUID, svctoken, activeCB, finishedCB) {
+function checkPlaybook(playUUID, activeCB, finishedCB) {
   console.log("checking status");
-  Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getPlaybookState"])(playUUID, svctoken).then(function (resp) {
+  Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getPlaybookState"])(playUUID).then(function (resp) {
     var response = JSON.parse(resp);
     console.log("- " + JSON.stringify(response));
 
     if (response.msg == "running") {
       console.log("fetching event info");
-      Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getTaskEvents"])(playUUID, "CEPH_CHECK_ROLE", svctoken).then(function (resp) {
+      Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getTaskEvents"])(playUUID, "CEPH_CHECK_ROLE").then(function (resp) {
         activeCB(JSON.parse(resp), playUUID);
         setTimeout(function () {
-          checkPlaybook(playUUID, svctoken, activeCB, finishedCB);
+          checkPlaybook(playUUID, activeCB, finishedCB);
         }, 2000);
       });
     } else {
       console.log("Playbook ended : " + response.msg);
-      Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getTaskEvents"])(playUUID, "CEPH_CHECK_ROLE", svctoken).then(function (resp) {
+      Object(_apicalls_js__WEBPACK_IMPORTED_MODULE_1__["getTaskEvents"])(playUUID, "CEPH_CHECK_ROLE").then(function (resp) {
         activeCB(JSON.parse(resp), playUUID);
         finishedCB(response.msg);
       });
@@ -28878,7 +28906,7 @@ function collocationOK(currentRoles, newRole, installType, clusterType) {
   console.log("current roles " + currentRoles);
   console.log("new role is " + newRole);
 
-  if (newRole == 'metrics' && currentRoles.length > 0 || currentRoles.includes('ceph-grafana')) {
+  if (newRole == 'metrics' && currentRoles.length > 0 || currentRoles.includes('grafana-server')) {
     console.log("request for metrics on a host with other ceph roles is denied");
     return false;
   }

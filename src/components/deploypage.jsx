@@ -3,7 +3,7 @@ import React from 'react';
 
 import { UIButton } from './common/nextbutton.jsx';
 import '../app.scss';
-import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, iscsiVars, cephAnsibleSequence } from '../services/ansibleMap.js';
+import { allVars, osdsVars, monsVars, mgrsVars, hostVars, rgwsVars, iscsiVars, cephAnsibleSequence, dashboardVars } from '../services/ansibleMap.js';
 import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents, getJobEvent } from '../services/apicalls.js';
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
@@ -89,7 +89,7 @@ export class DeployPage extends React.Component {
             let allRoles = buildRoles(nextProps.settings.hosts);
             let tmpRoleState = {};
             for (let role of allRoles) {
-                if (role == 'ceph-grafana') {
+                if (role == 'grafana-server') {
                     tmpRoleState['metrics'] = 'pending';
                 } else {
                     tmpRoleState[role] = 'pending';
@@ -102,6 +102,8 @@ export class DeployPage extends React.Component {
                 roleState: tmpRoleState,
                 roleSequence: cephAnsibleSequence(allRoles)
             };
+        } else {
+            return null;
         }
     }
 
@@ -109,8 +111,22 @@ export class DeployPage extends React.Component {
         let currentState = this.state.roleState;
         let changesMade = false;
         let eventRoleName;
-        // all ceph-ansible roles are prefixed by ceph-
-        let shortName = eventData.data.role.replace("ceph-", ''); // eg. ceph-mon or ceph-grafana
+        let shortName;
+
+        // Most roles are prefixed by ceph- but we need to handle the exceptions too
+        let taskRole = (eventData.data.role || eventData.data.task_metadata.role);
+        switch (taskRole) {
+        case "grafana-server":
+            shortName = 'grafana';
+            break;
+        default:
+            if (taskRole) {
+                shortName = taskRole.replace("ceph-", "");
+            } else {
+                shortName = '';
+            }
+            break;
+        }
 
         eventRoleName = convertRole(shortName);
 
@@ -208,7 +224,7 @@ export class DeployPage extends React.Component {
             this.props.modalHandler("Ceph Cluster Status", this.formattedOutput(this.mockCephOutput));
         } else {
             console.log("fetching event data from the playbook run");
-            getEvents(this.playbookUUID, this.props.svctoken)
+            getEvents(this.playbookUUID)
                     .then((resp) => {
                         let response = JSON.parse(resp);
                         let matchCount = (versionSupportsMetrics(this.props.settings.targetVersion)) ? 2 : 1;
@@ -232,7 +248,7 @@ export class DeployPage extends React.Component {
                             // build iterable containing all the promises
                             let events = [];
                             for (let eventID of foundEvents) {
-                                let promise = getJobEvent(this.playbookUUID, eventID, this.props.svctoken);
+                                let promise = getJobEvent(this.playbookUUID, eventID);
                                 events.push(promise);
                             }
                             // wait for all promises to resolve
@@ -295,8 +311,8 @@ export class DeployPage extends React.Component {
         var vars = allVars(this.state.settings);
         console.log("creating all.yml as " + JSON.stringify(vars));
         var chain = Promise.resolve();
-        let mons, mgrs, osds, rgws, iscsi;
-        chain = chain.then(() => storeGroupVars('all', vars, this.props.svctoken));
+        let mons, mgrs, osds, rgws, iscsi, dashboards;
+        chain = chain.then(() => storeGroupVars('all', vars));
 
         for (let roleGroup of roleList) {
             switch (roleGroup) {
@@ -304,16 +320,16 @@ export class DeployPage extends React.Component {
                 console.log("adding mons + mgrs");
                 mons = monsVars(this.state.settings);
                 console.log("mon vars " + JSON.stringify(mons));
-                chain = chain.then(() => storeGroupVars('mons', mons, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('mons', mons));
                 mgrs = mgrsVars(this.state.settings);
                 console.log("mgr vars " + JSON.stringify(mgrs));
-                chain = chain.then(() => storeGroupVars('mgrs', mgrs, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('mgrs', mgrs));
                 break;
             case "osds":
                 console.log("adding osds");
                 osds = osdsVars(this.state.settings);
                 console.log("osd vars " + JSON.stringify(osds));
-                chain = chain.then(() => storeGroupVars('osds', osds, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('osds', osds));
                 break;
             case "mdss":
                 console.log("adding mds yml - Just using ceph-ansible defaults...FIXME?");
@@ -321,12 +337,17 @@ export class DeployPage extends React.Component {
             case "rgws":
                 console.log("adding rgws yml");
                 rgws = rgwsVars(this.state.settings);
-                chain = chain.then(() => storeGroupVars('rgws', rgws, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('rgws', rgws));
                 break;
             case "iscsigws":
                 console.log("adding iscsigws yml");
                 iscsi = iscsiVars(this.state.settings);
-                chain = chain.then(() => storeGroupVars('iscsigws', iscsi, this.props.svctoken));
+                chain = chain.then(() => storeGroupVars('iscsigws', iscsi));
+                break;
+            case "grafana-server":
+                console.log("adding dashboards.yml");
+                dashboards = dashboardVars(this.state.settings);
+                chain = chain.then(() => storeGroupVars('dashboards', dashboards));
                 break;
             }
         }
@@ -337,7 +358,7 @@ export class DeployPage extends React.Component {
             for (let host of this.state.settings.hosts) {
                 if (host.osd) {
                     let osd_metadata = hostVars(host, this.state.settings.flashUsage);
-                    chain = chain.then(() => storeHostVars(host.hostname, 'osds', osd_metadata, this.props.svctoken));
+                    chain = chain.then(() => storeHostVars(host.hostname, 'osds', osd_metadata));
                 }
             }
         }
@@ -396,7 +417,7 @@ export class DeployPage extends React.Component {
                 playbookName = 'site.yml';
             }
             console.log("Attempting to start playbook " + playbookName);
-            runPlaybook(playbookName, varOverrides, this.props.svctoken)
+            runPlaybook(playbookName, varOverrides)
                     .then((resp) => {
                         let response = JSON.parse(resp);
                         if (response.status == "STARTED") {
@@ -444,7 +465,7 @@ export class DeployPage extends React.Component {
             }
         } else {
             // this is a real run
-            getPlaybookState(this.playbookUUID, this.props.svctoken)
+            getPlaybookState(this.playbookUUID)
                     .then((resp) => {
                         // process the response
                         let response = JSON.parse(resp);
@@ -589,8 +610,9 @@ export class TaskStatus extends React.Component {
         } else {
             let taskInfo;
             let timeStamp;
-            if (this.props.status.data.role) {
-                taskInfo = '[ ' + this.props.status.data.role + ' ] ' + this.props.status.data.task;
+            let taskRole = (this.props.status.data.role || this.props.status.data.task_metadata.role);
+            if (taskRole) {
+                taskInfo = '[ ' + taskRole + ' ] ' + this.props.status.data.task;
             } else {
                 taskInfo = this.props.status.data.task;
             }
@@ -611,7 +633,7 @@ export class TaskStatus extends React.Component {
                         <span className="task-label bold-text">Started:</span><span>{timeStamp}</span>
                     </div>
                     <div>
-                        <span className="task-label bold-text">Role:</span><span>{this.props.status.data.role}</span>
+                        <span className="task-label bold-text">Role:</span><span>{taskRole}</span>
                     </div>
                     <div>
                         <span className="task-label bold-text">Pattern:</span><span>{this.props.status.data.task_metadata.play_pattern}</span>
@@ -809,6 +831,8 @@ export class BreadCrumbStatus extends React.Component {
             console.log("defining the role sequence for the breadcrumbs");
             let converted = nextProps.sequence.map((role, i) => { return convertRole(role) });
             return {roles: converted};
+        } else {
+            return null;
         }
     }
 
@@ -836,9 +860,6 @@ export class Breadcrumb extends React.Component {
         console.log("rendering a breadcrumb");
         var status;
         switch (this.props.state) {
-        case "pending":
-            status = "grey";
-            break;
         case "active":
             status = "blue";
             break;
@@ -847,6 +868,9 @@ export class Breadcrumb extends React.Component {
             break;
         case "failed":
             status = "red";
+            break;
+        default:
+            status = "grey";
             break;
         }
 

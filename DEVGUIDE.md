@@ -45,8 +45,8 @@ Another gotcha to be aware of is the async nature of component state itself. Sta
 The playbook that ceph-ansible runs processes the roles in a specific sequence, so to implement a breadcrumb trail following the installation process the
 code in ansibleMap/cephAnsibleSequence arranges the chosen roles from the host definition in a sequence compatible with the install flow. Once we have this sequence we can check the role in a tasks output to indicate whereabouts we are in the installation process, giving us the breadcrumb effect.  
 
-The actual flow from ceph-ansible (May 2019) is as follows;  
-mons > mgrs > osds > mdss > rgws > nfs > rbdmirrors > clients > iscsigws > ceph-grafana (metrics)  
+The actual flow from ceph-ansible (June 2019) is as follows;  
+mons > mgrs > osds > mdss > rgws > nfs > rbdmirrors > clients > iscsigws > grafana-server (metrics)  
 
 The main code responsible for tracking is the setRoleState function in the DeployPage component.  
 
@@ -107,12 +107,13 @@ Here's an example of the hosts array, that holds host objects.
 
 
 ## External Files  
-The app makes use of 2 files that are read from the hosts local filesystem during the initial load of the app.jsx code.  
-`/etc/ansible-runner-service/svctoken`  
-This is the jwt created for local access to the ansible runner service API endpoint. The token is created by the ansible runner service, and can only be used for 127.0.0.1 api calls - but by using the token the cockpit code doesn’t have to worry about login credentials and token expiration.
-  
-***NB.** this will change in the next couple of weeks as the ansible-runner-server replaces JWT with mutual TLS auth (courtesy of nginx)*
-  
+The app makes use of 3 files that are read from the hosts local filesystem during the initial load of the app.jsx code.  
+
+`/etc/ansible-runner-service/certs/client/client.crt`  
+`/etc/ansible-runner-service/certs/client/client.key`  
+These are the client certificate files that provide TLS mutual auth to the ansible runner service. If these files are missing, app.jsx flags an
+ error and prevents the rest of the application components from loading.
+   
 `/var/lib/cockpit/ceph-installer/defaults.json`  
 The environment page uses a set of defaults for installation source, osd type etc. These defaults can be overridden by supplying a defaults.json file that declares these variables. App.jsx attempts to read the defaults.json file, and if it’s found and valid it will override your settings with the application defaults (defined in app.jsx)
   
@@ -159,3 +160,34 @@ ln -s <dist directory> ceph-installer
 The app is built by webpack, and the repo provides a `Makefile` courtesy of the cockpit plugin starter kit. These pieces make rebuilding the application very simple...just run `make`!.  
   
 Once make completes, you’ll have the application artifacts compiled into the ‘dist’ folder. As long as your cockpit environment can see this folder, you’re good to go.  
+
+## Debuging from the browsers console log
+### Startup
+When the app loads into cockpit, it first verifies the environment is set up correctly. In the client's browser log you should see the following events
+- client crt file accessible (should be in /etc/ansible-runner-service/certs/client/)
+- client key file accessible (should be in /etc/ansible-runner-service/certs/client/)
+- API responded and ready (this is a call to the /api endpoint on port 5001 of the cockpit host)
+
+If you see the above messages, all is right with the world. The installationsteps page will load fully and populate the child pages.  
+
+Missing client files indicate that the generate_certs.sh script hasn't been run, or the locations/names of the files has been changed by the user.
+API access issues could relate to the runner-service container not running, or access to the port is blocked by the firewall.
+
+The startup also attempts to apply and overrides to the defaults set in the code. If there is a valid defaults.json (it must be JSON) you should see the
+ the following
+```
+ Overrides are : {"clusterType":"Development/POC","sourceType":"Community","targetVersion":"14 (Nautilus)"}
+ Defaults are : {"iscsiTargetName":"iqn.2003-01.com.redhat.iscsi-gw:ceph-igw","sourceType":"Community","targetVersion":"14 (Nautilus)","clusterType":"Development/POC","installType":"Container","networkType":"ipv4","osdType":"Bluestore","osdMode":"None","flashUsage":"Journals/Logs"}
+```  
+So if you see unexpected settings in the Environment page, check that the defaults override file is set up correctly. 
+
+
+
+### Playbook execution
+The console log will show the play UUID of the executing playbook which will correspond to a `/usr/share/ansible-runner-service/artifacts/<playUUID>`
+This directory will hold a subdir called job_events which correspond to all the tasks. Other files of interest are rc, status and stdout.  
+- rc ... will show the return code of the run
+- stdout .. contains all the content that would have been seen at the terminal from a run at the CLI
+- status .. text description - showing wither successful, failed or canceled.
+
+When playbooks run, the UI polls the events API endpoint every 2 seconds. This interval is hardcoded.

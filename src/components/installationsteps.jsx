@@ -173,8 +173,7 @@ export class InstallationSteps extends React.Component {
                         hosts={this.state.hosts}
                         targetVersion={this.state.targetVersion}
                         installType={this.state.installType}
-                        clusterType={this.state.clusterType}
-                        svctoken={this.props.svctoken} />
+                        clusterType={this.state.clusterType} />
                     <ValidatePage
                         className={this.page['validate']}
                         action={this.nextHandler}
@@ -183,8 +182,7 @@ export class InstallationSteps extends React.Component {
                         clusterType={this.state.clusterType}
                         installType={this.state.installType}
                         osdType={this.state.osdType}
-                        flashUsage={this.state.flashUsage}
-                        svctoken={this.props.svctoken} />
+                        flashUsage={this.state.flashUsage} />
                     <NetworkPage
                         className={this.page['network']}
                         action={this.nextHandler}
@@ -202,8 +200,7 @@ export class InstallationSteps extends React.Component {
                         prevPage={this.prevPageHandler}
                         settings={this.state}
                         deployHandler={this.deployHandler}
-                        modalHandler={this.props.modalHandler}
-                        svctoken={this.props.svctoken} />
+                        modalHandler={this.props.modalHandler} />
                 </div>
                 <InfoBar
                      info={this.infoText[this.state.pageNum] || ''} />

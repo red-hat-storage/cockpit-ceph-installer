@@ -27,7 +27,7 @@ export function buildRoles(hosts) {
         validRoles.forEach(function(roleName, index, array) {
             let ansibleGroup = convertRole(roleName);
             if (host[roleName] && !roleList.includes(ansibleGroup)) {
-                roleList.push(convertRole(roleName));
+                roleList.push(ansibleGroup);
             }
         });
     }
@@ -65,7 +65,7 @@ export function convertRole(role) {
         role = 'iscsi';
         break;
     case "metrics":
-        role = "ceph-grafana";
+        role = "grafana-server";
         break;
     case "grafana":
         // used by deploypage
@@ -80,7 +80,7 @@ export function convertRole(role) {
 
 export function getHost(hosts, hostname) {
     /* return the host object from the given hosts array */
-    console.log("scanning for " + hostname);
+    console.log("scanning for " + hostname + " in " + JSON.stringify(hosts));
 
     for (let i = 0; i < hosts.length; i++) {
         console.log("checking .. " + JSON.stringify(hosts[i]));
@@ -148,11 +148,12 @@ export function hostsWithRole(hosts, role) {
     return hostIndices;
 }
 
-export function toggleHostRole(hosts, callback, hostname, role, checked, svctoken) {
+export function toggleHostRole(hosts, callback, hostname, role, checked) {
     // change roles for a host
     // Used in hostspage and validatepage
-
+    console.log("Debug: toggle host called for role " + role);
     let ansibleRole = convertRole(role);
+    console.log("debug: " + role + " = " + ansibleRole);
     console.log("processing against a hosts array of " + JSON.stringify(hosts));
     var groupRemoval = false;
 
@@ -180,13 +181,13 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
 
     if (!groupRemoval) {
         for (let g = 0; g < groups.length; g++) {
-            groupChain = groupChain.then(() => addGroup(groups[g], svctoken));
+            groupChain = groupChain.then(() => addGroup(groups[g]));
         }
     }
     console.log("DEBUG toggleHostRole - groups are" + JSON.stringify(groups));
     groupChain
             .then(() => {
-                changeHost(hostname, ansibleRole, checked, svctoken)
+                changeHost(hostname, ansibleRole, checked)
                         .then((resp) => {
                             console.log("changeHost call completed, updating internal host information");
                             // console.log("Updated host entry in inventory");
@@ -214,7 +215,7 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
                                 let chain = Promise.resolve();
                                 for (let i = 0; i < groups.length; i++) {
                                     console.log("Issuing delete for group " + groups[i]);
-                                    chain = chain.then(() => deleteGroup(groups[i], svctoken))
+                                    chain = chain.then(() => deleteGroup(groups[i]))
                                             .then(() => {});
                                 }
                                 chain.then(() => {
@@ -225,6 +226,10 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
                                     console.log("failed to remove group: " + err);
                                 });
                             }
+                        })
+                        .catch(e => {
+                            // Problem returned from the changeHost request..blocked method?
+                            console.error("Problem making a changeHost request: " + JSON.stringify(e));
                         });
             });
     groupChain.catch(err => {
@@ -232,24 +237,24 @@ export function toggleHostRole(hosts, callback, hostname, role, checked, svctoke
     });
 }
 
-export function checkPlaybook(playUUID, svctoken, activeCB, finishedCB) {
+export function checkPlaybook(playUUID, activeCB, finishedCB) {
     console.log("checking status");
-    getPlaybookState(playUUID, svctoken)
+    getPlaybookState(playUUID)
             .then((resp) => {
                 let response = JSON.parse(resp);
                 console.log("- " + JSON.stringify(response));
                 if (response.msg == "running") {
                     console.log("fetching event info");
-                    getTaskEvents(playUUID, "CEPH_CHECK_ROLE", svctoken)
+                    getTaskEvents(playUUID, "CEPH_CHECK_ROLE")
                             .then((resp) => {
                                 activeCB(JSON.parse(resp), playUUID);
                                 setTimeout(() => {
-                                    checkPlaybook(playUUID, svctoken, activeCB, finishedCB);
+                                    checkPlaybook(playUUID, activeCB, finishedCB);
                                 }, 2000);
                             });
                 } else {
                     console.log("Playbook ended : " + response.msg);
-                    getTaskEvents(playUUID, "CEPH_CHECK_ROLE", svctoken)
+                    getTaskEvents(playUUID, "CEPH_CHECK_ROLE")
                             .then((resp) => {
                                 activeCB(JSON.parse(resp), playUUID);
                                 finishedCB(response.msg);
@@ -371,7 +376,7 @@ export function collocationOK(currentRoles, newRole, installType, clusterType) {
     console.log("checking for collocation violations");
     console.log("current roles " + currentRoles);
     console.log("new role is " + newRole);
-    if ((newRole == 'metrics' && currentRoles.length > 0) || (currentRoles.includes('ceph-grafana'))) {
+    if ((newRole == 'metrics' && currentRoles.length > 0) || (currentRoles.includes('grafana-server'))) {
         console.log("request for metrics on a host with other ceph roles is denied");
         return false;
     }
