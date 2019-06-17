@@ -1,20 +1,25 @@
 # cockpit-ceph-installer
-This project aims to provide a simple means to deploy a Ceph cluster by 'teaming up' with the ansible-runner and runner-service projects. The goal is to use the cockpit UI to gather all the settings necessary to drive a ceph-ansible playbook to install your Ceph cluster. It also uses the ceph-check-role ansible module to handle the validation of role against host configuration.
+This project aims to provide a simple means to deploy a Ceph cluster by 'teaming up' with the [ansible-runner](https://github.com/ansible/ansible-runner) and [ansible-runner-service](https://github.com/ansible/ansible-runner-service) projects. The aim of the project 
+is to use the cockpit UI to validate the intended hosts are suitable for Ceph, and drive the complete ansible installation using [ceph-ansible.](https://github.com/ceph/ceph-ansible)
 
 ## Project Status
 The plugin currently
-- creates the ansible inventory file (including hosts_vars and groups_vars)
 - supports different Ceph versions, bluestore and filestore, encrypted/non-encrypted
-- for a Nautilus target, a metrics hosts is required for full prometheus/grafana support
+- for a Nautilus target, a separate metrics hosts is required. This host provides full prometheus/grafana integration within the Ceph UI
 - probes and validates candidate hosts against their intended Ceph role(s)
-- presents ans selects available networks for the public, cluster and S3 networks
+- presents and selects available networks for the public, cluster, S3 and iSCSI networks
 - provides a review of the selections made
 - configuration options selected are committed to standard yml format ansible files (host & group vars)
-- initiates the ceph-ansible playbook and monitor progress
+- initiates the ceph-ansible playbook and monitors progress
 - any deployment errors are shown in the UI
 - following a Nautilus based deployment, the user may click a link to go straight to Ceph's web management console
 - allows environment defaults to be overridden from `var/lib/cockpit/ceph-installer/defaults.json`
-- supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways
+- supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways, metrics
+
+### Known Issues
+1. ceph-ansible currently (June 2019) doesn't deploy the grafana dashboards for a containerized ceph deployment. This results in
+the grafana container crash-looping. For more information, with the intended fix, follow this [issue](https://github.com/ceph/ceph-ansible/issues/4080)  
+2. The launch of the ceph UI from the installer fails. An [issue](https://github.com/ceph/ceph-ansible/issues/4081) is open in ceph-ansible tracking this problem
 
 ## Curious, take a look...
 
@@ -51,12 +56,12 @@ In this example we'll assume that you have a test VM ready to act as an ansible 
 
 2.2 Pull the image from docker hub (~670MB)
 ```
-# sudo docker pull jolmomar/ansible_runner_service
+# sudo docker pull jolmomar/ansible_runner_service:latest
 ```
 
 ### 3. Enable the cockpit interface
-If your testing with Ceph Nautilus, the installer requires a host for Metrics (prometheus and grafana). The port used by Prometheus conflicts with the port used by cockpit, so if you want to run the metrics services on the 'ansible host, you need to;
-  3.1 Set up an overridge file for cockpit
+If your testing with Ceph Nautilus, the installer requires a host for Metrics (prometheus and grafana). The port used by Prometheus conflicts with the port used by cockpit, so if you want to run the metrics services on the 'ansible host, you need to;  
+3.1 Set up an override file for cockpit
 ```
 # sudo su -
 # mkdir /etc/systemd/system/cockpit.socket.d
@@ -74,18 +79,15 @@ sudo systemctl enable --now cockpit.socket
 ```
 *for further information, the offical docs are [here](https://cockpit-project.org/guide/latest/listen.html)*
 
-### 4. Grab ceph-ansible from the Ceph project
-4.1 Pull ceph-ansible from github and switch to the wip-dashboard branch (just until this merges!)
+### 4. Install ceph-ansible from the Ceph project
+4.1 Pull ceph-ansible from github.
 ```
 # sudo su -
 # cd /usr/share
 # git clone https://github.com/ceph/ceph-ansible.git
-# cd ceph-ansible
-# git checkout wip-dashboard
-# git pull
 # exit
 ```
-4.2 From the /usr/share/ceph-ansible directory, add the check_check_role module to ceph-ansible
+4.2 From the /usr/share/ceph-ansible directory, add the check_check_role module
 ```
 # sudo wget -P ./library https://raw.githubusercontent.com/pcuzner/ceph-check-role/master/library/ceph_check_role.py
 # sudo wget -P ./ https://raw.githubusercontent.com/pcuzner/ceph-check-role/master/checkrole.yml
@@ -94,34 +96,14 @@ sudo systemctl enable --now cockpit.socket
 ### 5. Setup the ansible-runner-service
 Although the ansible-runner-service runs as a container, it's configuration and playbooks come from the host filesystem.
 
-5.1 create configuration directories
+5.1 As the **root** user, run the setup script within the project ``utils`` folder. This script wil create and configure missing directories
+and set up default (self-signed) SSL identities, if they are missing.
 ```
-# sudo su -
-# mkdir /etc/ansible-runner-service
-# mkdir -p /usr/share/ansible-runner-service/{env,inventory,artifacts}
-# mkdir -p /etc/ansible-runner-service/certs/{client,server}
-# chcon -Rt container_file_t /usr/share/ansible-runner-service
-# chcon -Rt container_file_t /etc/ansible-runner-service
-# exit
-```
-5.2 Seed the /etc/ansible-runner-service directory
-
-```
-# sudo docker run --rm=true -d --network host -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service -v /etc/ansible-runner-service:/etc/ansible-runner-service -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project --name runner-service jolmomar/ansible_runner_service:latest
-
-# sudo docker exec -it runner-service cp /root/ansible-runner-service/{logging,config}.yaml /etc/ansible-runner-service
-
-```
-5.3 Create the self-signed cert, server and client certificates
-```
-sudo docker exec -it runner-service /root/ansible-runner-service/misc/nginx/generate_certs.sh
-```
-5.3 Restart the service
-```
-sudo docker restart runner-service
+# cd utils
+# PROJECT='jolmomar' ./etc/ansible-runner-service.sh
 ```
 
-5.4  Define some example ssh access
+5.2  Define some example ssh access
 
 In the runner-service container, add multiple entries to /etc/hosts to represent hosts all pointing to the main ip in the host where runs the Ansible Runner Service container. Use the the container's host ip address in each of the new entries for the test hosts
 
@@ -138,7 +120,7 @@ eg:
 192.168.122.160  ts5
 ```
 
-5.5 Make possible ssh-passwordless connections to test servers
+5.3 Make possible ssh-passwordless connections to test servers
 
 ```
 # cd /root
@@ -158,8 +140,6 @@ eg:
 # cd /usr/share
 # sudo git clone https://github.com/pcuzner/cockpit-ceph-installer.git
 # cd cockpit-ceph-installer
-# git checkout tls-support
-# git pull
 # exit
 ```
 
@@ -169,8 +149,7 @@ eg:
 # sudo ln -snf $PWD /usr/share/cockpit/ceph-installer
 # sudo systemctl restart cockpit.socket
 ```
-4. point your browser at port 9091 of the machine, and login as root
-   - make sure runner-service has been started - if not, the UI will tell you!
+4. Point your browser at the cockpit port of your ansible VM (default port is 9090), and login as root
 
 
 -----------------------------------------------------------------------------------------------------------------
