@@ -16,49 +16,49 @@ CONTAINER_IMAGE="ansible_runner_service"
 create_server_certs() {
 
     # Server CA
-    if $VERBOSE; then 
+    if $VERBOSE; then
         echo "Creating the CA Key and Certificate for signing Client Certs"
         echo "- Using cert identity - $CERT_IDENTITY"
     fi
     openssl genrsa -des3 -out $SERVERCERTS/ca.key -passout pass:$CERT_PASSWORD 4096
-    openssl req -new -x509 -days 365 -key $SERVERCERTS/ca.key \
+    openssl req -new -x509 -sha256 -days 365 -key $SERVERCERTS/ca.key \
         -out $SERVERCERTS/ca.crt -passin pass:$CERT_PASSWORD \
         -subj "$CERT_IDENTITY"
 
-    # Server cert 
+    # Server cert
     if $VERBOSE; then echo "Creating the Server Key, CSR, and Certificate"; fi
     openssl genrsa -des3 -out $SERVERCERTS/server.key.org \
-        -passout pass:$CERT_PASSWORD 1024
+        -passout pass:$CERT_PASSWORD 4096
     # Remove password (avoid server claiming for it each time it starts)
     openssl rsa -in $SERVERCERTS/server.key.org -out $SERVERCERTS/server.key \
         -passin pass:$CERT_PASSWORD
     # Generate server certificate
-    openssl req -new -key $SERVERCERTS/server.key -out $SERVERCERTS/server.csr \
+    openssl req -new -sha256 -key $SERVERCERTS/server.key -out $SERVERCERTS/server.csr \
         -passin pass:$CERT_PASSWORD -subj "$CERT_IDENTITY"
 
     if $VERBOSE; then echo "Self-signing the certificate with our CA cert"; fi
-    openssl x509 -req -days 365 -in $SERVERCERTS/server.csr \
+    openssl x509 -req -sha256 -days 365 -in $SERVERCERTS/server.csr \
         -CA $SERVERCERTS/ca.crt -CAkey $SERVERCERTS/ca.key \
         -set_serial 01 -out $SERVERCERTS/server.crt -passin pass:$CERT_PASSWORD
 }
 
 create_client_certs() {
 
-    if $VERBOSE; then 
+    if $VERBOSE; then
         echo "Creating the Client Key and CSR"
         echo "- Using client identity - $CERT_IDENTITY_CLIENT"
     fi
 
-    openssl genrsa -des3 -out $CLIENTCERTS/client.key.org -passout pass:$CERT_PASSWORD 1024
+    openssl genrsa -des3 -out $CLIENTCERTS/client.key.org -passout pass:$CERT_PASSWORD 4096
     # Remove password (avoid https client claiming for it in each request)
     openssl rsa -in $CLIENTCERTS/client.key.org -out $CLIENTCERTS/client.key \
         -passin pass:$CERT_PASSWORD
     # Generate client certificate
-    openssl req -new -key $CLIENTCERTS/client.key -out $CLIENTCERTS/client.csr \
+    openssl req -new -sha256 -key $CLIENTCERTS/client.key -out $CLIENTCERTS/client.csr \
         -passin pass:$CERT_PASSWORD -subj "$CERT_IDENTITY_CLIENT"
-    
+
     if $VERBOSE; then echo "Signing the client certificate with our CA cert"; fi
-    openssl x509 -req -days 365 -in $CLIENTCERTS/client.csr -CA $SERVERCERTS/ca.crt \
+    openssl x509 -req -sha256 -days 365 -in $CLIENTCERTS/client.csr -CA $SERVERCERTS/ca.crt \
         -CAkey $SERVERCERTS/ca.key -CAcreateserial -out $CLIENTCERTS/client.crt \
         -passin pass:$CERT_PASSWORD
 }
@@ -69,7 +69,7 @@ create_certs() {
         create_server_certs
     fi
 
-    if [ ! -f "$CLIENTCERTS/client.crt" ]; then 
+    if [ ! -f "$CLIENTCERTS/client.crt" ]; then
         create_client_certs
     fi
 }
@@ -79,7 +79,7 @@ fetch_container() {
     if [ $? -ne 0 ]; then
         echo "Fetching ansible runner service container. Please wait..."
         docker pull "$PROJECT/$CONTAINER_IMAGE:latest"
-        if [[ $? -ne 0 ]]; then 
+        if [[ $? -ne 0 ]]; then
             echo "Failed to fetch the container. Unable to continue"
             exit 4
         fi
@@ -95,7 +95,7 @@ start_container() {
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
                -v /etc/ansible-runner-service:/etc/ansible-runner-service \
                --name runner-service $PROJECT/$CONTAINER_IMAGE > /dev/null 2>&1
-    if [ $? -eq 0 ]; then 
+    if [ $? -eq 0 ]; then
         echo "Started runner-service container"
     else
         echo "Failed to start the container"
@@ -110,14 +110,14 @@ stop_runner_service() {
 
 setup_dirs() {
     echo "Checking/creating directories"
-    if [ ! -d "$ETCDIR" ]; then 
-        if $VERBOSE; then 
+    if [ ! -d "$ETCDIR" ]; then
+        if $VERBOSE; then
             echo "Creating directories in /etc"
         fi
         mkdir -p /etc/ansible-runner-service/certs/{client,server}
     fi
-    if [ ! -d "$RUNNERDIR" ]; then 
-        if $VERBOSE; then 
+    if [ ! -d "$RUNNERDIR" ]; then
+        if $VERBOSE; then
             echo "Creating directories in /usr/share"
         fi
         mkdir -p /usr/share/ansible-runner-service/{artifacts,env,inventory,project}
@@ -141,7 +141,7 @@ set_selinux() {
     for path in '/etc/ansible-runner-service' '/usr/share/ceph-ansible'; do
         echo "Applying SELINUX container_file_t context to '$path'"
         chcon -Rt container_file_t $path > /dev/null 2>&1
-        if [ $? -ne 0 ]; then 
+        if [ $? -ne 0 ]; then
             echo "Unable to set SELINUX context on $path. Can not continue"
             exit
         fi
@@ -155,7 +155,7 @@ environment_ok() {
     echo "Checking environment is ready"
 
     # must run as root
-    if [ $(whoami) != 'root' ]; then 
+    if [ $(whoami) != 'root' ]; then
         errors+="\tScript must run as the root user\n"
     fi
 
@@ -165,21 +165,21 @@ environment_ok() {
 
     for binary in ${PREREQS[@]}; do
         out=$(whereis $binary)
-        if [[ ${#out} -le 10 ]]; then 
+        if [[ ${#out} -le 10 ]]; then
             errors+="\t$binary not found.\n"
         else
-            if $VERBOSE; then 
+            if $VERBOSE; then
                 echo -e "\t$binary is present"
             fi
         fi
     done
 
-    if [[ ! -d "/usr/share/ceph-ansible" ]]; then 
+    if [[ ! -d "/usr/share/ceph-ansible" ]]; then
         errors+="\tceph-ansible is not installed.\n"
     fi
 
     docker ps > /dev/null 2>&1
-    if [ $? -ne 0 ]; then 
+    if [ $? -ne 0 ]; then
         errors+="\tdocker daemon not running"
     fi
 
@@ -190,7 +190,7 @@ environment_ok() {
     [ -z "$CERT_IDENTITY_CLIENT" ] && CERT_IDENTITY_CLIENT="/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/OU=RunnerClient/CN=$HOST"
     [ -z "$CERT_PASSWORD" ] && CERT_PASSWORD="ansible"
 
-    if [ "$errors" != "" ]; then 
+    if [ "$errors" != "" ]; then
         echo "- Problems found"
         echo -e "$errors"
         return 1
@@ -229,7 +229,7 @@ check_access() {
     echo "Waiting for runner-service container to respond"
     local ctr=1
     local limit=10
-    while [ $ctr -le $limit ]; do 
+    while [ $ctr -le $limit ]; do
         HTTP_STATUS=$(curl -s -i -k \
                         -o /dev/null \
                         -w "%{http_code}" \
@@ -249,7 +249,7 @@ check_access() {
 
 start_runner_service() {
 
-    if ! environment_ok; then 
+    if ! environment_ok; then
         echo "Unable to start the ansible_runner_service container"
         exit
     fi
@@ -263,7 +263,7 @@ start_runner_service() {
 
     create_certs
 
-    if [ $(getenforce) == "Enforcing" ]; then 
+    if [ $(getenforce) == "Enforcing" ]; then
         set_selinux
     fi
 
@@ -273,7 +273,7 @@ start_runner_service() {
 
     check_access
     CURL_RC=$?
-    case $CURL_RC in 
+    case $CURL_RC in
         0)
             echo "Unable to connect to the container"
             ;;
@@ -292,9 +292,9 @@ main() {
     if [[ "$@[@]" =~ "-v" ]]; then
         VERBOSE=true
     fi
-    
-    while getopts ":khsv" option; do 
-        case "${option}" in 
+
+    while getopts ":khsv" option; do
+        case "${option}" in
             h)
                 usage
                 exit
@@ -302,12 +302,12 @@ main() {
             s)
                 start_runner_service
                 exit
-                ;;  
+                ;;
             k)
                 is_running
                 if [[ $? -eq 0 ]]; then
                     stop_runner_service
-                    if [[ $? -eq 0 ]]; then 
+                    if [[ $? -eq 0 ]]; then
                         echo "Stopped runner-service"
                     else
                         echo "Failed to stop the runner-service container."
@@ -315,7 +315,7 @@ main() {
                 else
                     echo "runner-service container is not active...did you mean to start it?"
                 fi
-                exit 
+                exit
                 ;;
             \?)
                 echo "Unsupported option."
