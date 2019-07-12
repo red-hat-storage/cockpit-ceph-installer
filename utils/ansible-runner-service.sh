@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #
 # Testing
-# export PROJECT='jolmomar'
+# export REGISTRY_IMAGE_PATH='brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/ansible-runner-service:ceph-4.0-rhel-8-containers-candidate-23773-20190712110332'
 # ./ansible-runner-service -s
 # Cert identity and password may be overridden by environment variables - see help
 
@@ -11,15 +11,24 @@ ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
-CONTAINER_IMAGE="ansible_runner_service"
+CONTAINER_IMAGE_NAME="ansible-runner-service"
+#REGISTRY_IMAGE_PATH="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/ansible-runner-service:ceph-4.0-rhel-8-containers-candidate-23773-20190712110332"
 
 create_server_certs() {
 
     # Server CA
+    if [ ! -d "$SERVERCERTS" ]; then
+        if $VERBOSE; then
+            echo "Creating directories in <$ETCDIR> for server certificates"
+            mkdir -p $SERVERCERTS
+        fi
+    fi
+
     if $VERBOSE; then
         echo "Creating the CA Key and Certificate for signing Client Certs"
         echo "- Using cert identity - $CERT_IDENTITY"
     fi
+
     openssl genrsa -des3 -out $SERVERCERTS/ca.key -passout pass:$CERT_PASSWORD 4096
     openssl req -new -x509 -sha256 -days 365 -key $SERVERCERTS/ca.key \
         -out $SERVERCERTS/ca.crt -passin pass:$CERT_PASSWORD \
@@ -43,6 +52,13 @@ create_server_certs() {
 }
 
 create_client_certs() {
+
+    if [ ! -d "$CLIENTCERTS" ]; then
+        if $VERBOSE; then
+            echo "Creating directories in <$ETCDIR> for client certificates"
+            mkdir -p $CLIENTCERTS
+        fi
+    fi
 
     if $VERBOSE; then
         echo "Creating the Client Key and CSR"
@@ -75,13 +91,15 @@ create_certs() {
 }
 
 fetch_container() {
-    docker images | grep ansible_runner_service > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
+    IMAGE_ID=$(docker images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
+    if [ -z "$IMAGE_ID" ]; then
         echo "Fetching ansible runner service container. Please wait..."
-        docker pull "$PROJECT/$CONTAINER_IMAGE:latest"
+        docker pull "$REGISTRY_IMAGE_PATH"
         if [[ $? -ne 0 ]]; then
             echo "Failed to fetch the container. Unable to continue"
             exit 4
+        else
+            IMAGE_ID=$(docker images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
         fi
     else
         echo "Using the ansible_runner_service container already downloaded"
@@ -94,7 +112,7 @@ start_container() {
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
                -v /etc/ansible-runner-service:/etc/ansible-runner-service \
-               --name runner-service $PROJECT/$CONTAINER_IMAGE > /dev/null 2>&1
+               --name runner-service $IMAGE_ID > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "Started runner-service container"
     else
@@ -110,12 +128,7 @@ stop_runner_service() {
 
 setup_dirs() {
     echo "Checking/creating directories"
-    if [ ! -d "$ETCDIR" ]; then
-        if $VERBOSE; then
-            echo "Creating directories in /etc"
-        fi
-        mkdir -p /etc/ansible-runner-service/certs/{client,server}
-    fi
+
     if [ ! -d "$RUNNERDIR" ]; then
         if $VERBOSE; then
             echo "Creating directories in /usr/share"
@@ -159,8 +172,8 @@ environment_ok() {
         errors+="\tScript must run as the root user\n"
     fi
 
-    if [ -z $PROJECT ]; then
-        errors+="\tEnvironment variable PROJECT must be set to the project holding the ansible_runner_service container\n"
+    if [ -z $REGISTRY_IMAGE_PATH ]; then
+        errors+="\tEnvironment variable REGISTRY_IMAGE_PATH must be set to the registry path where the ansible_runner_service image is stored\n"
     fi
 
     for binary in ${PREREQS[@]}; do
