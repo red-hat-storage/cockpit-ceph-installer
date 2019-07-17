@@ -1,52 +1,63 @@
-Name: ceph-installer
+Name: cockpit-ceph-installer
 Version: 0.8
-Release: 7%{?dist}
+Release: 8%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
 Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
 
-Requires: ansible-runner-service >= 0.9
 Requires: ceph-ansible >= 3.1
 Requires: cockpit 
 Requires: cockpit-bridge
 
-%description
-This package installs a plugin for cockpit that provides a a graphical means of installing a Ceph cluster. The plugin handles UI interaction and makes API calls to the ansible-runner-service API daemon, running on localhost, to run Ansible playbooks to handle the installation.
+%if "%{?dist}" == ".el7"
+%define containermgr    docker
+%else
+%define containermgr    podman
+%endif
 
+Requires: %{containermgr}
+
+%description
+This package installs a plugin for cockpit that provides a graphical means of installing a Ceph cluster. The plugin handles UI interaction and makes API calls to the ansible-runner-service API daemon, running on localhost, to run Ansible playbooks to handle the installation. The package provides a helper script called ansible-runner-service.sh to handle the installation of the ansible-runner-service daemon (container)
 
 %prep
 %setup -q -n ceph-installer-%{version}
 
 %install
 mkdir -p %{buildroot}%{_datadir}/cockpit/%{name}
+mkdir -p %{buildroot}%{_bindir}
 install -m 0644 dist/* %{buildroot}%{_datadir}/cockpit/%{name}/
+install -m 0755 utils/ansible-runner-service.sh %{buildroot}%{_bindir}/
 mkdir -p %{buildroot}%{_datadir}/metainfo/
 install -m 0644 ./org.cockpit-project.%{name}.metainfo.xml %{buildroot}%{_datadir}/metainfo/
 
 %post
 if [ "$1" = 1 ]; then
   systemctl enable --now cockpit.service
-# rename the project folder, and symlink to ceph-ansible
-  mv %{_datadir}/ansible-runner-service/project %{_datadir}/ansible-runner-service/project_default
-  ln -s /usr/share/ceph-ansible %{_datadir}/ansible-runner-service/project
 
-# copy the sample playbooks for installation, so they're available to the runner-service
+# copy the ceph-ansible sample playbooks, so they're available to the runner-service
   cp %{_datadir}/ceph-ansible/site.yml.sample %{_datadir}/ceph-ansible/site.yml 
   cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-docker.yml 
   cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-container.yml 
 
-# TODO: Could change ansible-runner-service target_user parm = ceph (default will be root)
-#       i.e add the parameter and restart runner-service daemon
+# start the container manager daemon
+  systemctl enable --now %{containermgr}.service
+
 fi
 
 
 %files
 %{_datadir}/cockpit/*
 %{_datadir}/metainfo/*
+%{_bindir}/ansible-runner-service.sh
 
 %changelog
+* Wed Jul 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.8-8
+- remove ansible-runner-service rpm dependency
+- handle podman/docker for el7/el8
+- ensure the ansible-runner-service setup script is installed
 * Thu Mar 21 2019 Paul Cuzner <pcuzner@redhat.com> 0.8-7
 - Return error if the probe task fails in some way
 - Add visual cue (spinner) when the probe task is running

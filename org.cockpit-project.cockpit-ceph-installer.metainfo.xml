@@ -1,0 +1,15 @@
+<component type="addon">
+  <id>org.cockpit-project.cockpit-ceph-installer</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Ceph Installer Plugin</name>
+  <summary>
+    Scaffolding for a cockpit module.
+  </summary>
+  <description>
+    <p>
+      Scaffolding for a cockpit module.
+    </p>
+  </description>
+  <extends>cockpit.desktop</extends>
+  <launchable type="cockpit-manifest">cockpit-ceph-installer</launchable>
+</component>
