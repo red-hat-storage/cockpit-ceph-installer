@@ -6,12 +6,15 @@
 # Cert identity and password may be overridden by environment variables - see help
 
 VERBOSE=false
-PREREQS="docker openssl curl"
+CONTAINER_OPTS="docker podman"
+PREREQS="openssl curl"
 ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
 CONTAINER_IMAGE_NAME="ansible-runner-service"
+CONTAINER_BIN=''
+
 #REGISTRY_IMAGE_PATH="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/ansible-runner-service:ceph-4.0-rhel-8-containers-candidate-23773-20190712110332"
 
 create_server_certs() {
@@ -91,15 +94,15 @@ create_certs() {
 }
 
 fetch_container() {
-    IMAGE_ID=$(docker images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
+    IMAGE_ID=$($CONTAINER_BIN images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
     if [ -z "$IMAGE_ID" ]; then
         echo "Fetching ansible runner service container. Please wait..."
-        docker pull "$REGISTRY_IMAGE_PATH"
+        $CONTAINER_BIN pull "$REGISTRY_IMAGE_PATH"
         if [[ $? -ne 0 ]]; then
             echo "Failed to fetch the container. Unable to continue"
             exit 4
         else
-            IMAGE_ID=$(docker images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
+            IMAGE_ID=$($CONTAINER_BIN images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
         fi
     else
         echo "Using the ansible_runner_service container already downloaded"
@@ -108,7 +111,7 @@ fetch_container() {
 
 start_container() {
     echo "Starting runner-service container"
-    docker run --rm -d --network=host -p 5001:5001/tcp \
+    $CONTAINER_BIN run --rm -d --network=host -p 5001:5001/tcp \
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
                -v /etc/ansible-runner-service:/etc/ansible-runner-service \
@@ -123,7 +126,7 @@ start_container() {
 
 stop_runner_service() {
     echo "Stopping runner-service"
-    docker kill runner-service > /dev/null 2>&1
+    $CONTAINER_BIN kill runner-service > /dev/null 2>&1
 }
 
 setup_dirs() {
@@ -131,10 +134,17 @@ setup_dirs() {
 
     if [ ! -d "$RUNNERDIR" ]; then
         if $VERBOSE; then
-            echo "Creating directories in /usr/share"
+            echo "Creating directories in $RUNNERDIR"
         fi
-        mkdir -p /usr/share/ansible-runner-service/{artifacts,env,inventory,project}
+        mkdir -p /usr/share/ansible-runner-service/{artifacts,env,inventory}
+        ln -s /usr/share/ceph-ansible /usr/share/ansible-runner-service/project
         chcon -Rt container_file_t /usr/share/ansible-runner-service
+    fi
+    if [ ! -d "$ETCDIR" ]; then
+        if $VERBOSE; then
+            echo "Creating directories in $ETCDIR"
+        fi
+        mkdir -p $ETCDIR/certs/{server,client}
     fi
 
 }
@@ -176,14 +186,29 @@ environment_ok() {
         errors+="\tEnvironment variable REGISTRY_IMAGE_PATH must be set to the registry path where the ansible_runner_service image is stored\n"
     fi
 
+    for option in ${CONTAINER_OPTS[@]}; do
+        type $option > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            if $VERBOSE; then
+                echo -e "\tOptional binary $option is present"
+            fi
+            CONTAINER_BIN=$option
+            break
+        fi
+    done
+    
+    if [ -z "$CONTAINER_BIN" ]; then 
+        errors+="\tOne of $CONTAINER_OPTS subsystems must be present on the system"
+    fi
+
     for binary in ${PREREQS[@]}; do
-        out=$(whereis $binary)
-        if [[ ${#out} -le 10 ]]; then
-            errors+="\t$binary not found.\n"
-        else
+        type $binary > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
             if $VERBOSE; then
                 echo -e "\t$binary is present"
             fi
+        else
+            errors+="\t$binary not found.\n"
         fi
     done
 
@@ -191,9 +216,9 @@ environment_ok() {
         errors+="\tceph-ansible is not installed.\n"
     fi
 
-    docker ps > /dev/null 2>&1
+    $CONTAINER_BIN ps > /dev/null 2>&1
     if [ $? -ne 0 ]; then
-        errors+="\tdocker daemon not running"
+        errors+="\tcontainer daemon not running\n"
     fi
 
 
@@ -235,7 +260,7 @@ usage() {
 is_running() {
     if $VERBOSE; then echo "Checking container is active"; fi
 
-    docker ps | grep runner-service > /dev/null 2>&1
+    $CONTAINER_BIN ps | grep runner-service > /dev/null 2>&1
 }
 
 check_access() {
