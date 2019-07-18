@@ -11,7 +11,7 @@ Requires: ceph-ansible >= 3.1
 Requires: cockpit 
 Requires: cockpit-bridge
 
-%if "%{?dist}" == ".el7"
+%if "%{?dist}" == ".el7" || "%{rhel}" == "7"
 %define containermgr    docker
 %else
 %define containermgr    podman
