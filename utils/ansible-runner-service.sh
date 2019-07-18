@@ -13,7 +13,21 @@ SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
 CONTAINER_IMAGE_NAME="ansible-runner-service"
+
 CONTAINER_BIN=''
+
+set_container_bin() {
+    for option in ${CONTAINER_OPTS[@]}; do
+            type $option > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                if $VERBOSE; then
+                    echo -e "\tOptional binary $option is present"
+                fi
+                CONTAINER_BIN=$option
+                break
+            fi
+        done
+}
 
 #REGISTRY_IMAGE_PATH="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/ansible-runner-service:ceph-4.0-rhel-8-containers-candidate-23773-20190712110332"
 
@@ -186,17 +200,6 @@ environment_ok() {
         errors+="\tEnvironment variable REGISTRY_IMAGE_PATH must be set to the registry path where the ansible_runner_service image is stored\n"
     fi
 
-    for option in ${CONTAINER_OPTS[@]}; do
-        type $option > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            if $VERBOSE; then
-                echo -e "\tOptional binary $option is present"
-            fi
-            CONTAINER_BIN=$option
-            break
-        fi
-    done
-    
     if [ -z "$CONTAINER_BIN" ]; then 
         errors+="\tOne of $CONTAINER_OPTS subsystems must be present on the system"
     fi
@@ -243,6 +246,7 @@ usage() {
     echo -e "\t-h ... display usage information"
     echo -e "\t-v ... verbose mode"
     echo -e "\t-s ... start ansible runner service container (default)"
+    echo -e "\t-q ... query the state of the container, and tail it's log"
     echo -e "\t-k ... stop/kill the ansible runner service container\n"
     echo "The service uses mutual TLS auth and will set up self-signed certs if they are not provided."
     echo "Certs are stored in the following locations;"
@@ -325,13 +329,25 @@ start_runner_service() {
 
 }
 
+show_state() {
+    # show the current logs for debugging. User will need to ctrl-c to exit
+    echo "Container status"
+    echo "----------------"
+    $CONTAINER_BIN ps --filter=name=runner-service
+    echo -e "\nActive log (/var/log/uwsgi.log)"
+    echo      "-------------------------------"
+    $CONTAINER_BIN exec runner-service tail -n 100 -f /var/log/uwsgi.log
+}
+
 main() {
 
     if [[ "$@[@]" =~ "-v" ]]; then
         VERBOSE=true
     fi
 
-    while getopts ":khsv" option; do
+    set_container_bin
+
+    while getopts ":khsqv" option; do
         case "${option}" in
             h)
                 usage
@@ -352,6 +368,15 @@ main() {
                     fi
                 else
                     echo "runner-service container is not active...did you mean to start it?"
+                fi
+                exit
+                ;;
+            q)
+                is_running
+                if [[ $? -eq 0 ]]; then 
+                    show_state
+                else
+                    echo "runner-service is not active"
                 fi
                 exit
                 ;;
