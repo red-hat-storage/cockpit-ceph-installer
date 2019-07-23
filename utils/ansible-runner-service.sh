@@ -15,6 +15,7 @@ RUNNERDIR="/usr/share/ansible-runner-service"
 CONTAINER_IMAGE_NAME="ansible-runner-service"
 
 CONTAINER_BIN=''
+CONTAINER_RUN_OPTIONS=''
 
 set_container_bin() {
     for option in ${CONTAINER_OPTS[@]}; do
@@ -24,6 +25,11 @@ set_container_bin() {
                     echo -e "\tOptional binary $option is present"
                 fi
                 CONTAINER_BIN=$option
+                if [ $CONTAINER_BIN == "docker" ]; then
+                    CONTAINER_RUN_OPTIONS=' --rm -d '
+                else
+                    CONTAINER_RUN_OPTIONS=' -d '
+                fi
                 break
             fi
         done
@@ -125,7 +131,7 @@ fetch_container() {
 
 start_container() {
     echo "Starting runner-service container"
-    $CONTAINER_BIN run --rm -d --network=host -p 5001:5001/tcp \
+    $CONTAINER_BIN run $CONTAINER_RUN_OPTIONS --network=host -p 5001:5001/tcp \
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
                -v /etc/ansible-runner-service:/etc/ansible-runner-service \
@@ -200,7 +206,7 @@ environment_ok() {
         errors+="\tEnvironment variable REGISTRY_IMAGE_PATH must be set to the registry path where the ansible_runner_service image is stored\n"
     fi
 
-    if [ -z "$CONTAINER_BIN" ]; then 
+    if [ -z "$CONTAINER_BIN" ]; then
         errors+="\tOne of $CONTAINER_OPTS subsystems must be present on the system"
     fi
 
@@ -373,7 +379,7 @@ main() {
                 ;;
             q)
                 is_running
-                if [[ $? -eq 0 ]]; then 
+                if [[ $? -eq 0 ]]; then
                     show_state
                 else
                     echo "runner-service is not active"
