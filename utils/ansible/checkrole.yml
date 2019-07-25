@@ -1,0 +1,19 @@
+---
+
+# check host role
+
+- name: Validate hosts against desired cluster state
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+ 
+    - name: CEPH_CHECK_ROLE
+      ceph_check_role:
+        role: "{{ inventory[inventory_hostname]|default ('undefined') }}"
+        mode: "{{ mode }}"
+        deployment: "{{ deployment }}"
+        flashusage: "{{ flashusage }}"
+        osdtype: "{{ osdtype }}"
+
