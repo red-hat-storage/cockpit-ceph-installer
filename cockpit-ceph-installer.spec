@@ -49,8 +49,10 @@ if [ "$1" = 1 ]; then
   cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-docker.yml 
   cp %{_datadir}/ceph-ansible/site-docker.yml.sample %{_datadir}/ceph-ansible/site-container.yml 
 
-# start the container manager daemon
-  systemctl enable --now %{containermgr}.service
+# If this is a docker environment, start the daemon
+  if  [ "%{containermgr}" == "docker" ]; then 
+    systemctl enable --now %{containermgr}.service
+  fi
 
 fi
 
