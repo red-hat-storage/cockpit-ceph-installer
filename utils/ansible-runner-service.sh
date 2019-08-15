@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 #
 # Testing
-# export REGISTRY_IMAGE_PATH='brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/ansible-runner-service:ceph-4.0-rhel-8-containers-candidate-23773-20190712110332'
 # ./ansible-runner-service -s
 # Cert identity and password may be overridden by environment variables - see help
 
@@ -34,8 +33,6 @@ set_container_bin() {
             fi
         done
 }
-
-#REGISTRY_IMAGE_PATH="brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/ansible-runner-service:ceph-4.0-rhel-8-containers-candidate-23773-20190712110332"
 
 create_server_certs() {
 
@@ -117,7 +114,7 @@ fetch_container() {
     IMAGE_ID=$($CONTAINER_BIN images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
     if [ -z "$IMAGE_ID" ]; then
         echo "Fetching ansible runner service container. Please wait..."
-        $CONTAINER_BIN pull "$REGISTRY_IMAGE_PATH"
+        $CONTAINER_BIN pull "$CONTAINER_IMAGE_NAME"
         if [[ $? -ne 0 ]]; then
             echo "Failed to fetch the container. Unable to continue"
             exit 4
@@ -200,10 +197,6 @@ environment_ok() {
     # must run as root
     if [ $(whoami) != 'root' ]; then
         errors+="\tScript must run as the root user\n"
-    fi
-
-    if [ -z $REGISTRY_IMAGE_PATH ]; then
-        errors+="\tEnvironment variable REGISTRY_IMAGE_PATH must be set to the registry path where the ansible_runner_service image is stored\n"
     fi
 
     if [ -z "$CONTAINER_BIN" ]; then
