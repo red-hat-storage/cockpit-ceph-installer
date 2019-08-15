@@ -115,8 +115,14 @@ export function allVars (vars) {
         forYML.containerized_deployment = true;
         forYML.docker_pull_timeout = "600s"; // workaround for slow networks
         if (vars.sourceType === "Red Hat") {
-            forYML.ceph_docker_registry = 'registry.access.redhat.com/rhceph';
-            forYML.ceph_docker_image = 'rhceph-3-rhel7';
+            forYML.ceph_docker_registry = 'registry.access.redhat.com';
+
+            let vers = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
+            if (vers == '3') {
+                forYML.ceph_docker_image = 'rhceph/rhceph-3-rhel7';
+            } else {
+                forYML.ceph_docker_image = 'rhceph/rhceph-4-rhel8';
+            }
         }
         break;
     default:
