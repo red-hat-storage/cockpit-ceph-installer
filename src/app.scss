@@ -91,25 +91,25 @@ ul.dropdown-menu-tbl-right::after {
     padding-left: 15px;
 }
 .textinput {
-    border-style:none;
+    border: 1px solid white;
     padding-left:5px;
     padding-right:5px;
     background-color: #eee;
     width: 100%;
 }
 .textinput:focus {
+    box-shadow: 0 0 5px rgba(0,136,206,.6);
     background-color: white;
+    border: 1px solid rgb(125, 195, 232);
 }
-  .textinput:hover:not(:focus) {
+.textinput:hover:not(:focus) {
     background-color: #ccc;
 }
 .textinput-nofocus {
     border: 1px solid white;
 }
 .textinput-error {
-    outline-style: auto;
-    outline-color: red;
-    outline-width: 5px;
+    border: 1px solid red;
 }
 .dropdown-box {
     min-width: 160px;
@@ -127,7 +127,7 @@ ul.dropdown-menu-tbl-right::after {
     background-clip: padding-box;
 }
 .dropdown-box:hover {
-    border: 1px solid blue;
+    border: 1px solid rgb(0, 136, 206);
     cursor: pointer;
 }
 .tdTitles {

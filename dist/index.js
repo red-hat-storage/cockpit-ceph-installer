@@ -23090,7 +23090,7 @@ function (_React$Component) {
               break;
 
             case "grafana-server":
-              console.log("adding dashboard.yml");
+              console.log("adding dashboards.yml");
               dashboards = Object(_services_ansibleMap_js__WEBPACK_IMPORTED_MODULE_4__["dashboardVars"])(_this.state.settings);
               chain = chain.then(function () {
                 return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["storeGroupVars"])('dashboards', dashboards);
@@ -27968,8 +27968,14 @@ function allVars(vars) {
       forYML.docker_pull_timeout = "600s"; // workaround for slow networks
 
       if (vars.sourceType === "Red Hat") {
-        forYML.ceph_docker_registry = 'registry.access.redhat.com/rhceph';
-        forYML.ceph_docker_image = 'rhceph-3-rhel7';
+        forYML.ceph_docker_registry = 'registry.access.redhat.com';
+        var vers = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
+
+        if (vers == '3') {
+          forYML.ceph_docker_image = 'rhceph/rhceph-3-rhel7';
+        } else {
+          forYML.ceph_docker_image = 'rhceph/rhceph-4-rhel8';
+        }
       }
 
       break;
