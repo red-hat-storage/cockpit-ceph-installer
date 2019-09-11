@@ -1,6 +1,6 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
@@ -68,6 +68,8 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Tue Sep 10 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-1
+- fix port conflict when the metrics host is the same as the installer host
 * Wed Jul 24 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-0
 - ceph-check-role ansible module and playbook included
 * Wed Jul 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.8-8
