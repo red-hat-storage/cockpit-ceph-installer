@@ -142,6 +142,11 @@ export function allVars (vars) {
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
 
+    if (vars.metricsHost == vars.cockpitHost) {
+        console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
+        forYML.prometheus_port = 9091;
+    }
+
     // wishlist for a simplified rgw install
     // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
     // if (rgwHostIdx.length > 0) {

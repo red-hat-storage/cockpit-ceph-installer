@@ -53,6 +53,7 @@ export class Application extends React.Component {
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
+            cockpitHost: "localhost"
         };
     }
 
@@ -77,7 +78,27 @@ export class Application extends React.Component {
     componentWillMount() {
         // count of the number of files we need to read before we should render anything
         var actions = 0;
+
+        // count of all the actions we'll do to check the environment is ready. Make sure this
+        // matches the number of tests performed in this function.
+        var actions_limit = 5;
+
+        // array of error messages - ideally should be empty!
         var errorMsgs = [];
+
+        readFile('/etc/hostname')
+                .then((content, tag) => {
+                    // check the content, and extract up to 1st dot if needed
+                    let this_host = content.split('.')[0];
+
+                    this.defaults['cockpitHost'] = this_host;
+                    console.log("running on hostname " + this_host);
+                    actions++;
+                    if (actions == actions_limit) {
+                        this.checkReady(errorMsgs);
+                    }
+                });
+
         readFile('/etc/ansible-runner-service/certs/client/client.crt')
                 .then((content, tag) => {
                     if ((!content) && (tag == '-')) {
@@ -89,7 +110,7 @@ export class Application extends React.Component {
                         // Could check the internal format is PEM?
                     }
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 });
@@ -104,7 +125,7 @@ export class Application extends React.Component {
                         // Could check the internal format is PEM?
                     }
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 });
@@ -119,7 +140,7 @@ export class Application extends React.Component {
                 })
                 .finally(() => {
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 });
@@ -135,7 +156,7 @@ export class Application extends React.Component {
                         console.log("Unable to read local default overrides, using internal defaults");
                     }
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 })

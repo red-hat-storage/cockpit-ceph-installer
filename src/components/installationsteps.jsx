@@ -33,7 +33,8 @@ export class InstallationSteps extends React.Component {
             clusterNetwork: '',
             rgwNetwork:'',
             metricsHost: '',
-            deployStarted: false
+            deployStarted: false,
+            cockpitHost: props.defaults.cockpitHost
         };
 
         // define the classes the pages will initially use on first render. If behind is defined,
