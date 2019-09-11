@@ -21427,7 +21427,8 @@ function (_React$Component) {
       networkType: 'ipv4',
       osdType: "Bluestore",
       osdMode: "None",
-      flashUsage: "Journals/Logs"
+      flashUsage: "Journals/Logs",
+      cockpitHost: "localhost"
     };
     return _this;
   }
@@ -21438,8 +21439,23 @@ function (_React$Component) {
       var _this2 = this;
 
       // count of the number of files we need to read before we should render anything
-      var actions = 0;
+      var actions = 0; // count of all the actions we'll do to check the environment is ready. Make sure this
+      // matches the number of tests performed in this function.
+
+      var actions_limit = 5; // array of error messages - ideally should be empty!
+
       var errorMsgs = [];
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/hostname').then(function (content, tag) {
+        // check the content, and extract up to 1st dot if needed
+        var this_host = content.split('.')[0];
+        _this2.defaults['cockpitHost'] = this_host;
+        console.log("running on hostname " + this_host);
+        actions++;
+
+        if (actions == actions_limit) {
+          _this2.checkReady(errorMsgs);
+        }
+      });
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/ansible-runner-service/certs/client/client.crt').then(function (content, tag) {
         if (!content && tag == '-') {
           // crt file missing
@@ -21451,7 +21467,7 @@ function (_React$Component) {
 
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       });
@@ -21466,7 +21482,7 @@ function (_React$Component) {
 
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       });
@@ -21478,7 +21494,7 @@ function (_React$Component) {
       }).finally(function () {
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       });
@@ -21494,7 +21510,7 @@ function (_React$Component) {
 
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       }).catch(function (e) {
@@ -25800,7 +25816,8 @@ function (_React$Component) {
       clusterNetwork: '',
       rgwNetwork: '',
       metricsHost: '',
-      deployStarted: false
+      deployStarted: false,
+      cockpitHost: props.defaults.cockpitHost
     }; // define the classes the pages will initially use on first render. If behind is defined,
     // the page will be hidden.
 
@@ -27996,7 +28013,12 @@ function allVars(vars) {
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
-  forYML.ip_version = vars.networkType; // wishlist for a simplified rgw install
+  forYML.ip_version = vars.networkType;
+
+  if (vars.metricsHost == vars.cockpitHost) {
+    console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
+    forYML.prometheus_port = 9091;
+  } // wishlist for a simplified rgw install
   // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
   // if (rgwHostIdx.length > 0) {
   //     // Additional OSD tuning for Object workloads
@@ -28013,6 +28035,7 @@ function allVars(vars) {
   //         };
   //     }
   // }
+
 
   return forYML;
 }
