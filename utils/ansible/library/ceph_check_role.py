@@ -241,14 +241,15 @@ def get_free_disks(devices, rotational=1):
     """
 
     free = {}
+    excluded_devs = ('loop', 'dm-')
     for disk_id in devices:
         disk = devices[disk_id]
 
         # skip removable device entries (eg cd drives)
         if disk['removable'] == "1":
             continue
-        # skip device-mapper devices
-        if disk_id.startswith('dm-'):
+        # skip devices like loop, or device-mapper
+        if disk_id.startswith(excluded_devs):
             continue
         # skip disks that have partitions already
         if disk['partitions']:
