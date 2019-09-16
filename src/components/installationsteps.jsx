@@ -34,7 +34,9 @@ export class InstallationSteps extends React.Component {
             rgwNetwork:'',
             metricsHost: '',
             deployStarted: false,
-            cockpitHost: props.defaults.cockpitHost
+            cockpitHost: props.defaults.cockpitHost,
+            cephVersion: '',
+            prometheusPortOverride: props.defaults.prometheusPortOverride
         };
 
         // define the classes the pages will initially use on first render. If behind is defined,
@@ -172,7 +174,7 @@ export class InstallationSteps extends React.Component {
                         metricsHostHandler={this.setMetricsHost}
                         prevPage={this.prevPageHandler}
                         hosts={this.state.hosts}
-                        targetVersion={this.state.targetVersion}
+                        cephVersion={this.state.cephVersion}
                         installType={this.state.installType}
                         clusterType={this.state.clusterType} />
                     <ValidatePage
