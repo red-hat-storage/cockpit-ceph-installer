@@ -252,7 +252,8 @@ table.roleTable {
   color: black;
   font-weight: bold;
   line-height: 38px;
-  /* position text in center of circle */ }
+  /* position text in center of circle */
+  padding-right: 2px; }
 
 .selectable {
   cursor: pointer; }
@@ -706,7 +707,7 @@ pre {
   width: 200px; }
 
 .sel-container-vertical {
-  width: 400px;
+  width: 600px;
   margin: 10px; }
 
 .sel-label-vertical {
@@ -827,7 +828,8 @@ table#add-hosts td {
   color: black; }
 
 .alert-space {
-  height: 64px;
+  height: 44px;
+  margin-bottom: 20px;
   width: 100%;
   display: block; }
 
