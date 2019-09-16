@@ -9,9 +9,27 @@ export class RadioSet extends React.Component {
         super(props);
 
         this.state = {
+            default: this.props.default,
             name: props.config.name,
             selected: props.default
         };
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        console.log("props changed in radioset");
+        if (prevProps.default != this.props.default) {
+            console.log("sendng change of default :" + this.props.default);
+            this.updateDefault(this.props.default);
+        }
+        // if (!prevProps.visible) {
+        //     this.refs.hostInputField.focus();
+        //     console.log("with props " + JSON.stringify(prevProps));
+        // }
+    }
+
+    updateDefault = (option) => {
+        console.log("updating " + this.props.config.name + " as default changed");
+        this.setState({default: option});
     }
 
     changeHandler = (event) => {
@@ -22,6 +40,7 @@ export class RadioSet extends React.Component {
     }
 
     render() {
+        console.log("in radioset render for " + this.props.config.name);
         var radioGrpClass;
         var labelClass;
         var toolTip;
@@ -47,10 +66,10 @@ export class RadioSet extends React.Component {
                 <div className={ radioGrpClass } key={i}>
                     <label>
                         <input type="radio"
-                        onClick={this.changeHandler}
+                        onChange={this.changeHandler}
                         name={ this.props.config.name }
                         value={ text }
-                        defaultChecked={ text.valueOf() === this.props.default.valueOf() } />
+                        checked={ text.valueOf() === this.state.default.valueOf() } />
                         { text }
                     </label>
                 </div>);
