@@ -46,20 +46,22 @@ export class Application extends React.Component {
         this.defaults = {
             iscsiTargetName: "iqn.2003-01.com.redhat.iscsi-gw:ceph-igw",
             sourceType: "Red Hat",
-            targetVersion: "RHCS 3",
+            targetVersion: "RHCS 4",
             clusterType: "Production",
             installType: "Container",
             networkType: 'ipv4',
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
-            cockpitHost: "localhost"
+            cockpitHost: "localhost",
+            prometheusPortOverride: 9095
         };
     }
 
     checkReady = (errorMsgs) => {
         if (errorMsgs.length == 0) {
             this.setState({ready: true});
+            console.debug("UI using the following defaults :" + JSON.stringify(this.defaults));
         } else {
             // errors encountered, better give the user the bad news
             let msgs = errorMsgs.map((msg, key) => {
@@ -151,7 +153,6 @@ export class Application extends React.Component {
                     if (overrides) {
                         console.log("Overrides are : " + JSON.stringify(overrides));
                         Object.assign(this.defaults, overrides);
-                        console.log("Defaults are : " + JSON.stringify(this.defaults));
                     } else {
                         console.log("Unable to read local default overrides, using internal defaults");
                     }
