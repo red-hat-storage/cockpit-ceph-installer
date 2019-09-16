@@ -56,7 +56,7 @@ export class ReviewPage extends React.Component {
                 default:
                     roleName = role.slice(0, -1);
                 }
-                this.clusterData["- " + role] = hostsWithRoleCount(props.config.hosts, roleName);
+                this.clusterData['\u2022 ' + role] = hostsWithRoleCount(props.config.hosts, roleName);
             }
 
             for (let host of props.config.hosts) {
@@ -157,7 +157,7 @@ class StaticTable extends React.Component {
                                 let align = "review-table-value align-" + this.props.align;
                                 let itemValue;
                                 let tab = (<div />);
-                                if (item.startsWith('-')) {
+                                if (item.startsWith('\u2022')) {
                                     tab = (<div className="tab" />);
                                 }
                                 itemValue = (this.props.data[item] === '') ? 'N/A' : this.props.data[item];
