@@ -2,7 +2,8 @@ import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
 import { RadioSet } from './common/radioset.jsx';
 import { Selector } from './common/selector.jsx';
-
+import { Notification } from './common/notifications.jsx';
+import { listDir, getISOContents, getCephVersionNumber } from '../services/utils.js';
 import '../app.scss';
 
 export class EnvironmentPage extends React.Component {
@@ -22,14 +23,19 @@ export class EnvironmentPage extends React.Component {
             osdMode: props.defaults.osdMode,
             installType: props.defaults.installType,
             flashUsage: props.defaults.flashUsage,
-            targetVersion: props.defaults.targetVersion
+            targetVersion: props.defaults.targetVersion,
+            cephVersion: '',
+            msgLevel: 'info',
+            msgText: ''
         };
 
         this.installSource = {
-            "Red Hat": ["RHCS 3", 'RHCS 4'],
-            "Distribution": ["13 (Mimic)", "12 (Luminous)"],
-            "Community": ["13 (Mimic)", "12 (Luminous)", "14 (Nautilus)"]
+            "Red Hat": ["RHCS 4", 'RHCS 3'],
+            "ISO": [],
+            "Community": ["14 (Nautilus)", "13 (Mimic)", "12 (Luminous)"],
+            "Distribution": ["13 (Mimic)", "12 (Luminous)"]
         };
+        this.installSourceToolTip = "For an ISO install, the image must be in /usr/share/ansible-runner-service/iso\n and have container_file_t context";
 
         this.clusterTypes = {
             options : ["Production", "Development/POC"],
@@ -91,7 +97,26 @@ export class EnvironmentPage extends React.Component {
 
     installChange = (event) => {
         console.log("changing installation settings for: " + event.target.value);
+        // if the install source is ISO, the target version must not be No ISO...
+        if (event.target.value == "ISO") {
+            if (this.installSource["ISO"][0].startsWith('No')) {
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: "No ISO images have been found. Confirm ISO image location and check SELINUX context OR select another source"
+                });
+                return;
+            } else {
+                // acceptable ISO installation
+                console.debug("updating install type to RPM for ISO support");
+                this.setState({
+                    installType: "RPM"
+                });
+            }
+        }
+
         this.setState({
+            msgLevel: 'info',
+            msgText: '',
             sourceType: event.target.value,
             targetVersion: this.installSource[event.target.value][0]
         });
@@ -108,9 +133,98 @@ export class EnvironmentPage extends React.Component {
     }
 
     checkReady = (event) => {
-        // insert any validation logic here - that would compare the state settings prior to passing page state to the parent
         console.log("current radio button config: " + JSON.stringify(this.state));
-        this.props.action(this.state);
+        // insert any validation logic here - that would compare the state settings prior to passing page state to the parent
+
+        if (this.state.msgLevel != "info") {
+            return;
+        }
+
+        if (this.state.sourceType == 'ISO') {
+            // if (this.state.installSource != 'RPM') {
+            //     this.setState({
+            //         msgLevel: 'error',
+            //         msgText: "Installation from ISO, only supports RPM based deployment"
+            //     });
+            //     return;
+            // }
+
+            // check the iso is OK
+            let pathName = '/usr/share/ansible-runner-service/iso';
+            console.log("Performing ISO checks");
+            getISOContents(pathName + '/' + this.state.targetVersion)
+                    .then((content) => {
+                        let stdout = content.split('\n');
+                        console.debug("ISO scan returned " + stdout.length + " lines");
+
+                        let versionStr = '';
+                        for (let line of stdout) {
+                            if (line.includes("ceph-common")) {
+                                // example :  20178948 /Tools/ceph-common-14.2.2-16.ga7a380a.1.el8cp.x86_64.rpm
+                                let fileName = line.split('/').pop();
+                                versionStr = fileName.replace('ceph-common-', '').split('.')[0];
+                                break;
+                            }
+                        }
+
+                        if (!versionStr) {
+                            console.log("ISO does not contain a ceph-common package..unable to confirm its a Ceph ISO");
+                            this.setState({
+                                msgLevel: 'error',
+                                msgText: "ISO does not contain a ceph-common package. Is it Ceph ISO?"
+                            });
+                            return;
+                        }
+
+                        console.log("ceph-common file found on the ISO. Ceph version : " + versionStr);
+                        let currentState = this.updateVersion(versionStr);
+                        this.props.action(currentState);
+                    })
+                    .catch(() => {
+                        console.error("Unable to read the iso");
+                        this.setState({
+                            msgLevel: "error",
+                            msgText: "Unable to read the ISO file"
+                        });
+                    });
+        } else {
+            let currentState = this.updateVersion(getCephVersionNumber(this.state.targetVersion));
+            console.debug("leaving environmentpage, invoking callback with " + JSON.stringify(currentState));
+            this.props.action(currentState);
+        }
+    }
+
+    updateVersion = (versionStr) => {
+        let currentState = Object.assign({}, this.state);
+        currentState['cephVersion'] = versionStr;
+        console.debug("setting environmentPage state's cephversion to " + versionStr);
+        this.setState({
+            cephVersion: versionStr
+        });
+        return currentState;
+    }
+
+    componentDidMount () {
+        listDir('/usr/share/ansible-runner-service/iso')
+                .then((content) => {
+                    console.log("list of ansible-runner-service directory complete");
+                    let iso = [];
+                    let filesFound = content.split(" ");
+                    filesFound.forEach(filePath => {
+                        filePath = filePath.trim();
+                        if (filePath.toUpperCase().endsWith('.ISO')) {
+                            iso.push(filePath.split('/').pop());
+                        }
+                    });
+                    if (iso.length == 0) {
+                        iso.push("No ISO images found");
+                    }
+                    this.installSource['ISO'] = iso;
+                    console.log(iso.length + " iso images :" + iso);
+                })
+                .catch(() => {
+                    console.error("Unable to list ansible-runner-service directory");
+                });
     }
 
     render() {
@@ -120,10 +234,28 @@ export class EnvironmentPage extends React.Component {
                 <div id="environment" className={this.props.className}>
                     <h3>1. Environment</h3>
                     Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.
+                    <Notification msgLevel={this.state.msgLevel} msgText={this.state.msgText} />
                     <div >
-                        <Selector labelName="Installation Source" vertical value={this.state.sourceType} options={Object.keys(this.installSource)} callback={this.installChange} />
-                        <Selector labelName="Target Version" vertical value={this.state.targetVersion} options={versionList} callback={this.versionChange} />
-                        <Selector labelName="Cluster Type" vertical value={this.state.clusterType} options={this.clusterTypes.options} tooltip={this.clusterTypes.tooltip} callback={this.clusterTypeChange} />
+                        <Selector
+                            labelName="Installation Source"
+                            vertical
+                            value={this.state.sourceType}
+                            options={Object.keys(this.installSource)}
+                            tooltip={this.installSourceToolTip}
+                            callback={this.installChange} />
+                        <Selector
+                            labelName="Target Version"
+                            vertical
+                            value={this.state.targetVersion}
+                            options={versionList}
+                            callback={this.versionChange} />
+                        <Selector
+                            labelName="Cluster Type"
+                            vertical
+                            value={this.state.clusterType}
+                            options={this.clusterTypes.options}
+                            tooltip={this.clusterTypes.tooltip}
+                            callback={this.clusterTypeChange} />
                     </div>
                     <RadioSet config={this.network_type} default={this.state.networkType} callback={this.updateState} />
                     <RadioSet config={this.osd_type} default={this.state.osdType} callback={this.updateState} />

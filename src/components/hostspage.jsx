@@ -38,7 +38,7 @@ export class HostsPage extends React.Component {
         let iscsiTargetCounts = [0, 2, 4];
         let errMsgs = [];
 
-        if (versionSupportsMetrics(this.props.targetVersion)) {
+        if (versionSupportsMetrics(this.props.cephVersion)) {
             let metricsHost = '';
             for (let idx = 0; idx < this.state.hosts.length; idx++) {
                 if (this.state.hosts[idx]['metrics']) {
@@ -553,7 +553,7 @@ export class HostsPage extends React.Component {
     render() {
         if (this.props.className == 'page') {
             var rows, metricsClass;
-            metricsClass = versionSupportsMetrics(this.props.targetVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
+            metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
 
             if (this.state.hosts.length > 0) {
                 rows = this.state.hosts.map(host => {
@@ -563,7 +563,7 @@ export class HostsPage extends React.Component {
                                 roleChange={this.updateHost}
                                 deleteRow={this.deleteHost}
                                 retryHost={this.retryHost}
-                                targetVersion={this.props.targetVersion}
+                                cephVersion={this.props.cephVersion}
                                 modal={this.showModal} />;
                 });
             } else {
@@ -588,7 +588,7 @@ export class HostsPage extends React.Component {
                         hosts={this.state.hosts}
                         callback={this.addHostsToTable}
                         clusterType={this.props.clusterType}
-                        targetVersion={this.props.targetVersion}
+                        cephVersion={this.props.cephVersion}
                         closeHandler={this.hideAddHosts}
                         installType={this.props.installType} />
                     <div className="divCenter">
@@ -672,7 +672,7 @@ class HostDataRow extends React.Component {
     }
 
     render() {
-        let metricsClass = versionSupportsMetrics(this.props.targetVersion) ? "thMetricsWidth visible-cell" : "hidden";
+        let metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "thMetricsWidth visible-cell" : "hidden";
         return (
             <tr>
                 <td className="thHostname" >
@@ -962,17 +962,11 @@ class HostMask extends React.Component {
         this.props.closeHandler();
     }
 
-    // componentWillReceiveProps(props) {
-    //     if (versionSupportsMetrics(this.props.targetVersion)) {
-    //         this.setState({metrics: false});
-    //     }
-    // }
-
     render() {
         let showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
         let metrics_cbox = (<td />);
         let metrics_label = (<td />);
-        if (versionSupportsMetrics(this.props.targetVersion)) {
+        if (versionSupportsMetrics(this.props.cephVersion)) {
             console.log("enabling selection of metrics role - grafana/prometheus");
             metrics_cbox = (
                 <td>
