@@ -15,8 +15,37 @@ export function readFile (fileName, fileType) {
     return promise;
 }
 
+export function listDir (pathname) {
+    console.log("listing contents of " + pathname);
+    let cmd = ['/usr/bin/find', pathname, "-type", "f"];
+    let promise = cockpit.spawn(cmd);
+    return promise;
+}
+
+export function getISOContents(ISOimage) {
+    // requires the host to have libcdio installed for the iso-info command
+    console.log("looking for contents of " + ISOimage);
+    let cmd = ["/usr/bin/iso-info", "-f", "-i", ISOimage]; //, "|", "grep", "-i", "-m", "1", fileTarget];
+    let promise = cockpit.spawn(cmd);
+    return promise;
+}
+
 export function versionSupportsMetrics(version) {
-    return ["14 (Nautilus)", "RHCS 4"].includes(version);
+    // check the version number is 14 (Nautilus) or above, when metrics are integrated into the mgr/dashboard
+    return parseInt(version) >= 14;
+}
+
+export function getCephVersionNumber(versionStr) {
+    switch (versionStr) {
+    case "RHCS 3":
+        return "12";
+    case "RHCS 4":
+        return "14";
+    case "12 (Luminous)":
+    case "13 (Mimic)":
+    case "14 (Nautilus)":
+        return versionStr.split(' ')[0];
+    }
 }
 
 export function buildRoles(hosts) {
