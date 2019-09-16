@@ -22,6 +22,12 @@ hostspage.jsx
 validatepage.jsx
     - None
 
+deployPage.jsx
+    - if metrics are deployed any network delay pulling grafana hits an ansible timeout for the playbook. Ansible doesn't close cleanly, so 
+      the UI hits an Oops!
+    - if the metrics host runs out of memory (too low to start with!), the ansible task fails in the UI but no information explaining the error
+      is shown
+
 networkpage.jsx
     NIC bandwidth is reported as unknown, when ansible returns a speed of 0.
         this happens on some interfaces; docker bridge, libvirt bridge or when the target machine is a VM using virtio based NIC
@@ -33,3 +39,7 @@ ansibleMap.js
       - "objecter_inflight_ops": 102400
       - "rgw_ops_log_rados": false,
       - "rgw_dynamic_resharding": false
+
+ceph_check_role
+    - ansible module doesn't check the spec of the metrics host. If the metrics host = ansible host it is possible for the host to run
+      out of memory, and the cockpit UI will not receive a reason
