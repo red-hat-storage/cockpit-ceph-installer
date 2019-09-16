@@ -24219,7 +24219,7 @@ function (_React$Component) {
       "Community": ["14 (Nautilus)", "13 (Mimic)", "12 (Luminous)"],
       "Distribution": ["13 (Mimic)", "12 (Luminous)"]
     };
-    _this.installSourceToolTip = "For an ISO install, the image must be in /usr/share/ansible-runner-service/iso\n and have container_file_t context";
+    _this.installSourceToolTip = "For an ISO install, the image must be in /usr/share/ansible-runner-service/iso\n and have container_file_t SELINUX context";
     _this.clusterTypes = {
       options: ["Production", "Development/POC"],
       tooltip: "Production mode applies strict configuration rules. To relax rules for\na developer or POC, use Development/POC mode"

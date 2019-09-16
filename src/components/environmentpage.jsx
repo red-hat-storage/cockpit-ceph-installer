@@ -35,7 +35,7 @@ export class EnvironmentPage extends React.Component {
             "Community": ["14 (Nautilus)", "13 (Mimic)", "12 (Luminous)"],
             "Distribution": ["13 (Mimic)", "12 (Luminous)"]
         };
-        this.installSourceToolTip = "For an ISO install, the image must be in /usr/share/ansible-runner-service/iso\n and have container_file_t context";
+        this.installSourceToolTip = "For an ISO install, the image must be in /usr/share/ansible-runner-service/iso\n and have container_file_t SELINUX context";
 
         this.clusterTypes = {
             options : ["Production", "Development/POC"],
