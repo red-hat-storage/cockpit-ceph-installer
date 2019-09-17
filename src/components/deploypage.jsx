@@ -227,7 +227,7 @@ export class DeployPage extends React.Component {
             getEvents(this.playbookUUID)
                     .then((resp) => {
                         let response = JSON.parse(resp);
-                        let matchCount = (versionSupportsMetrics(this.props.settings.targetVersion)) ? 2 : 1;
+                        let matchCount = (versionSupportsMetrics(this.props.settings.cephVersion)) ? 2 : 1;
                         console.log("Debug: Looking for " + matchCount + " job events in the playbook stream");
                         // process the events in reverse order, since what we're looking for is at the end of the run
                         let evtIDs = Object.keys(response.data.events).reverse();

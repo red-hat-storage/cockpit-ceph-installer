@@ -1,0 +1,33 @@
+---
+
+# check host role
+
+- name: Validate hosts against desired cluster state
+  hosts:
+    - rhcs4-1
+    - rhcs4-2
+    - rhcs4-3
+  become: true
+  gather_facts: false
+  vars:
+    inventory:
+      rhcs4-1: osds,mons
+      rhcs4-2: osds,mons
+      rhcs4-3: osds,mons
+    mode: dev
+    deployment: rpm
+    flashusage: journal
+    osdtype: bluestore
+
+  tasks:
+    - name: debug
+      debug:
+        msg: hostname is {{ inventory[inventory_hostname] }}
+
+    - name: CEPH_CHECK_ROLE
+      ceph_check_role:
+        role: "{{ inventory[inventory_hostname]|default ('undefined') }}"
+        mode: "{{ mode }}"
+        deployment: "{{ deployment }}"
+        flashusage: "{{ flashusage }}"
+        osdtype: "{{ osdtype }}"

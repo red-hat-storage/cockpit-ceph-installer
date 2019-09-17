@@ -1,6 +1,6 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
@@ -8,7 +8,8 @@ Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
 
 Requires: ceph-ansible >= 3.1
-Requires: cockpit 
+Requires: cockpit
+Requires: libcdio
 Requires: cockpit-bridge
 
 %if "%{?dist}" == ".el7" || "%{rhel}" == "7"
@@ -68,6 +69,11 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Sun Sep 15 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-1
+- minor UI improvements
+- add ISO installation option
+- exclude loop back devices from device discovery in checkrole playbook (EL8 issue)
+- fix port conflict when the metrics host is the same as the installer host
 * Wed Jul 24 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-0
 - ceph-check-role ansible module and playbook included
 * Wed Jul 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.8-8

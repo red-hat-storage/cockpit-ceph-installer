@@ -46,19 +46,22 @@ export class Application extends React.Component {
         this.defaults = {
             iscsiTargetName: "iqn.2003-01.com.redhat.iscsi-gw:ceph-igw",
             sourceType: "Red Hat",
-            targetVersion: "RHCS 3",
+            targetVersion: "RHCS 4",
             clusterType: "Production",
             installType: "Container",
             networkType: 'ipv4',
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
+            cockpitHost: "localhost",
+            prometheusPortOverride: 9095
         };
     }
 
     checkReady = (errorMsgs) => {
         if (errorMsgs.length == 0) {
             this.setState({ready: true});
+            console.debug("UI using the following defaults :" + JSON.stringify(this.defaults));
         } else {
             // errors encountered, better give the user the bad news
             let msgs = errorMsgs.map((msg, key) => {
@@ -77,7 +80,27 @@ export class Application extends React.Component {
     componentWillMount() {
         // count of the number of files we need to read before we should render anything
         var actions = 0;
+
+        // count of all the actions we'll do to check the environment is ready. Make sure this
+        // matches the number of tests performed in this function.
+        var actions_limit = 5;
+
+        // array of error messages - ideally should be empty!
         var errorMsgs = [];
+
+        readFile('/etc/hostname')
+                .then((content, tag) => {
+                    // check the content, and extract up to 1st dot if needed
+                    let this_host = content.split('.')[0];
+
+                    this.defaults['cockpitHost'] = this_host;
+                    console.log("running on hostname " + this_host);
+                    actions++;
+                    if (actions == actions_limit) {
+                        this.checkReady(errorMsgs);
+                    }
+                });
+
         readFile('/etc/ansible-runner-service/certs/client/client.crt')
                 .then((content, tag) => {
                     if ((!content) && (tag == '-')) {
@@ -89,7 +112,7 @@ export class Application extends React.Component {
                         // Could check the internal format is PEM?
                     }
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 });
@@ -104,7 +127,7 @@ export class Application extends React.Component {
                         // Could check the internal format is PEM?
                     }
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 });
@@ -119,7 +142,7 @@ export class Application extends React.Component {
                 })
                 .finally(() => {
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 });
@@ -130,12 +153,11 @@ export class Application extends React.Component {
                     if (overrides) {
                         console.log("Overrides are : " + JSON.stringify(overrides));
                         Object.assign(this.defaults, overrides);
-                        console.log("Defaults are : " + JSON.stringify(this.defaults));
                     } else {
                         console.log("Unable to read local default overrides, using internal defaults");
                     }
                     actions++;
-                    if (actions == 4) {
+                    if (actions == actions_limit) {
                         this.checkReady(errorMsgs);
                     }
                 })

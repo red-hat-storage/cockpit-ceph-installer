@@ -67,9 +67,8 @@ export function osdsVars (vars) {
         }
     }
 
-    switch (vars.targetVersion) {
-    case "RHCS 4":
-    case "14 (Nautilus)":
+    switch (vars.cephVersion) {
+    case "14":
         // ceph-volume based OSDs
         forYML.osd_scenario = 'lvm';
         break;
@@ -92,43 +91,53 @@ export function allVars (vars) {
     case "Community":
         forYML.ceph_repository = "community";
         forYML.ceph_origin = "repository";
-        forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
+        forYML.ceph_version_num = parseInt(vars.cephVersion);
         forYML.ceph_stable_release = vars.targetVersion.split('(')[1].slice(0, -1).toLowerCase(); // nautilus
-        if (forYML.ceph_stable_release == 'nautilus') {
-            forYML.dashboard_enabled = true;
-        }
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
         forYML.ceph_origin = "repository";
-        forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
-        if (forYML.ceph_rhcs_version == '4') {
-            forYML.dashboard_enabled = true;
-        }
+        forYML.ceph_rhcs_version = parseInt(vars.targetVersion.split(' ')[1]); // 3 or 4
         break;
     case "Distribution":
         forYML.ceph_origin = "distro";
+        break;
+    case "ISO":
+        // ISO installation requested - assumes an RHCS 4 install
+        forYML.ceph_origin = "repository";
+        forYML.ceph_repository = 'rhcs';
+        forYML.ceph_repository_type = 'iso';
+        forYML.ceph_rhcs_iso_path = '/usr/share/ansible-runner-service/iso/' + vars.targetVersion;
+        break;
+    }
+
+    if (parseInt(vars.cephVersion) >= 14) {
+        forYML.dashboard_enabled = true;
     }
 
     switch (vars.installType) {
     case "Container":
         forYML.containerized_deployment = true;
         forYML.docker_pull_timeout = "600s"; // workaround for slow networks
-        if (vars.sourceType === "Red Hat") {
-            forYML.ceph_docker_registry = 'registry.access.redhat.com';
 
-            let vers = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
-            if (vers == '3') {
+        if (vars.sourceType === "Red Hat") {
+            let vers = parseInt(vars.targetVersion.split(' ')[1]); // 3 or 4
+            if (vers == 3) {
                 forYML.ceph_docker_image = 'rhceph/rhceph-3-rhel7';
+                forYML.ceph_docker_registry = 'registry.access.redhat.com';
             } else {
                 forYML.ceph_docker_image = 'rhceph/rhceph-4-rhel8';
+                forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated regisry
             }
         }
+
         break;
     default:
         // RPM deployment
         if (forYML.ceph_repository === "rhcs") {
-            forYML.ceph_repository_type = "cdn";
+            if (vars.sourceType != "ISO") {
+                forYML.ceph_repository_type = "cdn";
+            }
         }
         forYML.containerized_deployment = false;
     }
@@ -141,6 +150,11 @@ export function allVars (vars) {
     forYML.cluster_network = vars.clusterNetwork;
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
+
+    if (vars.metricsHost == vars.cockpitHost) {
+        console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
+        forYML.prometheus_port = vars.prometheusPortOverride;
+    }
 
     // wishlist for a simplified rgw install
     // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
@@ -180,14 +194,12 @@ export function mgrsVars (vars) {
     let forYML = {};
 
     let module_map = {
-        "12 (Luminous)" : ["prometheus", "status"],
-        "13 (Mimic)" : ["prometheus", "status", "dashboard"],
-        "14 (Nautilus)" : ["prometheus", "status", "dashboard", "pg_autoscaler"],
-        "RHCS 3": ["prometheus", "status"],
-        "RHCS 4": ["prometheus", "status", "dashboard", "pg_autoscaler"]
+        "12" : ["prometheus", "status"],
+        "13" : ["prometheus", "status", "dashboard"],
+        "14" : ["prometheus", "status", "dashboard", "pg_autoscaler"],
     };
 
-    forYML.ceph_mgr_modules = module_map[vars.targetVersion];
+    forYML.ceph_mgr_modules = module_map[vars.cephVersion];
 
     return forYML;
 }

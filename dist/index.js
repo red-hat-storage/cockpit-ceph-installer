@@ -21382,6 +21382,8 @@ function (_React$Component) {
         _this.setState({
           ready: true
         });
+
+        console.debug("UI using the following defaults :" + JSON.stringify(_this.defaults));
       } else {
         // errors encountered, better give the user the bad news
         var msgs = errorMsgs.map(function (msg, key) {
@@ -21421,13 +21423,15 @@ function (_React$Component) {
     _this.defaults = {
       iscsiTargetName: "iqn.2003-01.com.redhat.iscsi-gw:ceph-igw",
       sourceType: "Red Hat",
-      targetVersion: "RHCS 3",
+      targetVersion: "RHCS 4",
       clusterType: "Production",
       installType: "Container",
       networkType: 'ipv4',
       osdType: "Bluestore",
       osdMode: "None",
-      flashUsage: "Journals/Logs"
+      flashUsage: "Journals/Logs",
+      cockpitHost: "localhost",
+      prometheusPortOverride: 9095
     };
     return _this;
   }
@@ -21438,8 +21442,23 @@ function (_React$Component) {
       var _this2 = this;
 
       // count of the number of files we need to read before we should render anything
-      var actions = 0;
+      var actions = 0; // count of all the actions we'll do to check the environment is ready. Make sure this
+      // matches the number of tests performed in this function.
+
+      var actions_limit = 5; // array of error messages - ideally should be empty!
+
       var errorMsgs = [];
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/hostname').then(function (content, tag) {
+        // check the content, and extract up to 1st dot if needed
+        var this_host = content.split('.')[0];
+        _this2.defaults['cockpitHost'] = this_host;
+        console.log("running on hostname " + this_host);
+        actions++;
+
+        if (actions == actions_limit) {
+          _this2.checkReady(errorMsgs);
+        }
+      });
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/ansible-runner-service/certs/client/client.crt').then(function (content, tag) {
         if (!content && tag == '-') {
           // crt file missing
@@ -21451,7 +21470,7 @@ function (_React$Component) {
 
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       });
@@ -21466,7 +21485,7 @@ function (_React$Component) {
 
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       });
@@ -21478,7 +21497,7 @@ function (_React$Component) {
       }).finally(function () {
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       });
@@ -21487,14 +21506,13 @@ function (_React$Component) {
         if (overrides) {
           console.log("Overrides are : " + JSON.stringify(overrides));
           Object.assign(_this2.defaults, overrides);
-          console.log("Defaults are : " + JSON.stringify(_this2.defaults));
         } else {
           console.log("Unable to read local default overrides, using internal defaults");
         }
 
         actions++;
 
-        if (actions == 4) {
+        if (actions == actions_limit) {
           _this2.checkReady(errorMsgs);
         }
       }).catch(function (e) {
@@ -22173,6 +22191,14 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(RadioSet).call(this, props));
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateDefault", function (option) {
+      console.log("updating " + _this.props.config.name + " as default changed");
+
+      _this.setState({
+        default: option
+      });
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "changeHandler", function (event) {
       console.log("radio set " + _this.props.config.name + " changed");
       console.log("value is " + event.target.value);
@@ -22185,6 +22211,7 @@ function (_React$Component) {
     });
 
     _this.state = {
+      default: _this.props.default,
       name: props.config.name,
       selected: props.default
     };
@@ -22192,10 +22219,25 @@ function (_React$Component) {
   }
 
   _createClass(RadioSet, [{
+    key: "componentDidUpdate",
+    value: function componentDidUpdate(prevProps, prevState) {
+      console.log("props changed in radioset");
+
+      if (prevProps.default != this.props.default) {
+        console.log("sendng change of default :" + this.props.default);
+        this.updateDefault(this.props.default);
+      } // if (!prevProps.visible) {
+      //     this.refs.hostInputField.focus();
+      //     console.log("with props " + JSON.stringify(prevProps));
+      // }
+
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this2 = this;
 
+      console.log("in radioset render for " + this.props.config.name);
       var radioGrpClass;
       var labelClass;
       var toolTip;
@@ -22224,10 +22266,10 @@ function (_React$Component) {
           key: i
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
           type: "radio",
-          onClick: _this2.changeHandler,
+          onChange: _this2.changeHandler,
           name: _this2.props.config.name,
           value: text,
-          defaultChecked: text.valueOf() === _this2.props.default.valueOf()
+          checked: text.valueOf() === _this2.state.default.valueOf()
         }), text));
       });
 
@@ -22877,7 +22919,7 @@ function (_React$Component) {
         console.log("fetching event data from the playbook run");
         Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_5__["getEvents"])(_this.playbookUUID).then(function (resp) {
           var response = JSON.parse(resp);
-          var matchCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.settings.targetVersion) ? 2 : 1;
+          var matchCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.settings.cephVersion) ? 2 : 1;
           console.log("Debug: Looking for " + matchCount + " job events in the playbook stream"); // process the events in reverse order, since what we're looking for is at the end of the run
 
           var evtIDs = Object.keys(response.data.events).reverse();
@@ -23962,8 +24004,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_nextbutton_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/nextbutton.jsx */ "./src/components/common/nextbutton.jsx");
 /* harmony import */ var _common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./common/radioset.jsx */ "./src/components/common/radioset.jsx");
 /* harmony import */ var _common_selector_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./common/selector.jsx */ "./src/components/common/selector.jsx");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _common_notifications_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/notifications.jsx */ "./src/components/common/notifications.jsx");
+/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_6__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -23983,6 +24027,8 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
 
 
 
@@ -24014,9 +24060,29 @@ function (_React$Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "installChange", function (event) {
-      console.log("changing installation settings for: " + event.target.value);
+      console.log("changing installation settings for: " + event.target.value); // if the install source is ISO, the target version must not be No ISO...
+
+      if (event.target.value == "ISO") {
+        if (_this.installSource["ISO"][0].startsWith('No')) {
+          _this.setState({
+            msgLevel: 'error',
+            msgText: "No ISO images have been found. Confirm ISO image location and check SELINUX context OR select another source"
+          });
+
+          return;
+        } else {
+          // acceptable ISO installation
+          console.debug("updating install type to RPM for ISO support");
+
+          _this.setState({
+            installType: "RPM"
+          });
+        }
+      }
 
       _this.setState({
+        msgLevel: 'info',
+        msgText: '',
         sourceType: event.target.value,
         targetVersion: _this.installSource[event.target.value][0]
       });
@@ -24037,10 +24103,100 @@ function (_React$Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkReady", function (event) {
-      // insert any validation logic here - that would compare the state settings prior to passing page state to the parent
-      console.log("current radio button config: " + JSON.stringify(_this.state));
+      console.log("current radio button config: " + JSON.stringify(_this.state)); // insert any validation logic here - that would compare the state settings prior to passing page state to the parent
 
-      _this.props.action(_this.state);
+      if (_this.state.msgLevel != "info") {
+        return;
+      }
+
+      if (_this.state.sourceType == 'ISO') {
+        // if (this.state.installSource != 'RPM') {
+        //     this.setState({
+        //         msgLevel: 'error',
+        //         msgText: "Installation from ISO, only supports RPM based deployment"
+        //     });
+        //     return;
+        // }
+        // check the iso is OK
+        var pathName = '/usr/share/ansible-runner-service/iso';
+        console.log("Performing ISO checks");
+        Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["getISOContents"])(pathName + '/' + _this.state.targetVersion).then(function (content) {
+          var stdout = content.split('\n');
+          console.debug("ISO scan returned " + stdout.length + " lines");
+          var versionStr = '';
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = stdout[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var line = _step.value;
+
+              if (line.includes("ceph-common")) {
+                // example :  20178948 /Tools/ceph-common-14.2.2-16.ga7a380a.1.el8cp.x86_64.rpm
+                var fileName = line.split('/').pop();
+                versionStr = fileName.replace('ceph-common-', '').split('.')[0];
+                break;
+              }
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          if (!versionStr) {
+            console.log("ISO does not contain a ceph-common package..unable to confirm its a Ceph ISO");
+
+            _this.setState({
+              msgLevel: 'error',
+              msgText: "ISO does not contain a ceph-common package. Is it Ceph ISO?"
+            });
+
+            return;
+          }
+
+          console.log("ceph-common file found on the ISO. Ceph version : " + versionStr);
+
+          var currentState = _this.updateVersion(versionStr);
+
+          _this.props.action(currentState);
+        }).catch(function () {
+          console.error("Unable to read the iso");
+
+          _this.setState({
+            msgLevel: "error",
+            msgText: "Unable to read the ISO file"
+          });
+        });
+      } else {
+        var currentState = _this.updateVersion(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["getCephVersionNumber"])(_this.state.targetVersion));
+
+        console.debug("leaving environmentpage, invoking callback with " + JSON.stringify(currentState));
+
+        _this.props.action(currentState);
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateVersion", function (versionStr) {
+      var currentState = Object.assign({}, _this.state);
+      currentState['cephVersion'] = versionStr;
+      console.debug("setting environmentPage state's cephversion to " + versionStr);
+
+      _this.setState({
+        cephVersion: versionStr
+      });
+
+      return currentState;
     });
 
     _this.state = {
@@ -24052,13 +24208,18 @@ function (_React$Component) {
       osdMode: props.defaults.osdMode,
       installType: props.defaults.installType,
       flashUsage: props.defaults.flashUsage,
-      targetVersion: props.defaults.targetVersion
+      targetVersion: props.defaults.targetVersion,
+      cephVersion: '',
+      msgLevel: 'info',
+      msgText: ''
     };
     _this.installSource = {
-      "Red Hat": ["RHCS 3", 'RHCS 4'],
-      "Distribution": ["13 (Mimic)", "12 (Luminous)"],
-      "Community": ["13 (Mimic)", "12 (Luminous)", "14 (Nautilus)"]
+      "Red Hat": ["RHCS 4", 'RHCS 3'],
+      "ISO": [],
+      "Community": ["14 (Nautilus)", "13 (Mimic)", "12 (Luminous)"],
+      "Distribution": ["13 (Mimic)", "12 (Luminous)"]
     };
+    _this.installSourceToolTip = "For an ISO install, the image must be in /usr/share/ansible-runner-service/iso\n and have container_file_t SELINUX context";
     _this.clusterTypes = {
       options: ["Production", "Development/POC"],
       tooltip: "Production mode applies strict configuration rules. To relax rules for\na developer or POC, use Development/POC mode"
@@ -24113,6 +24274,33 @@ function (_React$Component) {
   }
 
   _createClass(EnvironmentPage, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["listDir"])('/usr/share/ansible-runner-service/iso').then(function (content) {
+        console.log("list of ansible-runner-service directory complete");
+        var iso = [];
+        var filesFound = content.split(" ");
+        filesFound.forEach(function (filePath) {
+          filePath = filePath.trim();
+
+          if (filePath.toUpperCase().endsWith('.ISO')) {
+            iso.push(filePath.split('/').pop());
+          }
+        });
+
+        if (iso.length == 0) {
+          iso.push("No ISO images found");
+        }
+
+        _this2.installSource['ISO'] = iso;
+        console.log(iso.length + " iso images :" + iso);
+      }).catch(function () {
+        console.error("Unable to list ansible-runner-service directory");
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
       var versionList = this.installSource[this.state.sourceType];
@@ -24121,11 +24309,15 @@ function (_React$Component) {
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           id: "environment",
           className: this.props.className
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "1. Environment"), "Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_selector_jsx__WEBPACK_IMPORTED_MODULE_3__["Selector"], {
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "1. Environment"), "Define the high level environment settings that will determine the way that the Ceph cluster is installed and configured.", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_4__["Notification"], {
+          msgLevel: this.state.msgLevel,
+          msgText: this.state.msgText
+        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_selector_jsx__WEBPACK_IMPORTED_MODULE_3__["Selector"], {
           labelName: "Installation Source",
           vertical: true,
           value: this.state.sourceType,
           options: Object.keys(this.installSource),
+          tooltip: this.installSourceToolTip,
           callback: this.installChange
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_selector_jsx__WEBPACK_IMPORTED_MODULE_3__["Selector"], {
           labelName: "Target Version",
@@ -24259,7 +24451,7 @@ function (_React$Component) {
       var iscsiTargetCounts = [0, 2, 4];
       var errMsgs = [];
 
-      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.targetVersion)) {
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.cephVersion)) {
         var metricsHost = '';
 
         for (var idx = 0; idx < _this.state.hosts.length; idx++) {
@@ -24868,7 +25060,7 @@ function (_React$Component) {
 
       if (this.props.className == 'page') {
         var rows, metricsClass;
-        metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.targetVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
+        metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.cephVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
 
         if (this.state.hosts.length > 0) {
           rows = this.state.hosts.map(function (host) {
@@ -24878,7 +25070,7 @@ function (_React$Component) {
               roleChange: _this2.updateHost,
               deleteRow: _this2.deleteHost,
               retryHost: _this2.retryHost,
-              targetVersion: _this2.props.targetVersion,
+              cephVersion: _this2.props.cephVersion,
               modal: _this2.showModal
             });
           });
@@ -24903,7 +25095,7 @@ function (_React$Component) {
           hosts: this.state.hosts,
           callback: this.addHostsToTable,
           clusterType: this.props.clusterType,
-          targetVersion: this.props.targetVersion,
+          cephVersion: this.props.cephVersion,
           closeHandler: this.hideAddHosts,
           installType: this.props.installType
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -25030,7 +25222,7 @@ function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.targetVersion) ? "thMetricsWidth visible-cell" : "hidden";
+      var metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.cephVersion) ? "thMetricsWidth visible-cell" : "hidden";
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "thHostname"
       }, this.colorify(this.state.host.hostname)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
@@ -25395,17 +25587,12 @@ function (_React$Component4) {
 
   _createClass(HostMask, [{
     key: "render",
-    // componentWillReceiveProps(props) {
-    //     if (versionSupportsMetrics(this.props.targetVersion)) {
-    //         this.setState({metrics: false});
-    //     }
-    // }
     value: function render() {
       var showHideClass = this.props.show ? 'modal display-block' : 'modal display-none';
       var metrics_cbox = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null);
       var metrics_label = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null);
 
-      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.targetVersion)) {
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.cephVersion)) {
         console.log("enabling selection of metrics role - grafana/prometheus");
         metrics_cbox = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
           role: "metrics",
@@ -25800,7 +25987,10 @@ function (_React$Component) {
       clusterNetwork: '',
       rgwNetwork: '',
       metricsHost: '',
-      deployStarted: false
+      deployStarted: false,
+      cockpitHost: props.defaults.cockpitHost,
+      cephVersion: '',
+      prometheusPortOverride: props.defaults.prometheusPortOverride
     }; // define the classes the pages will initially use on first render. If behind is defined,
     // the page will be hidden.
 
@@ -25851,7 +26041,7 @@ function (_React$Component) {
         metricsHostHandler: this.setMetricsHost,
         prevPage: this.prevPageHandler,
         hosts: this.state.hosts,
-        targetVersion: this.state.targetVersion,
+        cephVersion: this.state.cephVersion,
         installType: this.state.installType,
         clusterType: this.state.clusterType
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_validatepage_jsx__WEBPACK_IMPORTED_MODULE_5__["default"], {
@@ -26414,7 +26604,7 @@ function (_React$Component) {
                 roleName = role.slice(0, -1);
             }
 
-            this.clusterData["- " + role] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["hostsWithRoleCount"])(props.config.hosts, roleName);
+            this.clusterData["\u2022 " + role] = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_2__["hostsWithRoleCount"])(props.config.hosts, roleName);
           }
         } catch (err) {
           _didIteratorError = true;
@@ -26585,7 +26775,7 @@ function (_React$Component2) {
         var itemValue;
         var tab = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null);
 
-        if (item.startsWith('-')) {
+        if (item.startsWith("\u2022")) {
           tab = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
             className: "tab"
           });
@@ -27911,9 +28101,8 @@ function osdsVars(vars) {
     }
   }
 
-  switch (vars.targetVersion) {
-    case "RHCS 4":
-    case "14 (Nautilus)":
+  switch (vars.cephVersion) {
+    case "14":
       // ceph-volume based OSDs
       forYML.osd_scenario = 'lvm';
       break;
@@ -27937,29 +28126,33 @@ function allVars(vars) {
     case "Community":
       forYML.ceph_repository = "community";
       forYML.ceph_origin = "repository";
-      forYML.ceph_version_num = parseInt(vars.targetVersion.split(' ')[0]); // 13
-
+      forYML.ceph_version_num = parseInt(vars.cephVersion);
       forYML.ceph_stable_release = vars.targetVersion.split('(')[1].slice(0, -1).toLowerCase(); // nautilus
-
-      if (forYML.ceph_stable_release == 'nautilus') {
-        forYML.dashboard_enabled = true;
-      }
 
       break;
 
     case "Red Hat":
       forYML.ceph_repository = "rhcs";
       forYML.ceph_origin = "repository";
-      forYML.ceph_rhcs_version = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
-
-      if (forYML.ceph_rhcs_version == '4') {
-        forYML.dashboard_enabled = true;
-      }
+      forYML.ceph_rhcs_version = parseInt(vars.targetVersion.split(' ')[1]); // 3 or 4
 
       break;
 
     case "Distribution":
       forYML.ceph_origin = "distro";
+      break;
+
+    case "ISO":
+      // ISO installation requested - assumes an RHCS 4 install
+      forYML.ceph_origin = "repository";
+      forYML.ceph_repository = 'rhcs';
+      forYML.ceph_repository_type = 'iso';
+      forYML.ceph_rhcs_iso_path = '/usr/share/ansible-runner-service/iso/' + vars.targetVersion;
+      break;
+  }
+
+  if (parseInt(vars.cephVersion) >= 14) {
+    forYML.dashboard_enabled = true;
   }
 
   switch (vars.installType) {
@@ -27968,13 +28161,14 @@ function allVars(vars) {
       forYML.docker_pull_timeout = "600s"; // workaround for slow networks
 
       if (vars.sourceType === "Red Hat") {
-        forYML.ceph_docker_registry = 'registry.access.redhat.com';
-        var vers = parseFloat(vars.targetVersion.split(' ')[1]); // 3 or 4
+        var vers = parseInt(vars.targetVersion.split(' ')[1]); // 3 or 4
 
-        if (vers == '3') {
+        if (vers == 3) {
           forYML.ceph_docker_image = 'rhceph/rhceph-3-rhel7';
+          forYML.ceph_docker_registry = 'registry.access.redhat.com';
         } else {
           forYML.ceph_docker_image = 'rhceph/rhceph-4-rhel8';
+          forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated regisry
         }
       }
 
@@ -27983,7 +28177,9 @@ function allVars(vars) {
     default:
       // RPM deployment
       if (forYML.ceph_repository === "rhcs") {
-        forYML.ceph_repository_type = "cdn";
+        if (vars.sourceType != "ISO") {
+          forYML.ceph_repository_type = "cdn";
+        }
       }
 
       forYML.containerized_deployment = false;
@@ -27996,7 +28192,12 @@ function allVars(vars) {
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
-  forYML.ip_version = vars.networkType; // wishlist for a simplified rgw install
+  forYML.ip_version = vars.networkType;
+
+  if (vars.metricsHost == vars.cockpitHost) {
+    console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
+    forYML.prometheus_port = vars.prometheusPortOverride;
+  } // wishlist for a simplified rgw install
   // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
   // if (rgwHostIdx.length > 0) {
   //     // Additional OSD tuning for Object workloads
@@ -28014,6 +28215,7 @@ function allVars(vars) {
   //     }
   // }
 
+
   return forYML;
 }
 function dashboardVars(vars) {
@@ -28030,13 +28232,11 @@ function monsVars(vars) {
 function mgrsVars(vars) {
   var forYML = {};
   var module_map = {
-    "12 (Luminous)": ["prometheus", "status"],
-    "13 (Mimic)": ["prometheus", "status", "dashboard"],
-    "14 (Nautilus)": ["prometheus", "status", "dashboard", "pg_autoscaler"],
-    "RHCS 3": ["prometheus", "status"],
-    "RHCS 4": ["prometheus", "status", "dashboard", "pg_autoscaler"]
+    "12": ["prometheus", "status"],
+    "13": ["prometheus", "status", "dashboard"],
+    "14": ["prometheus", "status", "dashboard", "pg_autoscaler"]
   };
-  forYML.ceph_mgr_modules = module_map[vars.targetVersion];
+  forYML.ceph_mgr_modules = module_map[vars.cephVersion];
   return forYML;
 }
 function rgwsVars(vars) {
@@ -28391,13 +28591,16 @@ function decodeAddError(hostName, error) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: readFile, versionSupportsMetrics, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount */
+/*! exports provided: readFile, listDir, getISOContents, versionSupportsMetrics, getCephVersionNumber, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readFile", function() { return readFile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "listDir", function() { return listDir; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getISOContents", function() { return getISOContents; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "versionSupportsMetrics", function() { return versionSupportsMetrics; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getCephVersionNumber", function() { return getCephVersionNumber; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildRoles", function() { return buildRoles; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeItem", function() { return removeItem; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertRole", function() { return convertRole; });
@@ -28448,8 +28651,37 @@ function readFile(fileName, fileType) {
   var promise = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.file(fileName, spec).read();
   return promise;
 }
+function listDir(pathname) {
+  console.log("listing contents of " + pathname);
+  var cmd = ['/usr/bin/find', pathname, "-type", "f"];
+  var promise = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.spawn(cmd);
+  return promise;
+}
+function getISOContents(ISOimage) {
+  // requires the host to have libcdio installed for the iso-info command
+  console.log("looking for contents of " + ISOimage);
+  var cmd = ["/usr/bin/iso-info", "-f", "-i", ISOimage]; //, "|", "grep", "-i", "-m", "1", fileTarget];
+
+  var promise = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.spawn(cmd);
+  return promise;
+}
 function versionSupportsMetrics(version) {
-  return ["14 (Nautilus)", "RHCS 4"].includes(version);
+  // check the version number is 14 (Nautilus) or above, when metrics are integrated into the mgr/dashboard
+  return parseInt(version) >= 14;
+}
+function getCephVersionNumber(versionStr) {
+  switch (versionStr) {
+    case "RHCS 3":
+      return "12";
+
+    case "RHCS 4":
+      return "14";
+
+    case "12 (Luminous)":
+    case "13 (Mimic)":
+    case "14 (Nautilus)":
+      return versionStr.split(' ')[0];
+  }
 }
 function buildRoles(hosts) {
   // return a list of roles from an array of host state objects
