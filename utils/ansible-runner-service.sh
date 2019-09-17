@@ -17,6 +17,17 @@ CONTAINER_BIN=''
 CONTAINER_RUN_OPTIONS=''
 
 set_container_bin() {
+
+    os_id=$(awk -F '=' '/^ID=/ { print $2 }' /etc/os-release | tr -d '"')
+    version_id=$(awk -F '=' '/^VERSION_ID=/ { print $2 }' /etc/os-release | tr -d '.' | tr -d '"')
+    if [ $os_id == "rhel" ]; then
+            if [ $version_id -ge "80" ]; then
+                  CONTAINER_OPTS="podman"
+            else
+                  CONTAINER_OPTS="docker"
+            fi
+    fi
+
     for option in ${CONTAINER_OPTS[@]}; do
         type $option > /dev/null 2>&1
         if [ $? -eq 0 ]; then
