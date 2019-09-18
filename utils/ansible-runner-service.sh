@@ -11,7 +11,6 @@ ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
-CONTAINER_IMAGE_NAME="ansible-runner-service"
 
 CONTAINER_BIN=''
 CONTAINER_RUN_OPTIONS=''
@@ -245,6 +244,8 @@ environment_ok() {
     [ -z "$CERT_IDENTITY" ] && CERT_IDENTITY="/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/OU=RunnerServer/CN=$HOST"
     [ -z "$CERT_IDENTITY_CLIENT" ] && CERT_IDENTITY_CLIENT="/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/OU=RunnerClient/CN=$HOST"
     [ -z "$CERT_PASSWORD" ] && CERT_PASSWORD="ansible"
+    [ -z "$CONTAINER_IMAGE_NAME" ] && CONTAINER_IMAGE_NAME="ansible-runner-service"
+
 
     if [ "$errors" != "" ]; then
         echo "- Problems found"
@@ -273,7 +274,11 @@ usage() {
     echo -e "\t CERT_IDENTITY_CLIENT ... server certificate id (subject)"
     echo -e "\t CERT_PASSWORD ... password used to lock and access the server cert\n"
     echo "e.g."
-    echo "> CERT_PASSWORD='supersecret' ./ansible-runner-service.sh -v -s"
+    echo -e "> CERT_PASSWORD='supersecret' ./ansible-runner-service.sh -v -s\n"
+    echo -e "Ansible Runner Service container image name can be customized (<ansible-runner-service> by default) using a environment variable:\n"
+    echo -e "\t CONTAINER_IMAGE_NAME ... string used in the <pull> command to get the ARS container image\n"
+    echo "e.g."
+    echo -e "> CONTAINER_IMAGE_NAME='ansible/ansible-runner-service' ./ansible-runner-service.sh -v -s\n"
 }
 
 is_running() {
