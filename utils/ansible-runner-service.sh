@@ -5,7 +5,7 @@
 # Cert identity and password may be overridden by environment variables - see help
 
 VERBOSE=false
-CONTAINER_OPTS="docker podman"
+CONTAINER_OPTS="podman docker"
 PREREQS="openssl curl"
 ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
@@ -17,21 +17,37 @@ CONTAINER_BIN=''
 CONTAINER_RUN_OPTIONS=''
 
 set_container_bin() {
-    for option in ${CONTAINER_OPTS[@]}; do
-            type $option > /dev/null 2>&1
-            if [ $? -eq 0 ]; then
-                if $VERBOSE; then
-                    echo -e "\tOptional binary $option is present"
-                fi
-                CONTAINER_BIN=$option
-                if [ $CONTAINER_BIN == "docker" ]; then
-                    CONTAINER_RUN_OPTIONS=' --rm -d '
-                else
-                    CONTAINER_RUN_OPTIONS=' -d '
-                fi
-                break
+
+    os_id=$(awk -F '=' '/^ID=/ { print $2 }' /etc/os-release | tr -d '"')
+    version_id=$(awk -F '=' '/^VERSION_ID=/ { print $2 }' /etc/os-release | tr -d '.' | tr -d '"')
+    if [ $os_id == "rhel" ]; then
+            if [ $version_id -ge "80" ]; then
+                  CONTAINER_OPTS="podman"
+            else
+                  CONTAINER_OPTS="docker"
             fi
-        done
+    fi
+
+    for option in ${CONTAINER_OPTS[@]}; do
+        type $option > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            if $VERBOSE; then
+                echo -e "\tOptional binary $option is present"
+            fi
+            CONTAINER_BIN=$option
+            if [ $CONTAINER_BIN == "docker" ]; then
+                CONTAINER_RUN_OPTIONS=' --rm -d '
+            else
+                CONTAINER_RUN_OPTIONS=' -d '
+            fi
+            break
+        fi
+    done
+    if [ -z "$CONTAINER_BIN" ]; then
+            echo "Please install in first place <podman> or <docker>"
+            exit 1
+    fi
+
 }
 
 create_server_certs() {
