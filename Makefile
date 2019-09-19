@@ -68,7 +68,7 @@ $(WEBPACK_TEST): $(NODE_MODULES_TEST) $(shell find src/ -type f) package.json we
 
 clean:
 	rm -rf dist/
-	[ ! -e cockpit-$(PACKAGE_NAME).spec.in ] || rm -f cockpit-$(PACKAGE_NAME).spec
+	[ ! -e $(PACKAGE_NAME).spec.in ] || rm -f $(PACKAGE_NAME).spec
 
 install: $(WEBPACK_TEST)
 	mkdir -p $(DESTDIR)/usr/share/cockpit/$(PACKAGE_NAME)
@@ -84,24 +84,24 @@ devel-install: $(WEBPACK_TEST)
 # when building a distribution tarball, call webpack with a 'production' environment
 # ship a stub node_modules/ so that `make` works without re-running `npm install`
 dist-gzip: NODE_ENV=production
-dist-gzip: all cockpit-$(PACKAGE_NAME).spec
+dist-gzip: all $(PACKAGE_NAME).spec
 	mv node_modules node_modules.release
 	mkdir -p $(NODE_MODULES_TEST)
 	touch -r package.json $(NODE_MODULES_TEST)
 	touch dist/*
-	tar czf cockpit-$(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,cockpit-$(PACKAGE_NAME)/,' \
-		--exclude cockpit-$(PACKAGE_NAME).spec.in \
-		$$(git ls-files) cockpit-$(PACKAGE_NAME).spec dist/ node_modules
+	tar czf $(PACKAGE_NAME)-$(VERSION).tar.gz --transform 's,^,$(PACKAGE_NAME)/,' \
+		--exclude $(PACKAGE_NAME).spec.in \
+		$$(git ls-files) $(PACKAGE_NAME).spec dist/ node_modules
 	rm -rf node_modules
 	mv node_modules.release node_modules
 
-srpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
+srpm: dist-gzip $(PACKAGE_NAME).spec
 	rpmbuild -bs \
 	  --define "_sourcedir `pwd`" \
 	  --define "_srcrpmdir `pwd`" \
-	  cockpit-$(PACKAGE_NAME).spec
+	  $(PACKAGE_NAME).spec
 
-rpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
+rpm: dist-gzip $(PACKAGE_NAME).spec
 	mkdir -p "`pwd`/output"
 	mkdir -p "`pwd`/rpmbuild"
 	rpmbuild -bb \
@@ -111,7 +111,7 @@ rpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
 	  --define "_srcrpmdir `pwd`" \
 	  --define "_rpmdir `pwd`/output" \
 	  --define "_buildrootdir `pwd`/build" \
-	  cockpit-$(PACKAGE_NAME).spec
+	  $(PACKAGE_NAME).spec
 	find `pwd`/output -name '*.rpm' -printf '%f\n' -exec mv {} . \;
 	rm -r "`pwd`/rpmbuild"
 	rm -r "`pwd`/output" "`pwd`/build"
@@ -119,7 +119,7 @@ rpm: dist-gzip cockpit-$(PACKAGE_NAME).spec
 # build a VM with locally built rpm installed
 $(VM_IMAGE): rpm bots
 	rm -f $(VM_IMAGE) $(VM_IMAGE).qcow2
-	bots/image-customize -v -i cockpit -i `pwd`/cockpit-$(PACKAGE_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
+	bots/image-customize -v -i cockpit -i `pwd`/$(PACKAGE_NAME)-*.noarch.rpm -s $(CURDIR)/test/vm.install $(TEST_OS)
 
 # convenience target for the above
 vm: $(VM_IMAGE)
