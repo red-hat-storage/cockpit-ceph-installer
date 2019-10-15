@@ -11,7 +11,7 @@ ETCDIR="/etc/ansible-runner-service"
 SERVERCERTS="$ETCDIR/certs/server"
 CLIENTCERTS="$ETCDIR/certs/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
-
+IMAGE_ID=''
 CONTAINER_BIN=''
 CONTAINER_RUN_OPTIONS=''
 
@@ -125,8 +125,19 @@ create_certs() {
     fi
 }
 
+set_image_id() {
+    # set the image id, ignoring any tag that could be present in the
+    # container name
+    old_IFS=$IFS
+    IFS=':' read -ra image <<< "$CONTAINER_IMAGE_NAME"
+    IFS=${old_IFS}
+    IMAGE_ID=$($CONTAINER_BIN images | grep ${image[0]} | awk -F ' ' '{print $3}')
+}
+
 fetch_container() {
-    IMAGE_ID=$($CONTAINER_BIN images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
+    
+    set_image_id
+
     if [ -z "$IMAGE_ID" ]; then
         echo "Fetching ansible runner service container. Please wait..."
         $CONTAINER_BIN pull "$CONTAINER_IMAGE_NAME"
@@ -134,7 +145,7 @@ fetch_container() {
             echo "Failed to fetch the container. Unable to continue"
             exit 4
         else
-            IMAGE_ID=$($CONTAINER_BIN images | grep $CONTAINER_IMAGE_NAME | awk -F ' ' '{print $3}')
+            set_image_id
         fi
     else
         echo "Using the ansible_runner_service container already downloaded"
@@ -160,7 +171,7 @@ stop_runner_service() {
     echo "Stopping runner-service"
     $CONTAINER_BIN kill runner-service > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        $CONTAINER_BIN rm runner-service > /dev/null 2>&1
+        $CONTAINER_BIN rm -f runner-service > /dev/null 2>&1
     fi
 }
 
