@@ -1,3 +1,4 @@
+import { hostsWithRoleCount } from "./utils.js";
 
 export function hostVars(hostMetadata, flashUsage) {
     // gets run once per host to generate the hostvars variables
@@ -154,6 +155,18 @@ export function allVars (vars) {
     if (vars.metricsHost == vars.cockpitHost) {
         console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
         forYML.prometheus_port = vars.prometheusPortOverride;
+    }
+
+    // with only a single host, we need to change the default crush policy from 1 (host)
+    // to 0 (osd)
+    if (hostsWithRoleCount(vars.hosts, 'osd') == 1) {
+        console.log("changing default crush rules : only a single osd host requires chooseleaf_type = 0 (instead of 1)");
+        forYML.ceph_conf_overrides = {
+            "global": {
+                "osd_crush_chooseleaf_type": 0,
+                "osd_pool_default_size": 1
+            }
+        };
     }
 
     // wishlist for a simplified rgw install
