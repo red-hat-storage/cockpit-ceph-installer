@@ -1,6 +1,6 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
@@ -69,6 +69,11 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Tue Oct 15 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-2
+- improve handling of container image names that include a tag
+- provide ceph.conf overrides for All-in-One clusters BZ1761616
+- fix removal of runner-service container BZ1761608
+- add missing iso directory to runner-service directory structure BZ1761610
 * Sun Sep 15 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-1
 - minor UI improvements
 - add ISO installation option
