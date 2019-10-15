@@ -28008,6 +28008,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rgwsVars", function() { return rgwsVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "iscsiVars", function() { return iscsiVars; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cephAnsibleSequence", function() { return cephAnsibleSequence; });
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils.js */ "./src/services/utils.js");
+
 function hostVars(hostMetadata, flashUsage) {
   // gets run once per host to generate the hostvars variables
   console.log("hostvars called with " + JSON.stringify(hostMetadata));
@@ -28197,6 +28199,18 @@ function allVars(vars) {
   if (vars.metricsHost == vars.cockpitHost) {
     console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
     forYML.prometheus_port = vars.prometheusPortOverride;
+  } // with only a single host, we need to change the default crush policy from 1 (host)
+  // to 0 (osd)
+
+
+  if (Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["hostsWithRoleCount"])(vars.hosts, 'osd') == 1) {
+    console.log("changing default crush rules : only a single osd host requires chooseleaf_type = 0 (instead of 1)");
+    forYML.ceph_conf_overrides = {
+      "global": {
+        "osd_crush_chooseleaf_type": 0,
+        "osd_pool_default_size": 1
+      }
+    };
   } // wishlist for a simplified rgw install
   // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
   // if (rgwHostIdx.length > 0) {
