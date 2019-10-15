@@ -159,6 +159,9 @@ start_container() {
 stop_runner_service() {
     echo "Stopping runner-service"
     $CONTAINER_BIN kill runner-service > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        $CONTAINER_BIN rm runner-service > /dev/null 2>&1
+    fi
 }
 
 setup_dirs() {
