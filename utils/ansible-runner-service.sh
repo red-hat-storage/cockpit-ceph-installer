@@ -171,7 +171,7 @@ setup_dirs() {
         if $VERBOSE; then
             echo "Creating directories in $RUNNERDIR"
         fi
-        mkdir -p /usr/share/ansible-runner-service/{artifacts,env,inventory}
+        mkdir -p /usr/share/ansible-runner-service/{artifacts,env,inventory,iso}
         ln -s /usr/share/ceph-ansible /usr/share/ansible-runner-service/project
         chcon -Rt container_file_t /usr/share/ansible-runner-service
     fi
