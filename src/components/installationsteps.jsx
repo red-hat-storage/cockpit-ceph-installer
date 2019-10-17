@@ -35,8 +35,7 @@ export class InstallationSteps extends React.Component {
             metricsHost: '',
             deployStarted: false,
             cockpitHost: props.defaults.cockpitHost,
-            cephVersion: '',
-            prometheusPortOverride: props.defaults.prometheusPortOverride
+            cephVersion: ''
         };
 
         // define the classes the pages will initially use on first render. If behind is defined,

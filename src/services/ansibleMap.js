@@ -152,11 +152,6 @@ export function allVars (vars) {
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType;
 
-    if (vars.metricsHost == vars.cockpitHost) {
-        console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
-        forYML.prometheus_port = vars.prometheusPortOverride;
-    }
-
     // with only a single host, we need to change the default crush policy from 1 (host)
     // to 0 (osd)
     if (hostsWithRoleCount(vars.hosts, 'osd') == 1) {

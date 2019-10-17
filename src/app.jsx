@@ -53,8 +53,7 @@ export class Application extends React.Component {
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
-            cockpitHost: "localhost",
-            prometheusPortOverride: 9095
+            cockpitHost: "localhost"
         };
     }
 
