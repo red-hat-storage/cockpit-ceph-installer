@@ -3,8 +3,10 @@ import { UIButton } from './common/nextbutton.jsx';
 import { RadioSet } from './common/radioset.jsx';
 import { Selector } from './common/selector.jsx';
 import { Notification } from './common/notifications.jsx';
-import { listDir, getISOContents, getCephVersionNumber } from '../services/utils.js';
+import { listDir, getISOContents, getCephVersionNumber, isEmpty } from '../services/utils.js';
 import '../app.scss';
+import { PasswordBox } from './common/password.jsx';
+import { Tooltip } from './common/tooltip.jsx';
 
 export class EnvironmentPage extends React.Component {
     //
@@ -24,13 +26,16 @@ export class EnvironmentPage extends React.Component {
             installType: props.defaults.installType,
             flashUsage: props.defaults.flashUsage,
             targetVersion: props.defaults.targetVersion,
-            cephVersion: '',
-            msgLevel: 'info',
-            msgText: ''
+            cephVersion: "",
+            msgLevel: "info",
+            msgText: "",
+            rhnUserName: "",
+            rhnPassword: "",
+            credentialsClass: "visible"
         };
 
         this.installSource = {
-            "Red Hat": ["RHCS 4", 'RHCS 3'],
+            "Red Hat": ["RHCS 4"],
             "ISO": [],
             "Community": ["14 (Nautilus)", "13 (Mimic)", "12 (Luminous)"],
             "Distribution": ["13 (Mimic)", "12 (Luminous)"]
@@ -77,7 +82,7 @@ export class EnvironmentPage extends React.Component {
             options: ["Container", "RPM"],
             name: "installType",
             info: "Ceph can be installed as lightweight container images, or as rpm packages. Container deployments offer service isolation enabling improved collocation and hardware utilization",
-            tooltip: "Containers simplify deployment",
+            tooltip: "Ceph containers are managed by systemd, and use CPU and RAM limits to optimize collocation",
             horizontal: true
         };
         this.flash_usage = {
@@ -98,6 +103,8 @@ export class EnvironmentPage extends React.Component {
     installChange = (event) => {
         console.log("changing installation settings for: " + event.target.value);
         // if the install source is ISO, the target version must not be No ISO...
+        let credentialsVisibility;
+        let credentialsRequired = ["Red Hat", "ISO"];
         if (event.target.value == "ISO") {
             if (this.installSource["ISO"][0].startsWith('No')) {
                 this.setState({
@@ -114,7 +121,16 @@ export class EnvironmentPage extends React.Component {
             }
         }
 
+        // if the target.value is Red Hat or ISO reveal the credentials component,
+        // otherwise hide it
+        if (credentialsRequired.includes(event.target.value)) {
+            credentialsVisibility = 'visible';
+        } else {
+            credentialsVisibility = 'hidden';
+        }
+
         this.setState({
+            credentialsClass: credentialsVisibility,
             msgLevel: 'info',
             msgText: '',
             sourceType: event.target.value,
@@ -132,12 +148,47 @@ export class EnvironmentPage extends React.Component {
         this.setState({ [event.target.getAttribute('name')]: event.target.value });
     }
 
+    credentialsChange = (event) => {
+        let credType = event.target.getAttribute("name");
+
+        switch (credType) {
+        case "username":
+            this.setState({
+                rhnUserName: event.target.value
+            });
+            break;
+        case "password":
+            this.setState({
+                rhnPassword: event.target.value
+            });
+            break;
+        }
+
+        if (this.state.msgText.startsWith("RHN username")) {
+            this.setState({
+                msgLevel: "info",
+                msgText: ""
+            });
+        }
+    }
+
     checkReady = (event) => {
         console.log("current radio button config: " + JSON.stringify(this.state));
         // insert any validation logic here - that would compare the state settings prior to passing page state to the parent
-
+        let requiresCredentials = ["Red Hat", "ISO"];
         if (this.state.msgLevel != "info") {
             return;
+        }
+
+        if (requiresCredentials.includes(this.state.sourceType)) {
+            // ensure the credentials are not null
+            if (isEmpty(this.state.rhnUserName) || isEmpty(this.state.rhnPassword)) {
+                this.setState({
+                    msgLevel: 'error',
+                    msgText: "RHN username/password must be provided for Red Hat or ISO based deployments"
+                });
+                return;
+            }
         }
 
         if (this.state.sourceType == 'ISO') {
@@ -257,6 +308,10 @@ export class EnvironmentPage extends React.Component {
                             tooltip={this.clusterTypes.tooltip}
                             callback={this.clusterTypeChange} />
                     </div>
+                    <Credentials visible={this.state.credentialsClass}
+                                 callback={this.credentialsChange}
+                                 user={this.state.rhnUserName}
+                                 password={this.state.rhnPassword} />
                     <RadioSet config={this.network_type} default={this.state.networkType} callback={this.updateState} />
                     <RadioSet config={this.osd_type} default={this.state.osdType} callback={this.updateState} />
                     <RadioSet config={this.flash_usage} default={this.state.flashUsage} callback={this.updateState} />
@@ -271,6 +326,33 @@ export class EnvironmentPage extends React.Component {
             console.log("Skipping render of environmentpage - not active");
             return (<div id="environment" className={this.props.className} />);
         }
+    }
+}
+
+class Credentials extends React.Component {
+    constructor (props) {
+        super(props);
+        this.state = {
+        };
+    }
+
+    render() {
+        return (
+            <div className={this.props.visible}>
+                <span className="input-label-horizontal display-inline-block">
+                    <b>RHN User Name</b>
+                    <Tooltip text={"RHN credentials are needed to authenticate against\nthe Red Hat container registry"} />
+                </span>
+                <input type="text"
+                       name="username"
+                       defaultValue={this.props.user}
+                       className="form-control input-lg input-text display-inline-block"
+                       maxLength="20"
+                       placeholder="Username"
+                       onBlur={this.props.callback} />
+                <PasswordBox passwordPrompt="RHN Password" name="password" value={this.props.password} callback={this.props.callback} />
+            </div>
+        );
     }
 }
 

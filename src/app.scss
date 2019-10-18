@@ -778,8 +778,16 @@ table.failure-table tbody tr:hover {
     width: 200px;
     margin-right: 20px;
     text-align: right;
-    vertical-align: top; }
-      
+    vertical-align: top; 
+}
+.input-label-horizontal {
+    width: 200px;
+    margin-right: 40px;
+    margin-bottom:10px;
+    text-align: right;
+    vertical-align: top; 
+    line-height: 2em;
+}     
 .radio-label-vertical {
     position: relative; }
       
@@ -971,4 +979,17 @@ table.runtime-table {
 }
 .clippy:hover {
     color:black;
+}
+.width-auto {
+    width: auto;
+}
+.height-auto {
+    height:auto;
+    line-height: 1;
+}
+.input-text {
+    width:auto;
+    height: auto;
+    font-size: 12px;
+    line-height: 1;
 }

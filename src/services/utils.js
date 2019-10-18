@@ -541,3 +541,8 @@ export function osdCount(hosts, flashUsage) {
     console.log("Detected " + ctr + " candidate disks for OSDs");
     return ctr;
 }
+
+export function isEmpty(str) {
+    // return bool representing whether a string is empty or not
+    return (!str || str.trim().length === 0);
+}
