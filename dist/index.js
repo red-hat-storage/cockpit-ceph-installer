@@ -21431,7 +21431,11 @@ function (_React$Component) {
       osdMode: "None",
       flashUsage: "Journals/Logs",
       cockpitHost: "localhost",
-      prometheusPortOverride: 9095
+      rhcs_node_exporter_image: "registry.redhat.io/openshift4/ose-prometheus-node-exporter:v4.1",
+      rhcs_grafana_image: "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3",
+      rhcs_prometheus_image: "registry.redhat.io/openshift4/ose-prometheus:4.1",
+      rhcs_alertmanager_image: "registry.redhat.io/openshift4/ose-prometheus-alertmanager:4.1",
+      rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8"
     };
     return _this;
   }
@@ -22135,6 +22139,91 @@ function (_React$Component) {
   }]);
 
   return Notification;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+/***/ }),
+
+/***/ "./src/components/common/password.jsx":
+/*!********************************************!*\
+  !*** ./src/components/common/password.jsx ***!
+  \********************************************/
+/*! exports provided: PasswordBox */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PasswordBox", function() { return PasswordBox; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+var PasswordBox =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(PasswordBox, _React$Component);
+
+  /* PasswordBox is implemented as a separate component, so we can add show/reveal
+    functionality later
+  */
+  function PasswordBox(props) {
+    var _this;
+
+    _classCallCheck(this, PasswordBox);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(PasswordBox).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateParent", function (event) {
+      console.debug("left the password box");
+
+      _this.props.callback(event);
+    });
+
+    _this.state = {
+      class: "display-inline-block arrow-right toggle-reset"
+    };
+    return _this;
+  }
+
+  _createClass(PasswordBox, [{
+    key: "render",
+    value: function render() {
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "input-label-horizontal display-inline-block"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, this.props.passwordPrompt)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        type: "password",
+        name: this.props.name,
+        defaultValue: this.props.value,
+        maxLength: "20",
+        className: "form-control input-lg input-text display-inline-block",
+        placeholder: "Password",
+        onBlur: this.updateParent
+      }));
+    }
+  }]);
+
+  return PasswordBox;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 /***/ }),
@@ -24008,6 +24097,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _common_password_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/password.jsx */ "./src/components/common/password.jsx");
+/* harmony import */ var _common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./common/tooltip.jsx */ "./src/components/common/tooltip.jsx");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24027,6 +24118,8 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
 
 
 
@@ -24062,6 +24155,9 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "installChange", function (event) {
       console.log("changing installation settings for: " + event.target.value); // if the install source is ISO, the target version must not be No ISO...
 
+      var credentialsVisibility;
+      var credentialsRequired = ["Red Hat", "ISO"];
+
       if (event.target.value == "ISO") {
         if (_this.installSource["ISO"][0].startsWith('No')) {
           _this.setState({
@@ -24078,9 +24174,18 @@ function (_React$Component) {
             installType: "RPM"
           });
         }
+      } // if the target.value is Red Hat or ISO reveal the credentials component,
+      // otherwise hide it
+
+
+      if (credentialsRequired.includes(event.target.value)) {
+        credentialsVisibility = 'visible';
+      } else {
+        credentialsVisibility = 'hidden';
       }
 
       _this.setState({
+        credentialsClass: credentialsVisibility,
         msgLevel: 'info',
         msgText: '',
         sourceType: event.target.value,
@@ -24102,11 +24207,52 @@ function (_React$Component) {
       _this.setState(_defineProperty({}, event.target.getAttribute('name'), event.target.value));
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "credentialsChange", function (event) {
+      var credType = event.target.getAttribute("name");
+
+      switch (credType) {
+        case "username":
+          _this.setState({
+            rhnUserName: event.target.value
+          });
+
+          break;
+
+        case "password":
+          _this.setState({
+            rhnPassword: event.target.value
+          });
+
+          break;
+      }
+
+      if (_this.state.msgText.startsWith("RHN username")) {
+        _this.setState({
+          msgLevel: "info",
+          msgText: ""
+        });
+      }
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkReady", function (event) {
       console.log("current radio button config: " + JSON.stringify(_this.state)); // insert any validation logic here - that would compare the state settings prior to passing page state to the parent
 
+      var requiresCredentials = ["Red Hat", "ISO"];
+
       if (_this.state.msgLevel != "info") {
         return;
+      }
+
+      if (requiresCredentials.includes(_this.state.sourceType)) {
+        // ensure the credentials are not null
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["isEmpty"])(_this.state.rhnUserName) || Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["isEmpty"])(_this.state.rhnPassword)) {
+          _this.setState({
+            msgLevel: 'error',
+            msgText: "RHN username/password must be provided for Red Hat or ISO based deployments"
+          });
+
+          return;
+        }
       }
 
       if (_this.state.sourceType == 'ISO') {
@@ -24209,12 +24355,15 @@ function (_React$Component) {
       installType: props.defaults.installType,
       flashUsage: props.defaults.flashUsage,
       targetVersion: props.defaults.targetVersion,
-      cephVersion: '',
-      msgLevel: 'info',
-      msgText: ''
+      cephVersion: "",
+      msgLevel: "info",
+      msgText: "",
+      rhnUserName: "",
+      rhnPassword: "",
+      credentialsClass: "visible"
     };
     _this.installSource = {
-      "Red Hat": ["RHCS 4", 'RHCS 3'],
+      "Red Hat": ["RHCS 4"],
       "ISO": [],
       "Community": ["14 (Nautilus)", "13 (Mimic)", "12 (Luminous)"],
       "Distribution": ["13 (Mimic)", "12 (Luminous)"]
@@ -24259,7 +24408,7 @@ function (_React$Component) {
       options: ["Container", "RPM"],
       name: "installType",
       info: "Ceph can be installed as lightweight container images, or as rpm packages. Container deployments offer service isolation enabling improved collocation and hardware utilization",
-      tooltip: "Containers simplify deployment",
+      tooltip: "Ceph containers are managed by systemd, and use CPU and RAM limits to optimize collocation",
       horizontal: true
     };
     _this.flash_usage = {
@@ -24332,7 +24481,12 @@ function (_React$Component) {
           options: this.clusterTypes.options,
           tooltip: this.clusterTypes.tooltip,
           callback: this.clusterTypeChange
-        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
+        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Credentials, {
+          visible: this.state.credentialsClass,
+          callback: this.credentialsChange,
+          user: this.state.rhnUserName,
+          password: this.state.rhnPassword
+        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
           config: this.network_type,
           default: this.state.networkType,
           callback: this.updateState
@@ -24371,6 +24525,51 @@ function (_React$Component) {
 
   return EnvironmentPage;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+var Credentials =
+/*#__PURE__*/
+function (_React$Component2) {
+  _inherits(Credentials, _React$Component2);
+
+  function Credentials(props) {
+    var _this3;
+
+    _classCallCheck(this, Credentials);
+
+    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(Credentials).call(this, props));
+    _this3.state = {};
+    return _this3;
+  }
+
+  _createClass(Credentials, [{
+    key: "render",
+    value: function render() {
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: this.props.visible
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "input-label-horizontal display-inline-block"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "RHN User Name"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__["Tooltip"], {
+        text: "RHN credentials are needed to authenticate against\nthe Red Hat container registry"
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        type: "text",
+        name: "username",
+        defaultValue: this.props.user,
+        className: "form-control input-lg input-text display-inline-block",
+        maxLength: "20",
+        placeholder: "Username",
+        onBlur: this.props.callback
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_password_jsx__WEBPACK_IMPORTED_MODULE_7__["PasswordBox"], {
+        passwordPrompt: "RHN Password",
+        name: "password",
+        value: this.props.password,
+        callback: this.props.callback
+      }));
+    }
+  }]);
+
+  return Credentials;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
 /* harmony default export */ __webpack_exports__["default"] = (EnvironmentPage);
 
 /***/ }),
@@ -24394,11 +24593,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_emptyrow_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/emptyrow.jsx */ "./src/components/common/emptyrow.jsx");
 /* harmony import */ var _common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./common/notifications.jsx */ "./src/components/common/notifications.jsx");
 /* harmony import */ var _common_modal_jsx__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./common/modal.jsx */ "./src/components/common/modal.jsx");
-/* harmony import */ var _services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../services/errorHandlers.js */ "./src/services/errorHandlers.js");
-/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
-/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/tooltip.jsx */ "./src/components/common/tooltip.jsx");
+/* harmony import */ var _services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../services/errorHandlers.js */ "./src/services/errorHandlers.js");
+/* harmony import */ var _services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../services/apicalls.js */ "./src/services/apicalls.js");
+/* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_11__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24418,6 +24618,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -24451,7 +24652,7 @@ function (_React$Component) {
       var iscsiTargetCounts = [0, 2, 4];
       var errMsgs = [];
 
-      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(_this.props.cephVersion)) {
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["versionSupportsMetrics"])(_this.props.cephVersion)) {
         var metricsHost = '';
 
         for (var idx = 0; idx < _this.state.hosts.length; idx++) {
@@ -24492,9 +24693,9 @@ function (_React$Component) {
         }
 
         console.log("debug hosts " + JSON.stringify(_this.state.hosts));
-        var monCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'mon');
-        var osdHostCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'osd');
-        var iscsiCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'iscsi');
+        var monCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(_this.state.hosts, 'mon');
+        var osdHostCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(_this.state.hosts, 'osd');
+        var iscsiCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(_this.state.hosts, 'iscsi');
         console.log("debug : # iscsi hosts is " + iscsiCount);
 
         switch (true) {
@@ -24561,7 +24762,7 @@ function (_React$Component) {
       } // check selected groups are in the inventory
 
 
-      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([stateObject]); // if the user asks for a mon, they get a mgr collocated too
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["buildRoles"])([stateObject]); // if the user asks for a mon, they get a mgr collocated too
 
       if (roleList.includes('mons')) {
         console.log("adding mgrs to role list since we have a mon");
@@ -24577,7 +24778,7 @@ function (_React$Component) {
       console.log("required ansible groups: " + rolesString);
       var ansibleRoles;
       var createGroups = [];
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["getGroups"])().done(function (resp) {
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__["getGroups"])().done(function (resp) {
         ansibleRoles = JSON.parse(resp)['data']['groups'];
       }).then(function () {
         console.log("existing roles from runner-service: " + ansibleRoles);
@@ -24587,7 +24788,7 @@ function (_React$Component) {
 
           if (!ansibleRoles.includes(groupName)) {
             // need to create a group
-            createGroups.push(Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addGroup"])(groupName));
+            createGroups.push(Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__["addGroup"])(groupName));
           }
         }
       }).then(function () {
@@ -24612,7 +24813,7 @@ function (_React$Component) {
           var sequence = Promise.resolve();
           newHosts.forEach(function (hostName) {
             sequence = sequence.then(function () {
-              return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, rolesString);
+              return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__["addHost"])(hostName, rolesString);
             }).then(function (resp) {
               console.log(resp);
               var r = JSON.parse(resp);
@@ -24620,7 +24821,7 @@ function (_React$Component) {
               hostInfo = 'Connectivity verified, added to the inventory';
               hostStatus = r.status;
             }).catch(function (err) {
-              var result = Object(_services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_7__["decodeAddError"])(hostName, err);
+              var result = Object(_services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_8__["decodeAddError"])(hostName, err);
               hostStatus = result.statusText;
               hostInfo = result.statusDescription;
             }).finally(function () {
@@ -24708,21 +24909,21 @@ function (_React$Component) {
 
       var that = _assertThisInitialized(_assertThisInitialized(_this));
 
-      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([currentHosts[ptr]]);
+      var roleList = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["buildRoles"])([currentHosts[ptr]]);
 
       if (roleList.includes('mons')) {
         console.log("adding mgrs to role list since we have a mon");
         roleList.push('mgrs');
       }
 
-      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["addHost"])(hostName, roleList.join(',')).then(function (resp) {
+      Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__["addHost"])(hostName, roleList.join(',')).then(function (resp) {
         console.log("Add OK");
         var r = JSON.parse(resp);
         hostStatus = r.status;
         hostInfo = 'Connectivity verified, added to the inventory';
       }).catch(function (err) {
         console.error("Unable to add host: " + JSON.stringify(err));
-        var result = Object(_services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_7__["decodeAddError"])(hostName, err);
+        var result = Object(_services_errorHandlers_js__WEBPACK_IMPORTED_MODULE_8__["decodeAddError"])(hostName, err);
         hostStatus = result.statusText;
         hostInfo = result.statusDescription;
       }).finally(function () {
@@ -24751,14 +24952,14 @@ function (_React$Component) {
       var localState = _this.state.hosts.slice(0);
 
       console.log("current hosts are: " + JSON.stringify(_this.state.hosts));
-      var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["getHost"])(localState, hostname);
+      var hostObject = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["getHost"])(localState, hostname);
 
       if (checked) {
         // host role has been checked
         console.log("host is: " + JSON.stringify(hostObject));
-        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["buildRoles"])([hostObject]);
+        var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["buildRoles"])([hostObject]);
 
-        if (role == "metrics" && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') > 0) {
+        if (role == "metrics" && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') > 0) {
           _this.setState({
             msgLevel: 'error',
             msgText: "Only one host can hold the metrics role"
@@ -24769,7 +24970,7 @@ function (_React$Component) {
           return;
         }
 
-        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
           console.log("current hosts are: " + JSON.stringify(localState));
 
           _this.setState({
@@ -24782,7 +24983,7 @@ function (_React$Component) {
           return;
         } else {
           // collocation is OK, but are there any other issues to look for?
-          if (role == 'metrics' && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') == 1) {
+          if (role == 'metrics' && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') == 1) {
             _this.setState({
               msgLevel: 'error',
               msgText: "Only one host may have the metrics role"
@@ -24797,7 +24998,7 @@ function (_React$Component) {
         // host role has been unchecked
         console.log("unchecking a role");
 
-        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["activeRoleCount"])(hostObject) == 1) {
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["activeRoleCount"])(hostObject) == 1) {
           _this.setState({
             msgLevel: 'error',
             msgText: "Hosts must have at least one role. To remove the host, select 'Delete' from the action menu"
@@ -24814,7 +25015,7 @@ function (_React$Component) {
         msgText: ''
       });
 
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked);
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHostEntry", function (idx) {
@@ -24842,7 +25043,7 @@ function (_React$Component) {
       var delChain = Promise.resolve();
       groupsToRemove.forEach(function (group) {
         return delChain.then(function () {
-          return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteGroup"])(group);
+          return Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__["deleteGroup"])(group);
         });
       });
       delChain.catch(function (err) {
@@ -24868,7 +25069,7 @@ function (_React$Component) {
         }
       }
 
-      var hostRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["activeRoles"])(localState[idx]);
+      var hostRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["activeRoles"])(localState[idx]);
       var groupsToRemove = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -24878,11 +25079,11 @@ function (_React$Component) {
         for (var _iterator = hostRoles[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var role = _step.value;
 
-          if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(localState, role) == 1) {
-            groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(role));
+          if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(localState, role) == 1) {
+            groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["convertRole"])(role));
 
             if (role === 'mon') {
-              groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])('mgr'));
+              groupsToRemove.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["convertRole"])('mgr'));
             }
           }
         }
@@ -24904,7 +25105,7 @@ function (_React$Component) {
       if (localState[idx].status == 'OK') {
         // OK state means we've added the host to the inventory, so we need
         // to delete from the inventory AND the UI state
-        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_8__["deleteHost"])(hostname).then(function (resp) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_9__["deleteHost"])(hostname).then(function (resp) {
           _this.deleteHostEntry(idx);
         }).catch(function (error) {
           console.error("Error " + error + " deleting " + hostname);
@@ -25020,7 +25221,7 @@ function (_React$Component) {
         if (currentHosts.includes(hostName)) {
           // need to drop to avoid duplicate
           hostErrors.push(hostName);
-          hosts = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["removeItem"])(hosts, hostName);
+          hosts = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["removeItem"])(hosts, hostName);
         }
       });
 
@@ -25046,7 +25247,7 @@ function (_React$Component) {
           console.log("Applying update from parent hosts state to local state"); // sort the hosts by name, then update our state
 
           var tempHosts = JSON.parse(JSON.stringify(props.hosts));
-          tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["sortByKey"])('hostname'));
+          tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["sortByKey"])('hostname'));
           this.setState({
             hosts: tempHosts
           });
@@ -25060,7 +25261,7 @@ function (_React$Component) {
 
       if (this.props.className == 'page') {
         var rows, metricsClass;
-        metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.cephVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
+        metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["versionSupportsMetrics"])(this.props.cephVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
 
         if (this.state.hosts.length > 0) {
           rows = this.state.hosts.map(function (host) {
@@ -25222,7 +25423,7 @@ function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.cephVersion) ? "thMetricsWidth visible-cell" : "hidden";
+      var metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["versionSupportsMetrics"])(this.props.cephVersion) ? "thMetricsWidth visible-cell" : "hidden";
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "thHostname"
       }, this.colorify(this.state.host.hostname)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
@@ -25444,12 +25645,12 @@ function (_React$Component4) {
         var currentRoles = [];
         roles.forEach(function (role) {
           if (_this5.state[role]) {
-            currentRoles.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["convertRole"])(role));
+            currentRoles.push(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["convertRole"])(role));
           }
         });
         console.log("current roles from mask are " + currentRoles);
 
-        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["collocationOK"])(currentRoles, roleName, _this5.props.installType, _this5.props.clusterType)) {
+        if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["collocationOK"])(currentRoles, roleName, _this5.props.installType, _this5.props.clusterType)) {
           console.log("invalid roles - violates collocation rules");
 
           _this5.setState({
@@ -25474,7 +25675,7 @@ function (_React$Component4) {
 
             console.log("check that the metrics role hasn't already been selected");
 
-            if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["hostsWithRoleCount"])(_this5.props.hosts, roleName) > 0) {
+            if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["hostsWithRoleCount"])(_this5.props.hosts, roleName) > 0) {
               _this5.setState({
                 msgLevel: 'error',
                 msgText: "A metrics role has already been selected"
@@ -25582,6 +25783,15 @@ function (_React$Component4) {
       msgLevel: 'info',
       msgText: ''
     };
+    _this5.helpText = {
+      "roles": "A Ceph cluster consists of multiple daemons, each performing\na specific role. Hover over the 'info' icon against each role\nto learn more.",
+      "mon": "MONs provide control functionality to the cluster including\nmonitoring, host membership, configurationand state.\n3 mons are recommended for production use cases",
+      "mds": "This is the metadata server that provides a scale-out, distributed\n filesystem",
+      "osd": "Each disk within the cluster is managed an Object Storage Daemon.\nTo install you must assign the OSD role to 1 or more hosts that have\nfree disks",
+      "metrics": "The metrics role uses grafana and prometheus to provide\nrealtime insights into cluster performance",
+      "iscsi": "iSCSI connectivity is supported with gateway hosts. For high\nIOPS iSCSI environments, consider using dedicated hosts\nfor the iSCSI role",
+      "rgw": "This rados gateway deamon provides an AWS S3 compatible object\nstorage interface"
+    };
     return _this5;
   }
 
@@ -25592,7 +25802,7 @@ function (_React$Component4) {
       var metrics_cbox = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null);
       var metrics_label = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null);
 
-      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["versionSupportsMetrics"])(this.props.cephVersion)) {
+      if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["versionSupportsMetrics"])(this.props.cephVersion)) {
         console.log("enabling selection of metrics role - grafana/prometheus");
         metrics_cbox = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
           role: "metrics",
@@ -25603,7 +25813,9 @@ function (_React$Component4) {
           style: {
             minWidth: "60px"
           }
-        }, "Metrics (grafana/prometheus)");
+        }, "Metrics", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+          text: this.helpText.metrics
+        }));
       }
 
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -25625,12 +25837,15 @@ function (_React$Component4) {
         content: this.state.hostmask,
         visible: this.props.show
       }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "add-hosts-container",
         style: {
           marginTop: "15px"
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "display-inline-block sel-label-vertical"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Roles")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Roles"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: this.helpText.roles
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         style: {
           display: "inline-flex"
         }
@@ -25646,7 +25861,9 @@ function (_React$Component4) {
         style: {
           minWidth: "60px"
         }
-      }, "mon"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
+      }, "MON", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: this.helpText.mon
+      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
         role: "mds",
         checked: this.state.mds,
         callback: this.updateRole
@@ -25654,7 +25871,9 @@ function (_React$Component4) {
         style: {
           minWidth: "60px"
         }
-      }, "mds")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
+      }, "MDS", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: this.helpText.mds
+      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
         role: "osd",
         checked: this.state.osd,
         callback: this.updateRole
@@ -25662,15 +25881,9 @@ function (_React$Component4) {
         style: {
           minWidth: "60px"
         }
-      }, "osd"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
-        role: "iscsi",
-        checked: this.state.iscsi,
-        callback: this.updateRole
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-        style: {
-          minWidth: "60px"
-        }
-      }, "iscsi")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
+      }, "OSD", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: this.helpText.osd
+      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
         role: "rgw",
         checked: this.state.rgw,
         callback: this.updateRole
@@ -25678,7 +25891,19 @@ function (_React$Component4) {
         style: {
           minWidth: "60px"
         }
-      }, "rgw"), metrics_cbox, metrics_label)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__["Notification"], {
+      }, "RGW", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: this.helpText.rgw
+      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_rolecheckbox_jsx__WEBPACK_IMPORTED_MODULE_3__["RoleCheckbox"], {
+        role: "iscsi",
+        checked: this.state.iscsi,
+        callback: this.updateRole
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+        style: {
+          minWidth: "60px"
+        }
+      }, "iSCSI", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: this.helpText.iscsi
+      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, metrics_cbox, metrics_label)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_notifications_jsx__WEBPACK_IMPORTED_MODULE_5__["Notification"], {
         msgLevel: this.state.msgLevel,
         msgText: this.state.msgText
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -25731,7 +25956,7 @@ function (_React$Component5) {
         }, fixMe), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
           className: "btn fa fa-clipboard clippy",
           onClick: function onClick() {
-            Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["copyToClipboard"])(fixMe);
+            Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["copyToClipboard"])(fixMe);
           }
         }));
         helper = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
@@ -25990,7 +26215,13 @@ function (_React$Component) {
       deployStarted: false,
       cockpitHost: props.defaults.cockpitHost,
       cephVersion: '',
-      prometheusPortOverride: props.defaults.prometheusPortOverride
+      rhnUserName: '',
+      rhnPassword: '',
+      rhcs_node_exporter_image: props.defaults.rhcs_node_exporter_image,
+      rhcs_grafana_image: props.defaults.rhcs_grafana_image,
+      rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
+      rhcs_alertmanager_image: props.defaults.rhcs_alertmanager_image,
+      rhcs_ceph_image: props.defaults.rhcs_ceph_image
     }; // define the classes the pages will initially use on first render. If behind is defined,
     // the page will be hidden.
 
@@ -28149,12 +28380,25 @@ function allVars(vars) {
       forYML.ceph_origin = "repository";
       forYML.ceph_repository = 'rhcs';
       forYML.ceph_repository_type = 'iso';
+      forYML.ceph_rhcs_version = 4;
       forYML.ceph_rhcs_iso_path = '/usr/share/ansible-runner-service/iso/' + vars.targetVersion;
       break;
   }
 
   if (parseInt(vars.cephVersion) >= 14) {
     forYML.dashboard_enabled = true;
+  }
+
+  if (forYML.ceph_repository === "rhcs" && parseInt(vars.cephVersion) >= 14) {
+    forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated registry
+
+    forYML.ceph_docker_registry_auth = true;
+    forYML.ceph_docker_registry_username = vars.rhnUserName;
+    forYML.ceph_docker_registry_password = vars.rhnPassword;
+    forYML.node_exporter_container_image = vars.rhcs_node_exporter_image;
+    forYML.grafana_container_image = vars.rhcs_grafana_image;
+    forYML.prometheus_container_image = vars.rhcs_prometheus_image;
+    forYML.alertmanager_container_image = vars.rhcs_alertmanager_image;
   }
 
   switch (vars.installType) {
@@ -28169,8 +28413,8 @@ function allVars(vars) {
           forYML.ceph_docker_image = 'rhceph/rhceph-3-rhel7';
           forYML.ceph_docker_registry = 'registry.access.redhat.com';
         } else {
-          forYML.ceph_docker_image = 'rhceph/rhceph-4-rhel8';
-          forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated regisry
+          forYML.ceph_docker_image = vars.rhcs_ceph_image;
+          forYML.ceph_docker_image_tag = 'latest';
         }
       }
 
@@ -28194,14 +28438,8 @@ function allVars(vars) {
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
-  forYML.ip_version = vars.networkType;
-
-  if (vars.metricsHost == vars.cockpitHost) {
-    console.log("changing prometheus port to avoid conflict with cockpit UI (9090)");
-    forYML.prometheus_port = vars.prometheusPortOverride;
-  } // with only a single host, we need to change the default crush policy from 1 (host)
+  forYML.ip_version = vars.networkType; // with only a single host, we need to change the default crush policy from 1 (host)
   // to 0 (osd)
-
 
   if (Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["hostsWithRoleCount"])(vars.hosts, 'osd') == 1) {
     console.log("changing default crush rules : only a single osd host requires chooseleaf_type = 0 (instead of 1)");
@@ -28605,7 +28843,7 @@ function decodeAddError(hostName, error) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: readFile, listDir, getISOContents, versionSupportsMetrics, getCephVersionNumber, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount */
+/*! exports provided: readFile, listDir, getISOContents, versionSupportsMetrics, getCephVersionNumber, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount, isEmpty */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -28638,6 +28876,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildSubnetLookup", function() { return buildSubnetLookup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentTime", function() { return currentTime; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "osdCount", function() { return osdCount; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isEmpty", function() { return isEmpty; });
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cockpit */ "cockpit");
 /* harmony import */ var cockpit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cockpit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _apicalls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./apicalls.js */ "./src/services/apicalls.js");
@@ -29348,6 +29587,10 @@ function osdCount(hosts, flashUsage) {
 
   console.log("Detected " + ctr + " candidate disks for OSDs");
   return ctr;
+}
+function isEmpty(str) {
+  // return bool representing whether a string is empty or not
+  return !str || str.trim().length === 0;
 }
 
 /***/ }),

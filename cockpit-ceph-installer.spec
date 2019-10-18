@@ -1,13 +1,13 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
 Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
 
-Requires: ceph-ansible >= 3.1
+Requires: ceph-ansible >= 4
 Requires: cockpit
 Requires: libcdio
 Requires: cockpit-bridge
@@ -69,6 +69,13 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Thu Oct 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-3
+- added tooltips to all the roles in the add-hosts modal
+- added username and password fields to the environment page for rhcs/iso installs
+- added rhcs specific container image names to all.yml
+- added login credentials for registry.redhat.io to all.yml
+- removed the prometheus port work around (handled in v4 of ceph-ansible)
+- removed rhcs3 as an install option since this is an rhcs4 feature 
 * Tue Oct 15 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-2
 - improve handling of container image names that include a tag
 - provide ceph.conf overrides for All-in-One clusters BZ1761616

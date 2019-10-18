@@ -565,8 +565,8 @@ table.failure-table tbody tr:hover {
 .modal-main {
   position: relative;
   background: white;
-  width: 60%;
-  max-height: 600px;
+  width: 70%;
+  max-height: 700px;
   top: 50%;
   left: 0;
   margin: 0 auto;
@@ -579,7 +579,7 @@ table.failure-table tbody tr:hover {
 .modal-inner {
   margin: 0px 10px 0px 10px;
   overflow-y: auto;
-  max-height: 470px; }
+  max-height: 480px; }
 
 .display-block {
   display: block; }
@@ -724,6 +724,14 @@ pre {
   text-align: right;
   vertical-align: top; }
 
+.input-label-horizontal {
+  width: 200px;
+  margin-right: 40px;
+  margin-bottom: 10px;
+  text-align: right;
+  vertical-align: top;
+  line-height: 2em; }
+
 .radio-label-vertical {
   position: relative; }
 
@@ -792,7 +800,8 @@ table caption, .host-review-title {
   cursor: pointer; }
 
 table#add-hosts {
-  height: 150px; }
+  height: 270px;
+  width: 480px; }
 
 table#add-hosts td {
   padding-left: 0px; }
@@ -914,5 +923,14 @@ table.runtime-table td {
 
 .clippy:hover {
   color: black; }
+
+.input-text {
+  width: auto;
+  height: auto;
+  font-size: 12px;
+  line-height: 1; }
+
+.add-hosts-container {
+  width: 100%; }
 
 /*# sourceMappingURL=index.css.map*/
