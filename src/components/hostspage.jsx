@@ -6,6 +6,7 @@ import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { emptyRow } from './common/emptyrow.jsx';
 import { Notification } from './common/notifications.jsx';
 import { GenericModal, WindowTitle } from './common/modal.jsx';
+import { Tooltip } from './common/tooltip.jsx';
 import { decodeAddError } from '../services/errorHandlers.js';
 /* eslint-disable */
 import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
@@ -829,6 +830,16 @@ class HostMask extends React.Component {
             msgLevel: 'info',
             msgText: ''
         };
+
+        this.helpText = {
+            "roles": "A Ceph cluster consists of multiple daemons, each performing\na specific role. Hover over the 'info' icon against each role\nto learn more.",
+            "mon": "MONs provide control functionality to the cluster including\nmonitoring, host membership, configurationand state.\n3 mons are recommended for production use cases",
+            "mds": "This is the metadata server that provides a scale-out, distributed\n filesystem",
+            "osd": "Each disk within the cluster is managed an Object Storage Daemon.\nTo install you must assign the OSD role to 1 or more hosts that have\nfree disks",
+            "metrics": "The metrics role uses grafana and prometheus to provide\nrealtime insights into cluster performance",
+            "iscsi": "iSCSI connectivity is supported with gateway hosts. For high\nIOPS iSCSI environments, consider using dedicated hosts\nfor the iSCSI role",
+            "rgw": "This rados gateway deamon provides an AWS S3 compatible object\nstorage interface"
+        };
     }
 
     reset = () => {
@@ -972,7 +983,7 @@ class HostMask extends React.Component {
                 <td>
                     <RoleCheckbox role='metrics' checked={this.state.metrics} callback={this.updateRole} />
                 </td>);
-            metrics_label = (<td style={{minWidth: "60px"}}>Metrics (grafana/prometheus)</td>);
+            metrics_label = (<td style={{minWidth: "60px"}}>Metrics<Tooltip text={this.helpText.metrics} /></td>);
         }
 
         return (
@@ -988,8 +999,11 @@ class HostMask extends React.Component {
                                 <HostInputMask ref="hostInput" callback={this.updateHost} content={this.state.hostmask} visible={this.props.show} />
                             </div>
                         </div>
-                        <div style={{marginTop:"15px"}}>
-                            <div className="display-inline-block sel-label-vertical"><b>Roles</b></div>
+                        <div className="add-hosts-container" style={{marginTop:"15px"}}>
+                            <div className="display-inline-block sel-label-vertical">
+                                <b>Roles</b>
+                                <Tooltip text={this.helpText.roles} />
+                            </div>
                             <div style={{display:"inline-flex"}}>
 
                                 <div className="display-inline-block">
@@ -999,27 +1013,33 @@ class HostMask extends React.Component {
                                                 <td>
                                                     <RoleCheckbox role='mon' checked={this.state.mon} callback={this.updateRole} />
                                                 </td>
-                                                <td style={{minWidth: "60px"}}>mon</td>
+                                                <td style={{minWidth: "60px"}}>MON<Tooltip text={this.helpText.mon} /></td>
+                                            </tr>
+                                            <tr>
                                                 <td>
                                                     <RoleCheckbox role='mds' checked={this.state.mds} callback={this.updateRole} />
                                                 </td>
-                                                <td style={{minWidth: "60px"}}>mds</td>
+                                                <td style={{minWidth: "60px"}}>MDS<Tooltip text={this.helpText.mds} /></td>
                                             </tr>
                                             <tr>
                                                 <td>
                                                     <RoleCheckbox role='osd' checked={this.state.osd} callback={this.updateRole} />
                                                 </td>
-                                                <td style={{minWidth: "60px"}}>osd</td>
-                                                <td>
-                                                    <RoleCheckbox role='iscsi' checked={this.state.iscsi} callback={this.updateRole} />
-                                                </td>
-                                                <td style={{minWidth: "60px"}}>iscsi</td>
+                                                <td style={{minWidth: "60px"}}>OSD<Tooltip text={this.helpText.osd} /></td>
                                             </tr>
                                             <tr>
                                                 <td>
                                                     <RoleCheckbox role='rgw' checked={this.state.rgw} callback={this.updateRole} />
                                                 </td>
-                                                <td style={{minWidth: "60px"}}>rgw</td>
+                                                <td style={{minWidth: "60px"}}>RGW<Tooltip text={this.helpText.rgw} /></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <RoleCheckbox role='iscsi' checked={this.state.iscsi} callback={this.updateRole} />
+                                                </td>
+                                                <td style={{minWidth: "60px"}}>iSCSI<Tooltip text={this.helpText.iscsi} /></td>
+                                            </tr>
+                                            <tr>
                                                 { metrics_cbox }
                                                 { metrics_label }
                                             </tr>
