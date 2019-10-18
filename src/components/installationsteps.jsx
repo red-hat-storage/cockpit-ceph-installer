@@ -35,7 +35,14 @@ export class InstallationSteps extends React.Component {
             metricsHost: '',
             deployStarted: false,
             cockpitHost: props.defaults.cockpitHost,
-            cephVersion: ''
+            cephVersion: '',
+            rhnUserName: '',
+            rhnPassword: '',
+            rhcs_node_exporter_image: props.defaults.rhcs_node_exporter_image,
+            rhcs_grafana_image: props.defaults.rhcs_grafana_image,
+            rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
+            rhcs_alertmanager_image: props.defaults.rhcs_alertmanager_image,
+            rhcs_ceph_image: props.defaults.rhcs_ceph_image
         };
 
         // define the classes the pages will initially use on first render. If behind is defined,

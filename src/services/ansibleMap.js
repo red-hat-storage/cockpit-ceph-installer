@@ -108,12 +108,24 @@ export function allVars (vars) {
         forYML.ceph_origin = "repository";
         forYML.ceph_repository = 'rhcs';
         forYML.ceph_repository_type = 'iso';
+        forYML.ceph_rhcs_version = 4;
         forYML.ceph_rhcs_iso_path = '/usr/share/ansible-runner-service/iso/' + vars.targetVersion;
         break;
     }
 
     if (parseInt(vars.cephVersion) >= 14) {
         forYML.dashboard_enabled = true;
+    }
+
+    if (forYML.ceph_repository === "rhcs" && parseInt(vars.cephVersion) >= 14) {
+        forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated registry
+        forYML.ceph_docker_registry_auth = true;
+        forYML.ceph_docker_registry_username = vars.rhnUserName;
+        forYML.ceph_docker_registry_password = vars.rhnPassword;
+        forYML.node_exporter_container_image = vars.rhcs_node_exporter_image;
+        forYML.grafana_container_image = vars.rhcs_grafana_image;
+        forYML.prometheus_container_image = vars.rhcs_prometheus_image;
+        forYML.alertmanager_container_image = vars.rhcs_alertmanager_image;
     }
 
     switch (vars.installType) {
@@ -127,8 +139,8 @@ export function allVars (vars) {
                 forYML.ceph_docker_image = 'rhceph/rhceph-3-rhel7';
                 forYML.ceph_docker_registry = 'registry.access.redhat.com';
             } else {
-                forYML.ceph_docker_image = 'rhceph/rhceph-4-rhel8';
-                forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated regisry
+                forYML.ceph_docker_image = vars.rhcs_ceph_image;
+                forYML.ceph_docker_image_tag = 'latest';
             }
         }
 
