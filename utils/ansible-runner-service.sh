@@ -139,7 +139,7 @@ fetch_container() {
     set_image_id
 
     if [ -z "$IMAGE_ID" ]; then
-        echo "Fetching ansible runner service container. Please wait..."
+        echo "Fetching Ansible API container (runner-service). Please wait..."
         $CONTAINER_BIN pull "$CONTAINER_IMAGE_NAME"
         if [[ $? -ne 0 ]]; then
             echo "Failed to fetch the container. Unable to continue"
@@ -148,12 +148,12 @@ fetch_container() {
             set_image_id
         fi
     else
-        echo "Using the ansible_runner_service container already downloaded"
+        echo "Using the Ansible API container already downloaded (runner-service)"
     fi
 }
 
 start_container() {
-    echo "Starting runner-service container"
+    echo "Starting Ansible API container (runner-service)"
     $CONTAINER_BIN run $CONTAINER_RUN_OPTIONS --network=host -p 5001:5001/tcp \
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
@@ -168,7 +168,7 @@ start_container() {
 }
 
 stop_runner_service() {
-    echo "Stopping runner-service"
+    echo "Stopping the Ansible API container (runner-service)"
     $CONTAINER_BIN kill runner-service > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         $CONTAINER_BIN rm -f runner-service > /dev/null 2>&1
@@ -218,6 +218,31 @@ set_selinux() {
 
 }
 
+set_upstream_image() {
+    CONTAINER_IMAGE_NAME="jolmomar/ansible_runner_service"
+}
+
+set_default_image () {
+    # upstream container image
+    local vendor
+    /usr/bin/which rpm > /dev/null 2>&1
+    if [ $? -eq 0 ]; then 
+        # this is an rpm distro, check for redhat
+        vendor=$(rpm -q cockpit-ceph-installer --qf "%{VENDOR}")
+        case $vendor in
+            "Red Hat, Inc.")
+                CONTAINER_IMAGE_NAME="rhceph-beta/ansible-runner-rhel8:latest"
+                ;;
+            *)
+                set_upstream_image
+                ;;
+        esac
+    else
+        # use upstream by default
+        set_upstream_image
+    fi
+}
+
 environment_ok() {
     local errors=''
     local out=''
@@ -258,7 +283,7 @@ environment_ok() {
     [ -z "$CERT_IDENTITY" ] && CERT_IDENTITY="/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/OU=RunnerServer/CN=$HOST"
     [ -z "$CERT_IDENTITY_CLIENT" ] && CERT_IDENTITY_CLIENT="/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/OU=RunnerClient/CN=$HOST"
     [ -z "$CERT_PASSWORD" ] && CERT_PASSWORD="ansible"
-    [ -z "$CONTAINER_IMAGE_NAME" ] && CONTAINER_IMAGE_NAME="ansible-runner-service"
+    [ -z "$CONTAINER_IMAGE_NAME" ] && set_default_image
 
 
     if [ "$errors" != "" ]; then
@@ -272,7 +297,7 @@ environment_ok() {
 }
 
 usage() {
-    echo -e "Usage: ansible-runner-service [-hvsk]"
+    echo -e "Usage: ansible-runner-service.sh [-hvsk]"
     echo -e "\t-h ... display usage information"
     echo -e "\t-v ... verbose mode"
     echo -e "\t-s ... start ansible runner service container (default)"
@@ -292,7 +317,7 @@ usage() {
     echo -e "Ansible Runner Service container image name can be customized (<ansible-runner-service> by default) using a environment variable:\n"
     echo -e "\t CONTAINER_IMAGE_NAME ... string used in the <pull> command to get the ARS container image\n"
     echo "e.g."
-    echo -e "> CONTAINER_IMAGE_NAME='ansible/ansible-runner-service' ./ansible-runner-service.sh -v -s\n"
+    echo -e "> CONTAINER_IMAGE_NAME='rhceph/ansible-runner-rhel8:latest' ./ansible-runner-service.sh -v -s\n"
 }
 
 is_running() {
@@ -302,7 +327,7 @@ is_running() {
 }
 
 check_access() {
-    echo "Waiting for runner-service container to respond"
+    echo "Waiting for Ansible API container (runner-service) to respond"
     local ctr=1
     local limit=10
     while [ $ctr -le $limit ]; do
@@ -326,12 +351,12 @@ check_access() {
 start_runner_service() {
 
     if ! environment_ok; then
-        echo "Unable to start the ansible_runner_service container"
+        echo "Unable to start the Ansible API (runner-service) container"
         exit
     fi
 
     if is_running; then
-        echo "runner-service container is already running"
+        echo "The Ansible API container (runner-service) is already running - no action necessary"
         exit
     fi
 
@@ -343,6 +368,8 @@ start_runner_service() {
         set_selinux
     fi
 
+    echo "Ansible API (runner-service) container set to $CONTAINER_IMAGE_NAME"
+
     fetch_container
 
     start_container
@@ -351,13 +378,14 @@ start_runner_service() {
     CURL_RC=$?
     case $CURL_RC in
         0)
-            echo "Unable to connect to the container"
+            echo "Unable to connect to the Ansible API container (runner-service)"
             ;;
         200)
-            echo "runner-service container is available and responding to requests"
+            echo "The Ansible API container (runner-service) is available and responding to requests"
+            echo -e "\nLogin to the cockpit UI at https://$(hostname):9090/cockpit-ceph-installer to start the install"
             ;;
         *)
-            echo "runner-service container responded with unexpected status code: $CURL_RC"
+            echo "The Ansible API container (runner-service) responded with unexpected status code: $CURL_RC"
             ;;
     esac
 
@@ -368,7 +396,7 @@ show_state() {
     echo "Container status"
     echo "----------------"
     $CONTAINER_BIN ps --filter=name=runner-service
-    echo -e "\nActive log (/var/log/uwsgi.log)"
+    echo -e "\nWatching the active log (/var/log/uwsgi.log) - CTRL-C to exit"
     echo      "-------------------------------"
     $CONTAINER_BIN exec runner-service tail -n 100 -f /var/log/uwsgi.log
 }

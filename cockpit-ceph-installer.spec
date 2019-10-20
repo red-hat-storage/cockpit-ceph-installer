@@ -74,6 +74,7 @@ fi
 - added username and password fields to the environment page for rhcs/iso installs
 - added rhcs specific container image names to all.yml
 - added login credentials for registry.redhat.io to all.yml
+- improve runner-service start up messages, and set container image defaults
 - removed the prometheus port work around (handled in v4 of ceph-ansible)
 - removed rhcs3 as an install option since this is an rhcs4 feature 
 * Tue Oct 15 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-2
