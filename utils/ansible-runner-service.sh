@@ -154,6 +154,20 @@ fetch_container() {
 
 start_container() {
     echo "Starting Ansible API container (runner-service)"
+    local OLD_IMAGE
+    $CONTAINER_BIN ps -a | grep runner-service > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        # container exists from a prior run - remove it for a clean start
+        echo -e "- Removing old container image from the last run ... \c"
+        OLD_IMAGE=$($CONTAINER_BIN rm -f runner-service)
+        if [ $? -eq 0 ]; then
+            echo "OK (removed $OLD_IMAGE)"
+        else
+            echo "Failed. Unable to remove the old container, manual intervention required"
+            exit 1
+        fi
+    fi
+
     $CONTAINER_BIN run $CONTAINER_RUN_OPTIONS --network=host -p 5001:5001/tcp \
                -v /usr/share/ansible-runner-service:/usr/share/ansible-runner-service \
                -v /usr/share/ceph-ansible:/usr/share/ansible-runner-service/project \
