@@ -97,6 +97,7 @@ export function allVars (vars) {
         break;
     case "Red Hat":
         forYML.ceph_repository = "rhcs";
+        forYML.ceph_repository_type = 'cdn';
         forYML.ceph_origin = "repository";
         forYML.ceph_rhcs_version = parseInt(vars.targetVersion.split(' ')[1]); // 3 or 4
         break;
