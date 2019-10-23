@@ -1,6 +1,6 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
@@ -69,6 +69,9 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Tue Oct 22 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-5
+- ensure repository_type is set correctly for redhat installs
+- fix situation where the runner-service container wasn't shutdown cleanly
 * Sun Oct 20 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-4
 - include the ceph_docker_image var for rhcs deployments
 * Thu Oct 17 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-3
