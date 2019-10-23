@@ -25261,7 +25261,7 @@ function (_React$Component) {
 
       if (this.props.className == 'page') {
         var rows, metricsClass;
-        metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["versionSupportsMetrics"])(this.props.cephVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
+        metricsClass = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_10__["versionSupportsMetrics"])(this.props.cephVersion) ? "textCenter thMetricsWidth visible-cell" : "hidden";
 
         if (this.state.hosts.length > 0) {
           rows = this.state.hosts.map(function (host) {

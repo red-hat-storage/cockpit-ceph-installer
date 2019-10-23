@@ -554,7 +554,7 @@ export class HostsPage extends React.Component {
     render() {
         if (this.props.className == 'page') {
             var rows, metricsClass;
-            metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "textCenter thRoleWidth visible-cell" : "hidden";
+            metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "textCenter thMetricsWidth visible-cell" : "hidden";
 
             if (this.state.hosts.length > 0) {
                 rows = this.state.hosts.map(host => {
