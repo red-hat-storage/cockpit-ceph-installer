@@ -11,7 +11,8 @@ export class NetworkPage extends React.Component {
             publicNetwork: '',
             clusterNetwork: '',
             rgwNetwork: '',
-            iscsiNetwork: ''
+            iscsiNetwork: '',
+            active: false
         };
         this.cephHosts = [];
         this.internalNetworks = []; // suitable for cluster connectivity
@@ -21,71 +22,63 @@ export class NetworkPage extends React.Component {
         this.subnetLookup = {}; // Used for speed/bandwidth metadata
     }
 
-    componentWillReceiveProps(props) {
+    static getDerivedStateFromProps(props, state) {
         if (props.className == 'page') {
-            // the page is active, so refresh the items with updated props
-            // from the parent
-            console.log("Debug: host count : " + props.hosts.length);
-            for (let idx = 0; idx < props.hosts.length; idx++) {
-                if (props.hosts[idx]['metrics']) {
-                    continue;
-                } else {
-                    this.cephHosts.push(props.hosts[idx]);
-                }
-            }
-
-            let activeRoles = buildRoles(this.cephHosts);
-
-            console.log("setting subnet array state variables");
-            this.internalNetworks = commonSubnets(this.cephHosts, 'osd');
-            this.externalNetworks = commonSubnets(this.cephHosts, 'all');
-            this.subnetLookup = buildSubnetLookup(this.cephHosts);
-            let netState = {};
-
-            netState['clusterNetwork'] = this.internalNetworks[0];
-            netState['publicNetwork'] = this.externalNetworks[0];
-
-            if (activeRoles.includes('rgws')) {
-                console.log("determining the rgw networks");
-                this.s3Networks = commonSubnets(this.cephHosts, 'rgw');
-                netState['rgwNetwork'] = this.s3Networks[0];
-            } else {
-                console.log("no rgw role seen across the hosts");
-                this.s3Networks = [];
-                netState['rgwNetwork'] = '';
-            }
-
-            if (activeRoles.includes('iscsigws')) {
-                console.log("determining the iscsi networks");
-                this.iscsiNetworks = commonSubnets(this.cephHosts, 'iscsi');
-                netState['iscsiNetwork'] = this.iscsiNetworks[0];
-            } else {
-                console.log("no iscsi role seen across the hosts");
-                this.iscsiNetworks = [];
-                netState['iscsiNetwork'] = '';
-            }
-
-            this.setState(netState);
+            console.log("NetworkPage: page is active");
+            return {
+                active: true
+            };
+        } else {
+            console.log("NetworkPage: page is inactive");
+            return {
+                active: false
+            };
         }
     }
 
+    updateNetworkSubnets = () => {
+        this.cephHosts = [];
+        console.log("NetworkPage: host count : " + this.props.hosts.length);
+        for (let idx = 0; idx < this.props.hosts.length; idx++) {
+            if (this.props.hosts[idx]['metrics']) {
+                continue;
+            } else {
+                this.cephHosts.push(this.props.hosts[idx]);
+            }
+        }
+
+        let activeRoles = buildRoles(this.cephHosts);
+
+        console.log("NetworkPage: setting subnet array state variables");
+        this.internalNetworks = commonSubnets(this.cephHosts, 'osd');
+        this.externalNetworks = commonSubnets(this.cephHosts, 'all');
+        if (activeRoles.includes('rgws')) {
+            this.s3Networks = commonSubnets(this.cephHosts, 'rgw');
+        }
+        if (activeRoles.includes('iscsigws')) {
+            this.iscsiNetworks = commonSubnets(this.cephHosts, 'iscsi');
+        }
+        this.subnetLookup = buildSubnetLookup(this.cephHosts);
+    }
+
     updateParent = () => {
-        console.log("pass network state back to the parent - installationsteps state");
+        console.log("NetworkPage: pass network state back to the parent - installationsteps state");
         this.props.action(this.state);
     }
 
     updateHandler = (name, value) => {
-        console.log("subnet change for " + name + " with " + value);
+        console.log("NetworkPage: subnet change for " + name + " with " + value);
         this.setState({[name]: value});
     }
 
     render() {
-        if (this.props.className == 'page') {
-            console.log("rendering network page");
-            console.log("internal subnets " + JSON.stringify(this.internalNetworks));
-            console.log("external subnets " + JSON.stringify(this.externalNetworks));
-            console.log("s3 subnets " + JSON.stringify(this.s3Networks));
-            console.log("iscsi subnets " + JSON.stringify(this.iscsiNetworks));
+        if (this.state.active) {
+            console.log("NetworkPage: rendering");
+            this.updateNetworkSubnets();
+            console.log("NetworkPage: internal subnets " + JSON.stringify(this.internalNetworks));
+            console.log("NetworkPage: external subnets " + JSON.stringify(this.externalNetworks));
+            console.log("NetworkPage: s3 subnets " + JSON.stringify(this.s3Networks));
+            console.log("NetworkPage: iscsi subnets " + JSON.stringify(this.iscsiNetworks));
             return (
                 <div id="network" className={this.props.className}>
                     <h3>4. Network Configuration</h3>
@@ -99,6 +92,7 @@ export class NetworkPage extends React.Component {
                             title="Cluster Network"
                             description="Subnets common to OSD hosts"
                             subnets={this.internalNetworks}
+                            selected={this.state.clusterNetwork}
                             name="clusterNetwork"
                             lookup={this.subnetLookup}
                             hosts={this.cephHosts}
@@ -107,6 +101,7 @@ export class NetworkPage extends React.Component {
                             title="Public Network"
                             description="Subnets common to all hosts"
                             subnets={this.externalNetworks}
+                            selected={this.state.publicNetwork}
                             name="publicNetwork"
                             lookup={this.subnetLookup}
                             hosts={this.cephHosts}
@@ -115,6 +110,7 @@ export class NetworkPage extends React.Component {
                             title="S3 Client Network"
                             description="Subnets common to radosgw hosts"
                             subnets={this.s3Networks}
+                            selected={this.state.rgwNetwork}
                             name="rgwNetwork"
                             lookup={this.subnetLookup}
                             hosts={this.cephHosts}
@@ -123,6 +119,7 @@ export class NetworkPage extends React.Component {
                             title="iSCSI Target Network"
                             description="Subnets common to iSCSI hosts"
                             subnets={this.iscsiNetworks}
+                            selected={this.state.iscsiNetwork}
                             name="iscsiNetwork"
                             lookup={this.subnetLookup}
                             hosts={this.cephHosts}
@@ -146,15 +143,14 @@ export class NetworkOptions extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: null,
-            // subnets: [],
-            msg: []
+            selected: props.selected,
+            msg: netSummary(this.props.lookup, this.props.subnets[0], this.props.hosts)
         };
     }
 
     updateState = (event) => {
-        console.log("change in the radio button set " + event.target.name);
-        console.log("lookup the subnet to determine hosts by bandwidth: " + event.target.value);
+        console.log("NetworkOptions: change in the radio button set " + event.target.name);
+        console.log("NetworkOptions: lookup the subnet to determine hosts by bandwidth: " + event.target.value);
         // console.log("lookup table is " + JSON.stringify(this.props.lookup));
         this.setState({
             [event.target.getAttribute('name')]: event.target.value,
@@ -165,13 +161,21 @@ export class NetworkOptions extends React.Component {
     }
 
     render() {
+        let default_subnet;
+        if (this.state.selected) {
+            default_subnet = this.state.selected;
+        } else {
+            default_subnet = this.props.subnets[0];
+        }
+
         var radioConfig = {
             desc: this.props.description,
             options: this.props.subnets,
-            default: this.props.subnets[0],
+            default: default_subnet,
             name: this.props.name,
             horizontal: false
         };
+
         var subnetSelection;
         if (this.props.subnets.length > 0) {
             subnetSelection = (
