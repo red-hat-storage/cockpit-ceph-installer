@@ -406,7 +406,7 @@ def human_bytes(bytes_in, mode='bin'):
     prec = 0
     units = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']
     for ptr in range(len(units)):
-        if ptr > 4:
+        if ptr >= 4:
             prec = 1
         if abs(bytes_in) < divisor:
             return "{:.{}f}{}".format(bytes_in, prec, units[ptr])
@@ -429,10 +429,20 @@ def get_free_capacity(free_disks):
         None
     """ # noqa
     total_bytes = 0
+    unit_lookup = {
+        "KB": 1024,
+        "MB": 1024**2,
+        "GB": 1024**3,
+        "TB": 1024**4
+    }
 
     for dev in free_disks.keys():
         device = free_disks[dev]
-        total_bytes += int(device['sectors']) * int(device['sectorsize'])
+        
+        # using sector and sectorsize is error prone due to emulated and native 4k drive geometry
+        # reporting, so capacity is being calculated based on the human readable string
+        size, unit = device['size'].split(' ')  # e.g. 7.28 TB, splits to 7.28 and TB
+        total_bytes += float(size) * unit_lookup[unit]
 
     return total_bytes
 
