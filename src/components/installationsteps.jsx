@@ -42,7 +42,8 @@ export class InstallationSteps extends React.Component {
             rhcs_grafana_image: props.defaults.rhcs_grafana_image,
             rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
             rhcs_alertmanager_image: props.defaults.rhcs_alertmanager_image,
-            rhcs_ceph_image: props.defaults.rhcs_ceph_image
+            rhcs_ceph_image: props.defaults.rhcs_ceph_image,
+            domainName: props.defaults.domainName
         };
 
         // define the classes the pages will initially use on first render. If behind is defined,
@@ -182,7 +183,8 @@ export class InstallationSteps extends React.Component {
                         hosts={this.state.hosts}
                         cephVersion={this.state.cephVersion}
                         installType={this.state.installType}
-                        clusterType={this.state.clusterType} />
+                        clusterType={this.state.clusterType}
+                        domainName={this.state.domainName} />
                     <ValidatePage
                         className={this.page['validate']}
                         action={this.nextHandler}

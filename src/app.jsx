@@ -58,7 +58,8 @@ export class Application extends React.Component {
             rhcs_grafana_image: "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3",
             rhcs_prometheus_image: "registry.redhat.io/openshift4/ose-prometheus:4.1",
             rhcs_alertmanager_image: "registry.redhat.io/openshift4/ose-prometheus-alertmanager:4.1",
-            rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8"
+            rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8",
+            domainName: ""
         };
     }
 
@@ -95,10 +96,21 @@ export class Application extends React.Component {
         readFile('/etc/hostname')
                 .then((content, tag) => {
                     // check the content, and extract up to 1st dot if needed
-                    let this_host = content.split('.')[0];
+                    let hostComponent = content.split(".");
 
-                    this.defaults['cockpitHost'] = this_host;
-                    console.log("running on hostname " + this_host);
+                    // hostname
+                    this.defaults['cockpitHost'] = hostComponent[0];
+
+                    // domain name
+                    if (hostComponent.length > 1) {
+                        console.debug("hostname is fully qualified with a domain suffix");
+                        let dnsName = hostComponent.slice(1,).join(".");
+                        this.defaults['domainName'] = dnsName.trim(); // drop any whitespace
+                    } else {
+                        console.debug("hostname does not include domain suffix");
+                    }
+
+                    console.log("running on hostname " + hostComponent[0] + " in dns domain '" + this.defaults['domainName'] + "'");
                     actions++;
                     if (actions == actions_limit) {
                         this.checkReady(errorMsgs);

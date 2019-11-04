@@ -591,7 +591,8 @@ export class HostsPage extends React.Component {
                         clusterType={this.props.clusterType}
                         cephVersion={this.props.cephVersion}
                         closeHandler={this.hideAddHosts}
-                        installType={this.props.installType} />
+                        installType={this.props.installType}
+                        domainName={this.props.domainName} />
                     <div className="divCenter">
                         <div className="add-hosts-offset" >
                             <UIButton btnClass="display-block float-right btn btn-primary btn-lg" btnLabel="Add Host(s)" action={this.showAddHosts} />
@@ -997,6 +998,9 @@ class HostMask extends React.Component {
                             <div className="display-inline-block sel-label-vertical"><b>Hostname/Mask</b></div>
                             <div className="display-inline-block">
                                 <HostInputMask ref="hostInput" callback={this.updateHost} content={this.state.hostmask} visible={this.props.show} />
+                            </div>
+                            <div className="display-inline-block">
+                                <span>&nbsp;&nbsp;.</span>{this.props.domainName}
                             </div>
                         </div>
                         <div className="add-hosts-container" style={{marginTop:"15px"}}>
