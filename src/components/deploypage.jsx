@@ -8,7 +8,7 @@ import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
 import { GenericModal } from './common/modal.jsx';
-import { buildRoles, currentTime, convertRole, versionSupportsMetrics } from '../services/utils.js';
+import { buildRoles, currentTime, convertRole, versionSupportsMetrics, getUser, writeFile } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     //
@@ -398,6 +398,34 @@ export class DeployPage extends React.Component {
         }
     }
 
+    saveSettings = () => {
+        let now = currentTime();
+
+        // discard any unwanted settings variables that only apply to the UI
+        let ignoreList = ["pageNum", "lastPage", "msgText", "msgLevel", "credentialsClass", "modalTitle", "addHostsVisible"];
+        let localSettings = JSON.parse(JSON.stringify(this.state.settings));
+        ignoreList.forEach(item => {
+            delete localSettings[item];
+        });
+
+        getUser()
+                .then((user) => {
+                    let fileName = user.home + "/cockpit-ceph-installer.log";
+                    let runtimeSettings = {
+                        playuuid: this.playbookUUID,
+                        startTime: now,
+                        settings: localSettings
+                    };
+                    writeFile(fileName, JSON.stringify(runtimeSettings, null, 2))
+                            .done(() => {
+                                console.log("DeployPage: Runtime setttings stored in " + fileName);
+                            })
+                            .fail(() => {
+                                console.error("DeployPage: Failed to store runtime settings in " + fileName);
+                            });
+                });
+    }
+
     startPlaybook = () => {
         console.log("Start playbook and set up timer to refresh every 2secs");
         this.setState({
@@ -423,6 +451,7 @@ export class DeployPage extends React.Component {
                         if (response.status == "STARTED") {
                             this.playbookUUID = response.data.play_uuid;
                             console.log("playbook has started with UUID " + this.playbookUUID);
+                            this.saveSettings();
                             this.intervalHandler = setInterval(this.getPlaybookState, 2000);
                         }
                     })

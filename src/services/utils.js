@@ -15,6 +15,16 @@ export function readFile (fileName, fileType) {
     return promise;
 }
 
+export function writeFile(fileName, content) {
+    let promise = cockpit.file(fileName).replace(content);
+    return promise;
+}
+
+export function getUser() {
+    let promise = cockpit.user();
+    return promise;
+}
+
 export function listDir (pathname) {
     console.log("listing contents of " + pathname);
     let cmd = ['/usr/bin/find', pathname, "-type", "f"];
