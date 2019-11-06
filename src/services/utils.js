@@ -455,6 +455,22 @@ export function copyToClipboard(text) {
     textField.remove();
 }
 
+export function getCephHosts(hosts) {
+    // return list of hosts objects that don't have a non-ceph role
+    let excludedRoles = ['metrics'];
+    let cephHosts = [];
+    console.log("getCephHosts: hosts provided : " + hosts.length);
+    for (let idx = 0; idx < hosts.length; idx++) {
+        let hostRoles = activeRoles(hosts[idx]);
+        if (excludedRoles.some(val => hostRoles.includes(val))) {
+            continue;
+        }
+        cephHosts.push(hosts[idx]);
+    }
+    console.log("getCephHosts: hosts with ceph only role : " + cephHosts.length);
+    return cephHosts;
+}
+
 export function commonSubnets(hostArray, role) {
     // determine the common subnets for a given role
     let subnets = []; // subnets present on all hosts
