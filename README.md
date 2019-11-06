@@ -15,6 +15,7 @@ The plugin currently
 - allows environment defaults to be overridden from `/var/lib/cockpit/ceph-installer/defaults.json`
 - supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways, metrics
 - support All-in-One installs for POC (aka kick-the-tyres)
+- creates log of all the settings detected and requested at `~/cockpit-ceph-installer.log`
 
 ### Known Issues
 1. An ISO based deployment may not install the ceph-grafana-dashboards rpm
@@ -93,9 +94,10 @@ Although the ansible-runner-service runs as a container, it's configuration and 
 # cd utils
 # ./ansible-runner-service.sh -s -v
 ```
-NB. This script wil create and configure missing directories, set up default (self-signed) SSL identities, and download the runner-service container.
-4.2 Once the runner-service is running you'll see a link to connect to for the GUI installer. Login as the root user.
+NB. This script wil create and configure missing directories, set up default (self-signed) SSL identities, and download the runner-service container.  
 
+4.2 Once the runner-service is running you'll be presented with a URL to use to connect to GUI installer. Login as the root user.
+  
 
 -----------------------------------------------------------------------------------------------------------------
 

@@ -21435,7 +21435,8 @@ function (_React$Component) {
       rhcs_grafana_image: "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3",
       rhcs_prometheus_image: "registry.redhat.io/openshift4/ose-prometheus:4.1",
       rhcs_alertmanager_image: "registry.redhat.io/openshift4/ose-prometheus-alertmanager:4.1",
-      rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8"
+      rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8",
+      domainName: ""
     };
     return _this;
   }
@@ -21454,9 +21455,19 @@ function (_React$Component) {
       var errorMsgs = [];
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_4__["readFile"])('/etc/hostname').then(function (content, tag) {
         // check the content, and extract up to 1st dot if needed
-        var this_host = content.split('.')[0];
-        _this2.defaults['cockpitHost'] = this_host;
-        console.log("running on hostname " + this_host);
+        var hostComponent = content.split("."); // hostname
+
+        _this2.defaults['cockpitHost'] = hostComponent[0]; // domain name
+
+        if (hostComponent.length > 1) {
+          console.debug("hostname is fully qualified with a domain suffix");
+          var dnsName = hostComponent.slice(1).join(".");
+          _this2.defaults['domainName'] = dnsName.trim(); // drop any whitespace
+        } else {
+          console.debug("hostname does not include domain suffix");
+        }
+
+        console.log("running on hostname " + hostComponent[0] + " in dns domain '" + _this2.defaults['domainName'] + "'");
         actions++;
 
         if (actions == actions_limit) {
@@ -23331,6 +23342,29 @@ function (_React$Component) {
       }
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "saveSettings", function () {
+      var now = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["currentTime"])(); // discard any unwanted settings variables that only apply to the UI
+
+      var ignoreList = ["pageNum", "lastPage", "msgText", "msgLevel", "credentialsClass", "modalTitle", "addHostsVisible"];
+      var localSettings = JSON.parse(JSON.stringify(_this.state.settings));
+      ignoreList.forEach(function (item) {
+        delete localSettings[item];
+      });
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["getUser"])().then(function (user) {
+        var fileName = user.home + "/cockpit-ceph-installer.log";
+        var runtimeSettings = {
+          playuuid: _this.playbookUUID,
+          startTime: now,
+          settings: localSettings
+        };
+        Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_9__["writeFile"])(fileName, JSON.stringify(runtimeSettings, null, 2)).done(function () {
+          console.log("DeployPage: Runtime setttings stored in " + fileName);
+        }).fail(function () {
+          console.error("DeployPage: Failed to store runtime settings in " + fileName);
+        });
+      });
+    });
+
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "startPlaybook", function () {
       console.log("Start playbook and set up timer to refresh every 2secs");
 
@@ -23359,6 +23393,9 @@ function (_React$Component) {
           if (response.status == "STARTED") {
             _this.playbookUUID = response.data.play_uuid;
             console.log("playbook has started with UUID " + _this.playbookUUID);
+
+            _this.saveSettings();
+
             _this.intervalHandler = setInterval(_this.getPlaybookState, 2000);
           }
         }).catch(function (e) {
@@ -24162,7 +24199,8 @@ function (_React$Component) {
         if (_this.installSource["ISO"][0].startsWith('No')) {
           _this.setState({
             msgLevel: 'error',
-            msgText: "No ISO images have been found. Confirm ISO image location and check SELINUX context OR select another source"
+            msgText: "No ISO images have been found. Confirm ISO image location and check SELINUX context OR select another source",
+            sourceType: "ISO"
           });
 
           return;
@@ -25298,7 +25336,8 @@ function (_React$Component) {
           clusterType: this.props.clusterType,
           cephVersion: this.props.cephVersion,
           closeHandler: this.hideAddHosts,
-          installType: this.props.installType
+          installType: this.props.installType,
+          domainName: this.props.domainName
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "divCenter"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -25836,7 +25875,9 @@ function (_React$Component4) {
         callback: this.updateHost,
         content: this.state.hostmask,
         visible: this.props.show
-      }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "display-inline-block"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, "\xA0\xA0."), this.props.domainName)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "add-hosts-container",
         style: {
           marginTop: "15px"
@@ -26221,7 +26262,8 @@ function (_React$Component) {
       rhcs_grafana_image: props.defaults.rhcs_grafana_image,
       rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
       rhcs_alertmanager_image: props.defaults.rhcs_alertmanager_image,
-      rhcs_ceph_image: props.defaults.rhcs_ceph_image
+      rhcs_ceph_image: props.defaults.rhcs_ceph_image,
+      domainName: props.defaults.domainName
     }; // define the classes the pages will initially use on first render. If behind is defined,
     // the page will be hidden.
 
@@ -26274,7 +26316,8 @@ function (_React$Component) {
         hosts: this.state.hosts,
         cephVersion: this.state.cephVersion,
         installType: this.state.installType,
-        clusterType: this.state.clusterType
+        clusterType: this.state.clusterType,
+        domainName: this.state.domainName
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_validatepage_jsx__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: this.page['validate'],
         action: this.nextHandler,
@@ -26371,94 +26414,57 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(NetworkPage).call(this, props));
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateParent", function () {
-      console.log("pass network state back to the parent - installationsteps state");
+      console.log("NetworkPage: pass network state back to the parent - installationsteps state");
+
+      _this.setState({
+        active: false
+      });
 
       _this.props.action(_this.state);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateHandler", function (name, value) {
-      console.log("subnet change for " + name + " with " + value);
+      console.log("NetworkPage: subnet change for " + name + " with " + value);
 
       _this.setState(_defineProperty({}, name, value));
     });
 
     _this.state = {
+      internalNetworks: [],
+      // suitable for cluster connectivity
+      externalNetworks: [],
+      // shared across all nodes
+      s3Networks: [],
+      // common to Radosgw hosts
+      iscsiNetworks: [],
+      // common networks to iscsi target hosts
+      subnetLookup: {},
+      // Used for speed/bandwidth metadata
       publicNetwork: '',
       clusterNetwork: '',
       rgwNetwork: '',
-      iscsiNetwork: ''
-    };
-    _this.cephHosts = [];
-    _this.internalNetworks = []; // suitable for cluster connectivity
-
-    _this.externalNetworks = []; // shared across all nodes
-
-    _this.s3Networks = []; // common to Radosgw hosts
-
-    _this.iscsiNetworks = []; // common networks to iscsi target hosts
-
-    _this.subnetLookup = {}; // Used for speed/bandwidth metadata
+      iscsiNetwork: '',
+      active: false
+    }; // this.cephHosts = [];
+    // this.internalNetworks = []; // suitable for cluster connectivity
+    // this.externalNetworks = []; // shared across all nodes
+    // this.s3Networks = []; // common to Radosgw hosts
+    // this.iscsiNetworks = []; // common networks to iscsi target hosts
+    // this.subnetLookup = {}; // Used for speed/bandwidth metadata
 
     return _this;
   }
 
   _createClass(NetworkPage, [{
-    key: "componentWillReceiveProps",
-    value: function componentWillReceiveProps(props) {
-      if (props.className == 'page') {
-        // the page is active, so refresh the items with updated props
-        // from the parent
-        console.log("Debug: host count : " + props.hosts.length);
-
-        for (var idx = 0; idx < props.hosts.length; idx++) {
-          if (props.hosts[idx]['metrics']) {
-            continue;
-          } else {
-            this.cephHosts.push(props.hosts[idx]);
-          }
-        }
-
-        var activeRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(this.cephHosts);
-        console.log("setting subnet array state variables");
-        this.internalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'osd');
-        this.externalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'all');
-        this.subnetLookup = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildSubnetLookup"])(this.cephHosts);
-        var netState = {};
-        netState['clusterNetwork'] = this.internalNetworks[0];
-        netState['publicNetwork'] = this.externalNetworks[0];
-
-        if (activeRoles.includes('rgws')) {
-          console.log("determining the rgw networks");
-          this.s3Networks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'rgw');
-          netState['rgwNetwork'] = this.s3Networks[0];
-        } else {
-          console.log("no rgw role seen across the hosts");
-          this.s3Networks = [];
-          netState['rgwNetwork'] = '';
-        }
-
-        if (activeRoles.includes('iscsigws')) {
-          console.log("determining the iscsi networks");
-          this.iscsiNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(this.cephHosts, 'iscsi');
-          netState['iscsiNetwork'] = this.iscsiNetworks[0];
-        } else {
-          console.log("no iscsi role seen across the hosts");
-          this.iscsiNetworks = [];
-          netState['iscsiNetwork'] = '';
-        }
-
-        this.setState(netState);
-      }
-    }
-  }, {
     key: "render",
     value: function render() {
-      if (this.props.className == 'page') {
-        console.log("rendering network page");
-        console.log("internal subnets " + JSON.stringify(this.internalNetworks));
-        console.log("external subnets " + JSON.stringify(this.externalNetworks));
-        console.log("s3 subnets " + JSON.stringify(this.s3Networks));
-        console.log("iscsi subnets " + JSON.stringify(this.iscsiNetworks));
+      if (this.state.active) {
+        console.log("NetworkPage: rendering"); // this.updateNetworkSubnets();
+        // console.log("NetworkPage: internal subnets " + JSON.stringify(this.internalNetworks));
+        // console.log("NetworkPage: external subnets " + JSON.stringify(this.externalNetworks));
+        // console.log("NetworkPage: s3 subnets " + JSON.stringify(this.s3Networks));
+        // console.log("NetworkPage: iscsi subnets " + JSON.stringify(this.iscsiNetworks));
+
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           id: "network",
           className: this.props.className
@@ -26467,34 +26473,38 @@ function (_React$Component) {
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
           title: "Cluster Network",
           description: "Subnets common to OSD hosts",
-          subnets: this.internalNetworks,
+          subnets: this.state.internalNetworks,
+          selected: this.state.clusterNetwork,
           name: "clusterNetwork",
-          lookup: this.subnetLookup,
-          hosts: this.cephHosts,
+          lookup: this.state.subnetLookup,
+          hosts: this.props.hosts,
           updateHandler: this.updateHandler
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
           title: "Public Network",
           description: "Subnets common to all hosts",
-          subnets: this.externalNetworks,
+          subnets: this.state.externalNetworks,
+          selected: this.state.publicNetwork,
           name: "publicNetwork",
-          lookup: this.subnetLookup,
-          hosts: this.cephHosts,
+          lookup: this.state.subnetLookup,
+          hosts: this.props.hosts,
           updateHandler: this.updateHandler
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
           title: "S3 Client Network",
           description: "Subnets common to radosgw hosts",
-          subnets: this.s3Networks,
+          subnets: this.state.s3Networks,
+          selected: this.state.rgwNetwork,
           name: "rgwNetwork",
-          lookup: this.subnetLookup,
-          hosts: this.cephHosts,
+          lookup: this.state.subnetLookup,
+          hosts: this.props.hosts,
           updateHandler: this.updateHandler
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(NetworkOptions, {
           title: "iSCSI Target Network",
           description: "Subnets common to iSCSI hosts",
-          subnets: this.iscsiNetworks,
+          subnets: this.state.iscsiNetworks,
+          selected: this.state.iscsiNetwork,
           name: "iscsiNetwork",
-          lookup: this.subnetLookup,
-          hosts: this.cephHosts,
+          lookup: this.state.subnetLookup,
+          hosts: this.props.hosts,
           updateHandler: this.updateHandler
         })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "nav-button-container"
@@ -26514,6 +26524,58 @@ function (_React$Component) {
         });
       }
     }
+  }], [{
+    key: "getDerivedStateFromProps",
+    value: function getDerivedStateFromProps(props, state) {
+      if (props.className == 'page' && !state.active) {
+        var stateObject = {
+          active: true
+        };
+        console.log("NetworkPage: page is now active");
+        var cephHosts = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["getCephHosts"])(props.hosts);
+        var activeRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildRoles"])(cephHosts);
+        stateObject.subnetLookup = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["buildSubnetLookup"])(cephHosts);
+
+        if (!state.clusterNetwork) {
+          stateObject.internalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(cephHosts, 'osd');
+          stateObject.clusterNetwork = stateObject.internalNetworks[0];
+        }
+
+        if (!state.publicNetwork) {
+          stateObject.externalNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(cephHosts, 'all');
+          stateObject.publicNetwork = stateObject.externalNetworks[0];
+        }
+
+        if (!state.rgwNetwork && activeRoles.includes('rgws')) {
+          stateObject.s3Networks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(cephHosts, 'rgw');
+          stateObject.rgwNetwork = stateObject.s3Networks[0];
+        }
+
+        if (!state.iscsiNetwork && activeRoles.includes('iscsigws')) {
+          stateObject.iscsiNetworks = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["commonSubnets"])(cephHosts, 'iscsi');
+          stateObject.iscsiNetwork = stateObject.iscsiNetworks[0];
+        }
+
+        return stateObject;
+      } else {
+        console.log("NetworkPage: page is inactive");
+        return null;
+      }
+    } // updateNetworkSubnets = () => {
+    //     this.cephHosts = getCephHosts(this.props.hosts);
+    //     let activeRoles = buildRoles(this.cephHosts);
+    //     console.log("NetworkPage: setting subnet array state variables");
+    //     this.internalNetworks = commonSubnets(this.cephHosts, 'osd');
+    //     this.externalNetworks = commonSubnets(this.cephHosts, 'all');
+    //     if (activeRoles.includes('rgws')) {
+    //         this.s3Networks = commonSubnets(this.cephHosts, 'rgw');
+    //     }
+    //     if (activeRoles.includes('iscsigws')) {
+    //         this.iscsiNetworks = commonSubnets(this.cephHosts, 'iscsi');
+    //     }
+    //     this.subnetLookup = buildSubnetLookup(this.cephHosts);
+    // }
+
   }]);
 
   return NetworkPage;
@@ -26533,18 +26595,19 @@ function (_React$Component2) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this2)), "updateState", function (event) {
       var _this2$setState;
 
-      console.log("change in the radio button set " + event.target.name);
-      console.log("lookup the subnet to determine hosts by bandwidth: " + event.target.value); // console.log("lookup table is " + JSON.stringify(this.props.lookup));
+      console.log("NetworkOptions: change in the radio button set " + event.target.name);
+      console.log("NetworkOptions: lookup the subnet to determine hosts by bandwidth: " + event.target.value); // console.log("lookup table is " + JSON.stringify(this.props.lookup));
 
-      _this2.setState((_this2$setState = {}, _defineProperty(_this2$setState, event.target.getAttribute('name'), event.target.value), _defineProperty(_this2$setState, "selected", event.target.value), _defineProperty(_this2$setState, "msg", Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["netSummary"])(_this2.props.lookup, event.target.value, _this2.props.hosts)), _this2$setState));
+      _this2.setState((_this2$setState = {}, _defineProperty(_this2$setState, event.target.getAttribute('name'), event.target.value), _defineProperty(_this2$setState, "selected", event.target.value), _defineProperty(_this2$setState, "msg", Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["netSummary"])(_this2.props.lookup, event.target.value, _this2.state.cephHosts)), _this2$setState));
 
       _this2.props.updateHandler(_this2.props.name, event.target.value);
     });
 
+    var cephHosts = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["getCephHosts"])(_this2.props.hosts);
     _this2.state = {
-      selected: null,
-      // subnets: [],
-      msg: []
+      cephHosts: cephHosts,
+      selected: props.selected,
+      msg: Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_3__["netSummary"])(_this2.props.lookup, _this2.props.subnets[0], cephHosts)
     };
     return _this2;
   }
@@ -26552,10 +26615,18 @@ function (_React$Component2) {
   _createClass(NetworkOptions, [{
     key: "render",
     value: function render() {
+      var default_subnet;
+
+      if (this.state.selected) {
+        default_subnet = this.state.selected;
+      } else {
+        default_subnet = this.props.subnets[0];
+      }
+
       var radioConfig = {
         desc: this.props.description,
         options: this.props.subnets,
-        default: this.props.subnets[0],
+        default: default_subnet,
         name: this.props.name,
         horizontal: false
       };
@@ -28845,12 +28916,14 @@ function decodeAddError(hostName, error) {
 /*!*******************************!*\
   !*** ./src/services/utils.js ***!
   \*******************************/
-/*! exports provided: readFile, listDir, getISOContents, versionSupportsMetrics, getCephVersionNumber, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, commonSubnets, buildSubnetLookup, currentTime, osdCount, isEmpty */
+/*! exports provided: readFile, writeFile, getUser, listDir, getISOContents, versionSupportsMetrics, getCephVersionNumber, buildRoles, removeItem, convertRole, getHost, activeRoleCount, activeRoles, allRoles, hostsWithRoleCount, hostsWithRole, toggleHostRole, checkPlaybook, countNICs, msgCount, sortByKey, arrayIntersect, readableBits, netSummary, collocationOK, copyToClipboard, getCephHosts, commonSubnets, buildSubnetLookup, currentTime, osdCount, isEmpty */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readFile", function() { return readFile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "writeFile", function() { return writeFile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getUser", function() { return getUser; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "listDir", function() { return listDir; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getISOContents", function() { return getISOContents; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "versionSupportsMetrics", function() { return versionSupportsMetrics; });
@@ -28874,6 +28947,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "netSummary", function() { return netSummary; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collocationOK", function() { return collocationOK; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyToClipboard", function() { return copyToClipboard; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getCephHosts", function() { return getCephHosts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commonSubnets", function() { return commonSubnets; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildSubnetLookup", function() { return buildSubnetLookup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentTime", function() { return currentTime; });
@@ -28904,6 +28978,14 @@ function readFile(fileName, fileType) {
   }
 
   var promise = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.file(fileName, spec).read();
+  return promise;
+}
+function writeFile(fileName, content) {
+  var promise = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.file(fileName).replace(content);
+  return promise;
+}
+function getUser() {
+  var promise = cockpit__WEBPACK_IMPORTED_MODULE_0___default.a.user();
   return promise;
 }
 function listDir(pathname) {
@@ -29441,6 +29523,33 @@ function copyToClipboard(text) {
   textField.select();
   document.execCommand('copy');
   textField.remove();
+}
+function getCephHosts(hosts) {
+  // return list of hosts objects that don't have a non-ceph role
+  var excludedRoles = ['metrics'];
+  var cephHosts = [];
+  console.log("getCephHosts: hosts provided : " + hosts.length);
+
+  var _loop4 = function _loop4(idx) {
+    var hostRoles = activeRoles(hosts[idx]);
+
+    if (excludedRoles.some(function (val) {
+      return hostRoles.includes(val);
+    })) {
+      return "continue";
+    }
+
+    cephHosts.push(hosts[idx]);
+  };
+
+  for (var idx = 0; idx < hosts.length; idx++) {
+    var _ret = _loop4(idx);
+
+    if (_ret === "continue") continue;
+  }
+
+  console.log("getCephHosts: hosts with ceph only role : " + cephHosts.length);
+  return cephHosts;
 }
 function commonSubnets(hostArray, role) {
   // determine the common subnets for a given role

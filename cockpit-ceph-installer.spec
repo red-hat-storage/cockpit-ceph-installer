@@ -1,13 +1,13 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 5%{?dist}
+Release: 6%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 
 Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
 
-Requires: ceph-ansible >= 4
+Requires: ceph-ansible >= 4.0.3
 Requires: cockpit
 Requires: libcdio
 Requires: cockpit-bridge
@@ -69,6 +69,12 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Mon Nov 04 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-6
+- improve error message when ISO is selected without iso images being present 
+- runtime settings are written to the cockpit users home directory to provide an installation audit record
+- domain name now show in add hosts dialog 
+- calculation of drive capacity for 4kN/512E drives improved
+- Network subnet page usability improvements
 * Tue Oct 22 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-5
 - ensure repository_type is set correctly for redhat installs
 - fix situation where the runner-service container wasn't shutdown cleanly
