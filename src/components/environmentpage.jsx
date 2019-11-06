@@ -109,7 +109,8 @@ export class EnvironmentPage extends React.Component {
             if (this.installSource["ISO"][0].startsWith('No')) {
                 this.setState({
                     msgLevel: 'error',
-                    msgText: "No ISO images have been found. Confirm ISO image location and check SELINUX context OR select another source"
+                    msgText: "No ISO images have been found. Confirm ISO image location and check SELINUX context OR select another source",
+                    sourceType: "ISO"
                 });
                 return;
             } else {
