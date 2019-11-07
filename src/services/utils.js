@@ -556,12 +556,17 @@ export function osdCount(hosts, flashUsage) {
     // return the number of OSD devices from the hosts array
     let ctr = 0;
     for (let host of hosts) {
+        if (!host.osd) {
+            continue;
+        }
+
         switch (flashUsage) {
         case "OSD Data":
-            ctr += host.ssd;
+            ctr += parseInt(host.ssd, 10) || 0;
             break;
         default:
-            ctr += host.hdd;
+            console.log("osdcount : " + host.hdd);
+            ctr += parseInt(host.hdd, 10) || 0;
         }
     }
     console.log("Detected " + ctr + " candidate disks for OSDs");

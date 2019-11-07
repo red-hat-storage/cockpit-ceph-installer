@@ -29672,13 +29672,18 @@ function osdCount(hosts, flashUsage) {
     for (var _iterator5 = hosts[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
       var host = _step5.value;
 
+      if (!host.osd) {
+        continue;
+      }
+
       switch (flashUsage) {
         case "OSD Data":
-          ctr += host.ssd;
+          ctr += parseInt(host.ssd, 10) || 0;
           break;
 
         default:
-          ctr += host.hdd;
+          console.log("osdcount : " + host.hdd);
+          ctr += parseInt(host.hdd, 10) || 0;
       }
     }
   } catch (err) {
