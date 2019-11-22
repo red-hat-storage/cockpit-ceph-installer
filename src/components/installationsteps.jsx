@@ -29,6 +29,7 @@ export class InstallationSteps extends React.Component {
             osdType: props.defaults.osdType,
             osdMode: props.defaults.osdMode,
             flashUsage: props.defaults.flashUsage,
+            user: props.defaults.user,
             publicNetwork: '',
             clusterNetwork: '',
             rgwNetwork:'',
@@ -179,8 +180,10 @@ export class InstallationSteps extends React.Component {
                         className={this.page['hosts']}
                         action={this.nextHandler}
                         metricsHostHandler={this.setMetricsHost}
+                        updater={this.updateState}
                         prevPage={this.prevPageHandler}
                         hosts={this.state.hosts}
+                        userName={this.state.user.name}
                         cephVersion={this.state.cephVersion}
                         installType={this.state.installType}
                         clusterType={this.state.clusterType}
