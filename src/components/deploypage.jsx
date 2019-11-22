@@ -8,7 +8,7 @@ import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
 import { GenericModal } from './common/modal.jsx';
-import { buildRoles, currentTime, convertRole, versionSupportsMetrics, getUser, writeFile } from '../services/utils.js';
+import { buildRoles, currentTime, convertRole, versionSupportsMetrics, writeFile } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     //
@@ -408,21 +408,18 @@ export class DeployPage extends React.Component {
             delete localSettings[item];
         });
 
-        getUser()
-                .then((user) => {
-                    let fileName = user.home + "/cockpit-ceph-installer.log";
-                    let runtimeSettings = {
-                        playuuid: this.playbookUUID,
-                        startTime: now,
-                        settings: localSettings
-                    };
-                    writeFile(fileName, JSON.stringify(runtimeSettings, null, 2))
-                            .done(() => {
-                                console.log("DeployPage: Runtime setttings stored in " + fileName);
-                            })
-                            .fail(() => {
-                                console.error("DeployPage: Failed to store runtime settings in " + fileName);
-                            });
+        let fileName = this.state.settings.user.home + "/cockpit-ceph-installer.log";
+        let runtimeSettings = {
+            playuuid: this.playbookUUID,
+            startTime: now,
+            settings: localSettings
+        };
+        writeFile(fileName, JSON.stringify(runtimeSettings, null, 2))
+                .done(() => {
+                    console.log("DeployPage: Runtime setttings stored in " + fileName);
+                })
+                .fail(() => {
+                    console.error("DeployPage: Failed to store runtime settings in " + fileName);
                 });
     }
 
