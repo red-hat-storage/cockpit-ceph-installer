@@ -98,6 +98,21 @@ NB. This script wil create and configure missing directories, set up default (se
 
 4.2 Once the runner-service is running you'll be presented with a URL to use to connect to GUI installer. Login as the root user.
   
+## SUDO Support
+The installer can be run under root *or* through a passwordless sudo user account. To use a sudo based account you'll need to perform the following additional steps;  
+
+1. Create your deployment account on **each** host (ansible, and Ceph nodes). This example uses an account named cephansible.  
+```
+groupadd cephansible
+useradd cephansible -g cephansible
+echo -e "cephansible\tALL=(root)\tNOPASSWD:ALL" > /etc/sudoers.d/cephansible
+passwd cephansible
+```
+2. Start the ansible-runner-service.sh script with sudo (if your using an authenticated registry, you'll also need to ```sudo podman login...``` first!)
+3. Login to the cockpit UI with you sudo account. On the login screen, **you must 'tick' the checkbox** for "Reuse my password for privileged tasks".  
+  
+When you start the ansible-runner-service.sh under sudo, the script uses this account to take ownership of cert files, and defines this account as the target user for the ansible-runner-service API interactions by defining an override in ```/etc/ansible-runner-service/config.yaml```.  
+&nbsp;  
 
 -----------------------------------------------------------------------------------------------------------------
 
