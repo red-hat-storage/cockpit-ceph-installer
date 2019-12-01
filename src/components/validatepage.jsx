@@ -3,6 +3,7 @@ import { UIButton } from './common/nextbutton.jsx';
 import { Notification } from './common/notifications.jsx';
 import { RoleCheckbox } from './common/rolecheckbox.jsx';
 import { Arrow } from './common/arrow.jsx';
+import { InfoBar } from './common/infobar.jsx';
 
 import {
     toggleHostRole,
@@ -37,7 +38,8 @@ export class ValidatePage extends React.Component {
             pendingProbe: true,
             probeStatusMsg: '',
             msgLevel: 'info',
-            msgText: ''
+            msgText: '',
+            infoTip: "The probe process compares hardware configurations against the intended Ceph roles"
         };
         this.probeSummary = '';
         this.roleSummary = '';
@@ -582,6 +584,8 @@ export class ValidatePage extends React.Component {
                         <UIButton btnClass={ nextButtonClass } disabled={!this.state.ready} btnLabel="Network &rsaquo;" action={this.checkHostsReady} />
                         <UIButton btnClass={ probeButtonClass } disabled={!this.state.probeEnabled} btnLabel="Probe Hosts" action={this.probeHosts} />
                         <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.probeEnabled} action={this.prevPageHandler} />
+                        <InfoBar
+                        info={this.state.infoTip || ''} />
                     </div>
                 </div>
             );

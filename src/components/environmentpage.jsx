@@ -7,6 +7,7 @@ import { listDir, getISOContents, getCephVersionNumber, isEmpty } from '../servi
 import '../app.scss';
 import { PasswordBox } from './common/password.jsx';
 import { Tooltip } from './common/tooltip.jsx';
+import { InfoBar } from './common/infobar.jsx';
 
 export class EnvironmentPage extends React.Component {
     //
@@ -31,7 +32,8 @@ export class EnvironmentPage extends React.Component {
             msgText: "",
             rhnUserName: "",
             rhnPassword: "",
-            credentialsClass: "visible"
+            credentialsClass: "visible",
+            infoTip:"The environment settings define the basic constraints that will apply to the target Ceph cluster."
         };
 
         this.installSource = {
@@ -320,7 +322,10 @@ export class EnvironmentPage extends React.Component {
                     <RadioSet config={this.install_type} default={this.state.installType} callback={this.updateState} />
                     <div className="nav-button-container">
                         <UIButton primary btnLabel="Hosts &rsaquo;" action={this.checkReady} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
+
                 </div>
             );
         } else {

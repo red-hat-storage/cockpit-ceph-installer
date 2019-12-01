@@ -2,6 +2,8 @@ import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
 import { RadioSet } from './common/radioset.jsx';
 import { netSummary, commonSubnets, buildSubnetLookup, buildRoles, getCephHosts } from '../services/utils.js';
+import { InfoBar } from './common/infobar.jsx';
+
 import '../app.scss';
 
 export class NetworkPage extends React.Component {
@@ -17,7 +19,9 @@ export class NetworkPage extends React.Component {
             clusterNetwork: '',
             rgwNetwork: '',
             iscsiNetwork: '',
-            active: false
+            active: false,
+            infoTip: "Separating network traffic across multiple subnets is a recommeded best practice " +
+                     "for performance and fault tolerance."
         };
         // this.cephHosts = [];
         // this.internalNetworks = []; // suitable for cluster connectivity
@@ -150,6 +154,8 @@ export class NetworkPage extends React.Component {
                     <div className="nav-button-container">
                         <UIButton primary btnLabel="Review &rsaquo;" action={this.updateParent} />
                         <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
                 </div>
             );

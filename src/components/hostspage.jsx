@@ -7,9 +7,10 @@ import { emptyRow } from './common/emptyrow.jsx';
 import { Notification } from './common/notifications.jsx';
 import { GenericModal, WindowTitle } from './common/modal.jsx';
 import { Tooltip } from './common/tooltip.jsx';
+import { InfoBar } from './common/infobar.jsx';
 import { decodeAddError } from '../services/errorHandlers.js';
 /* eslint-disable */
-import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
+import { addGroup, getGroups, addHost, deleteHost, deleteGroup } from '../services/apicalls.js';
 import { buildRoles, removeItem, versionSupportsMetrics, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard, hostsWithRole, activeRoleCount } from '../services/utils.js';
 /* eslint-enable */
 import '../app.scss';
@@ -25,7 +26,9 @@ export class HostsPage extends React.Component {
             ready: false,
             addHostsVisible: false,
             msgLevel: 'info',
-            msgText: ''
+            msgText: '',
+            infoTip:"Enter the hostnames using either the hostname or a hostname pattern to " +
+                    "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc)."
         };
         this.config = {};
         this.cache = {
@@ -491,14 +494,10 @@ export class HostsPage extends React.Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        console.debug("hostspage received props : " + JSON.stringify(nextProps));
-        if (nextProps.hosts.length == 0) {
-            console.log("Hosts from parent is empty, skipping update of local state");
-            return null;
-        }
+        console.debug("DEBUG: hostspage received props : " + JSON.stringify(nextProps));
 
         if (JSON.stringify(nextProps.hosts) != JSON.stringify(prevState.hosts)) {
-            console.debug("hostspage updating hosts state from props");
+            console.debug("DEBUG: hostspage updating hosts state from props");
             let tempHosts = JSON.parse(JSON.stringify(nextProps.hosts));
             tempHosts.sort(sortByKey('hostname'));
             return { hosts: tempHosts };
@@ -558,6 +557,7 @@ export class HostsPage extends React.Component {
             metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "textCenter thMetricsWidth visible-cell" : "hidden";
 
             if (this.state.hosts.length > 0) {
+                console.log("DEBUG: hostspage is seeing " + JSON.stringify(this.state.hosts));
                 rows = this.state.hosts.map(host => {
                     console.log("creating hostrow for " + host.hostname);
                     return <HostDataRow
@@ -627,6 +627,8 @@ export class HostsPage extends React.Component {
                     <div className="nav-button-container">
                         <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
                         <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
                 </div>
             );

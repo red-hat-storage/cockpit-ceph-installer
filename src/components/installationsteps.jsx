@@ -8,7 +8,7 @@ import NetworkPage from './networkpage.jsx';
 import ReviewPage from './reviewpage.jsx';
 import DeployPage from './deploypage.jsx';
 import ProgressTracker from './progresstracker.jsx';
-import InfoBar from './infobar.jsx';
+// import InfoBar from './common/infobar.jsx/index.js';
 
 export class InstallationSteps extends React.Component {
     //
@@ -216,8 +216,8 @@ export class InstallationSteps extends React.Component {
                         deployHandler={this.deployHandler}
                         modalHandler={this.props.modalHandler} />
                 </div>
-                <InfoBar
-                     info={this.infoText[this.state.pageNum] || ''} />
+                {/* <InfoBar
+                     info={this.infoText[this.state.pageNum] || ''} /> */}
             </div>
         );
     }
