@@ -49,7 +49,7 @@ export class Application extends React.Component {
             targetVersion: "RHCS 4",
             clusterType: "Production",
             installType: "Container",
-            networkType: 'ipv4',
+            networkType: 'IPv4',
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",

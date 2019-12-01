@@ -164,7 +164,7 @@ export function allVars (vars) {
     forYML.public_network = vars.publicNetwork;
     forYML.cluster_network = vars.clusterNetwork;
     forYML.monitor_address_block = vars.clusterNetwork;
-    forYML.ip_version = vars.networkType;
+    forYML.ip_version = vars.networkType.toLowerCase();
 
     // with only a single host, we need to change the default crush policy from 1 (host)
     // to 0 (osd)
