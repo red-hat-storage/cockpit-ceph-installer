@@ -396,7 +396,7 @@ start_runner_service() {
             ;;
         200)
             echo "The Ansible API container (runner-service) is available and responding to requests"
-            echo -e "\nLogin to the cockpit UI at https://$(hostname):9090/cockpit-ceph-installer to start the install"
+            echo -e "\nLogin to the cockpit UI at https://$(hostname -f):9090/cockpit-ceph-installer to start the install"
             ;;
         *)
             echo "The Ansible API container (runner-service) responded with unexpected status code: $CURL_RC"
