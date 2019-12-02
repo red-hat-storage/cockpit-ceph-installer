@@ -501,6 +501,8 @@ export class HostsPage extends React.Component {
             let tempHosts = JSON.parse(JSON.stringify(nextProps.hosts));
             tempHosts.sort(sortByKey('hostname'));
             return { hosts: tempHosts };
+        } else {
+            return null;
         }
     }
 
