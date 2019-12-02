@@ -29,6 +29,7 @@ export class InstallationSteps extends React.Component {
             osdType: props.defaults.osdType,
             osdMode: props.defaults.osdMode,
             flashUsage: props.defaults.flashUsage,
+            firewall: props.defaults.firewall,
             user: props.defaults.user,
             publicNetwork: '',
             clusterNetwork: '',

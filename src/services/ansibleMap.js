@@ -166,6 +166,10 @@ export function allVars (vars) {
     forYML.monitor_address_block = vars.clusterNetwork;
     forYML.ip_version = vars.networkType.toLowerCase();
 
+    if (!vars.firewall) {
+        forYML.configure_firewall = false;
+    }
+
     // with only a single host, we need to change the default crush policy from 1 (host)
     // to 0 (osd)
     if (hostsWithRoleCount(vars.hosts, 'osd') == 1) {

@@ -8,6 +8,7 @@ import '../app.scss';
 import { PasswordBox } from './common/password.jsx';
 import { Tooltip } from './common/tooltip.jsx';
 import { InfoBar } from './common/infobar.jsx';
+import { OnOffSwitch } from './common/switch.jsx';
 
 export class EnvironmentPage extends React.Component {
     //
@@ -26,6 +27,7 @@ export class EnvironmentPage extends React.Component {
             osdMode: props.defaults.osdMode,
             installType: props.defaults.installType,
             flashUsage: props.defaults.flashUsage,
+            firewall: props.defaults.firewall,
             targetVersion: props.defaults.targetVersion,
             cephVersion: "",
             msgLevel: "info",
@@ -149,6 +151,11 @@ export class EnvironmentPage extends React.Component {
     updateState = (event) => {
         console.log("received a state change for radio button: " + event.target.getAttribute('name') + " with " + event.target.value);
         this.setState({ [event.target.getAttribute('name')]: event.target.value });
+    }
+
+    updateOnOffSwitch = (name, checked) => {
+        console.log("updating onOffSwitch with name " + name + " to " + checked);
+        this.setState({ [name]: checked });
     }
 
     credentialsChange = (event) => {
@@ -315,6 +322,13 @@ export class EnvironmentPage extends React.Component {
                                  callback={this.credentialsChange}
                                  user={this.state.rhnUserName}
                                  password={this.state.rhnPassword} />
+                    <div>
+                        <span className="input-label-horizontal display-inline-block">
+                            <b>Configure Firewall</b>
+                            <Tooltip text={"Set to 'ON' to configure firewalld to protect cluster nodes"} />
+                        </span>
+                        <OnOffSwitch name="firewall" checked={this.state.firewall} callback={this.updateOnOffSwitch} />
+                    </div>
                     <RadioSet config={this.network_type} default={this.state.networkType} callback={this.updateState} />
                     <RadioSet config={this.osd_type} default={this.state.osdType} callback={this.updateState} />
                     <RadioSet config={this.flash_usage} default={this.state.flashUsage} callback={this.updateState} />

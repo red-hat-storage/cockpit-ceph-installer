@@ -53,6 +53,7 @@ export class Application extends React.Component {
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
+            firewall: true,
             cockpitHost: "localhost",
             user: {},
             rhcs_node_exporter_image: "registry.redhat.io/openshift4/ose-prometheus-node-exporter:v4.1",
