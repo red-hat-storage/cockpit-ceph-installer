@@ -599,6 +599,15 @@ class Checker(object):
 
     def _check_network(self):
         self._add_check("_check_network")
+
+        if len(self.host_details['network']['subnets']) < 2 and self.mode == 'prod':
+            self._add_problem("warning", "hosts should have a minimum of 2 networks")
+
+        for net in self.host_details['network']['subnets']:
+            ip, cidr = net.split('/')
+            if cidr == '32':
+                self._add_problem("error", "A /32 CIDR subnet is invalid ({})".format(net))
+
         if 'osds' not in self.roles:
             return
 
