@@ -21426,10 +21426,11 @@ function (_React$Component) {
       targetVersion: "RHCS 4",
       clusterType: "Production",
       installType: "Container",
-      networkType: 'ipv4',
+      networkType: 'IPv4',
       osdType: "Bluestore",
       osdMode: "None",
       flashUsage: "Journals/Logs",
+      firewall: true,
       cockpitHost: "localhost",
       user: {},
       rhcs_node_exporter_image: "registry.redhat.io/openshift4/ose-prometheus-node-exporter:v4.1",
@@ -22689,6 +22690,125 @@ function (_React$Component) {
   }]);
 
   return Selector;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+/***/ }),
+
+/***/ "./src/components/common/switch.jsx":
+/*!******************************************!*\
+  !*** ./src/components/common/switch.jsx ***!
+  \******************************************/
+/*! exports provided: OnOffSwitch */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OnOffSwitch", function() { return OnOffSwitch; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+var OnOffSwitch =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(OnOffSwitch, _React$Component);
+
+  function OnOffSwitch(props) {
+    var _this;
+
+    _classCallCheck(this, OnOffSwitch);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(OnOffSwitch).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "handleToggle", function (event) {
+      console.log("switch clicked - ");
+      var newCheckedState = !_this.state.checked; // console.debug(JSON.stringify(event.target));
+
+      _this.setState({
+        checked: newCheckedState
+      }); // pass state back to parent via callback
+
+
+      _this.props.callback(_this.props.name, newCheckedState);
+    });
+
+    _this.state = {
+      disabled: false,
+      checked: _this.props.checked
+    };
+    return _this;
+  }
+
+  _createClass(OnOffSwitch, [{
+    key: "render",
+    value: function render() {
+      var switchState, switchMargin;
+      console.log("onoffswitch render for onoffswitch with name " + this.props.name + " status=" + this.state.checked);
+
+      if (this.state.checked) {
+        switchState = "bootstrap-switch-on";
+        switchMargin = "0px";
+      } else {
+        switchState = "bootstrap-switch-off";
+        switchMargin = "-33px";
+      }
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-animate " + switchState,
+        style: {
+          width: "68px"
+        }
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "bootstrap-switch-container",
+        style: {
+          width: "99px",
+          marginLeft: [switchMargin]
+        }
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "bootstrap-switch-handle-on bootstrap-switch-primary",
+        style: {
+          width: "33px"
+        },
+        onClick: this.handleToggle
+      }, "ON"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "bootstrap-switch-label",
+        style: {
+          width: "33px"
+        },
+        onClick: this.handleToggle
+      }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "bootstrap-switch-handle-off bootstrap-switch-default",
+        style: {
+          width: "33px"
+        },
+        onClick: this.handleToggle
+      }, "OFF")));
+    }
+  }]);
+
+  return OnOffSwitch;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 /***/ }),
@@ -24237,6 +24357,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_password_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/password.jsx */ "./src/components/common/password.jsx");
 /* harmony import */ var _common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./common/tooltip.jsx */ "./src/components/common/tooltip.jsx");
 /* harmony import */ var _common_infobar_jsx__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./common/infobar.jsx */ "./src/components/common/infobar.jsx");
+/* harmony import */ var _common_switch_jsx__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./common/switch.jsx */ "./src/components/common/switch.jsx");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24256,6 +24377,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -24345,6 +24467,12 @@ function (_React$Component) {
       console.log("received a state change for radio button: " + event.target.getAttribute('name') + " with " + event.target.value);
 
       _this.setState(_defineProperty({}, event.target.getAttribute('name'), event.target.value));
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateOnOffSwitch", function (name, checked) {
+      console.log("updating onOffSwitch with name " + name + " to " + checked);
+
+      _this.setState(_defineProperty({}, name, checked));
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "credentialsChange", function (event) {
@@ -24494,6 +24622,7 @@ function (_React$Component) {
       osdMode: props.defaults.osdMode,
       installType: props.defaults.installType,
       flashUsage: props.defaults.flashUsage,
+      firewall: props.defaults.firewall,
       targetVersion: props.defaults.targetVersion,
       cephVersion: "",
       msgLevel: "info",
@@ -24523,7 +24652,7 @@ function (_React$Component) {
     };
     _this.network_type = {
       description: "Network connectivity",
-      options: ['ipv4'],
+      options: ['IPv4'],
       // 'ipv6'],
       name: 'networkType',
       tooltip: "",
@@ -24627,7 +24756,15 @@ function (_React$Component) {
           callback: this.credentialsChange,
           user: this.state.rhnUserName,
           password: this.state.rhnPassword
-        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
+        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+          className: "input-label-horizontal display-inline-block"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Configure Firewall"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__["Tooltip"], {
+          text: "Set to 'ON' to configure firewalld to protect cluster nodes"
+        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_switch_jsx__WEBPACK_IMPORTED_MODULE_10__["OnOffSwitch"], {
+          name: "firewall",
+          checked: this.state.firewall,
+          callback: this.updateOnOffSwitch
+        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_radioset_jsx__WEBPACK_IMPORTED_MODULE_2__["RadioSet"], {
           config: this.network_type,
           default: this.state.networkType,
           callback: this.updateState
@@ -26309,6 +26446,7 @@ function (_React$Component) {
       osdType: props.defaults.osdType,
       osdMode: props.defaults.osdMode,
       flashUsage: props.defaults.flashUsage,
+      firewall: props.defaults.firewall,
       user: props.defaults.user,
       publicNetwork: '',
       clusterNetwork: '',
@@ -28587,8 +28725,13 @@ function allVars(vars) {
   forYML.public_network = vars.publicNetwork;
   forYML.cluster_network = vars.clusterNetwork;
   forYML.monitor_address_block = vars.clusterNetwork;
-  forYML.ip_version = vars.networkType; // with only a single host, we need to change the default crush policy from 1 (host)
+  forYML.ip_version = vars.networkType.toLowerCase();
+
+  if (!vars.firewall) {
+    forYML.configure_firewall = false;
+  } // with only a single host, we need to change the default crush policy from 1 (host)
   // to 0 (osd)
+
 
   if (Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__["hostsWithRoleCount"])(vars.hosts, 'osd') == 1) {
     console.log("changing default crush rules : only a single osd host requires chooseleaf_type = 0 (instead of 1)");
