@@ -366,7 +366,7 @@ class Credentials extends React.Component {
                     <input type="text"
                         name="username"
                         defaultValue={this.props.user}
-                        className="form-control input-lg input-text display-inline-block"
+                        className="form-control input-text display-inline-block textinput-padding"
                         maxLength="40"
                         size="40"
                         placeholder="Login Name"
@@ -377,9 +377,8 @@ class Credentials extends React.Component {
                         <b>Service Account Token</b>
                     </span>
                     <textarea name="password"
-                        className="textarea-token"
+                        className="textarea-token textinput-padding"
                         defaultValue={this.props.password}
-                        rows="3" columns="60"
                         placeholder="Token"
                         onBlur={this.props.callback} />
                 </div>
