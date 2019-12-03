@@ -438,7 +438,14 @@ float:right;
 .clickable {
     cursor: pointer;
 }
-
+.textarea-token {
+    width:620px;
+    height:70px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    resize: none;
+    margin-bottom:8px;
+}
 .hiddenTable td{
     border: 0px;
     min-width: 80px;
@@ -468,7 +475,7 @@ float:right;
     padding: 5px 10px;
     position: absolute;
     z-index: 1;
-    margin-left: 5px;
+    margin-left: 10px;
     top: -.4em;
     left: 110%;
     font-weight:normal; }
