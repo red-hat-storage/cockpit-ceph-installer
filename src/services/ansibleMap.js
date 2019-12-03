@@ -122,8 +122,8 @@ export function allVars (vars) {
         forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated registry
         forYML.ceph_docker_registry_auth = true;
         forYML.ceph_docker_image = "rhceph-beta/rhceph-4-rhel8";
-        forYML.ceph_docker_registry_username = vars.rhnUserName;
-        forYML.ceph_docker_registry_password = vars.rhnPassword;
+        forYML.ceph_docker_registry_username = vars.rhLogin;
+        forYML.ceph_docker_registry_password = vars.rhToken;
         forYML.node_exporter_container_image = vars.rhcs_node_exporter_image;
         forYML.grafana_container_image = vars.rhcs_grafana_image;
         forYML.prometheus_container_image = vars.rhcs_prometheus_image;

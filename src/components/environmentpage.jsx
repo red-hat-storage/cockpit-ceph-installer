@@ -5,7 +5,6 @@ import { Selector } from './common/selector.jsx';
 import { Notification } from './common/notifications.jsx';
 import { listDir, getISOContents, getCephVersionNumber, isEmpty } from '../services/utils.js';
 import '../app.scss';
-import { PasswordBox } from './common/password.jsx';
 import { Tooltip } from './common/tooltip.jsx';
 import { InfoBar } from './common/infobar.jsx';
 import { OnOffSwitch } from './common/switch.jsx';
@@ -32,8 +31,8 @@ export class EnvironmentPage extends React.Component {
             cephVersion: "",
             msgLevel: "info",
             msgText: "",
-            rhnUserName: "",
-            rhnPassword: "",
+            rhLogin: "",
+            rhToken: "",
             credentialsClass: "visible",
             infoTip:"The environment settings define the basic constraints that will apply to the target Ceph cluster."
         };
@@ -164,17 +163,17 @@ export class EnvironmentPage extends React.Component {
         switch (credType) {
         case "username":
             this.setState({
-                rhnUserName: event.target.value
+                rhLogin: event.target.value
             });
             break;
         case "password":
             this.setState({
-                rhnPassword: event.target.value
+                rhToken: event.target.value
             });
             break;
         }
 
-        if (this.state.msgText.startsWith("RHN username")) {
+        if (this.state.msgText.startsWith("Registry Service Account")) {
             this.setState({
                 msgLevel: "info",
                 msgText: ""
@@ -192,10 +191,10 @@ export class EnvironmentPage extends React.Component {
 
         if (requiresCredentials.includes(this.state.sourceType)) {
             // ensure the credentials are not null
-            if (isEmpty(this.state.rhnUserName) || isEmpty(this.state.rhnPassword)) {
+            if (isEmpty(this.state.rhLogin) || isEmpty(this.state.rhToken)) {
                 this.setState({
                     msgLevel: 'error',
-                    msgText: "RHN username/password must be provided for Red Hat or ISO based deployments"
+                    msgText: "Registry Service Account credentials must be provided for Red Hat or ISO based deployments"
                 });
                 return;
             }
@@ -320,8 +319,8 @@ export class EnvironmentPage extends React.Component {
                     </div>
                     <Credentials visible={this.state.credentialsClass}
                                  callback={this.credentialsChange}
-                                 user={this.state.rhnUserName}
-                                 password={this.state.rhnPassword} />
+                                 user={this.state.rhLogin}
+                                 password={this.state.rhToken} />
                     <div>
                         <span className="input-label-horizontal display-inline-block">
                             <b>Configure Firewall</b>
@@ -359,18 +358,31 @@ class Credentials extends React.Component {
     render() {
         return (
             <div className={this.props.visible}>
-                <span className="input-label-horizontal display-inline-block">
-                    <b>RHN User Name</b>
-                    <Tooltip text={"RHN credentials are needed to authenticate against\nthe Red Hat container registry"} />
-                </span>
-                <input type="text"
-                       name="username"
-                       defaultValue={this.props.user}
-                       className="form-control input-lg input-text display-inline-block"
-                       maxLength="20"
-                       placeholder="Username"
-                       onBlur={this.props.callback} />
-                <PasswordBox passwordPrompt="RHN Password" name="password" value={this.props.password} callback={this.props.callback} />
+                <div>
+                    <span className="input-label-horizontal display-inline-block">
+                        <b>Service Account Login</b>
+                        <Tooltip text={"Use your RH Registry !Link:https://access.redhat.com/terms-based-registry/:Service Account:"} />
+                    </span>
+                    <input type="text"
+                        name="username"
+                        defaultValue={this.props.user}
+                        className="form-control input-lg input-text display-inline-block"
+                        maxLength="40"
+                        size="40"
+                        placeholder="Login Name"
+                        onBlur={this.props.callback} />
+                </div>
+                <div>
+                    <span className="input-label-horizontal display-inline-block">
+                        <b>Service Account Token</b>
+                    </span>
+                    <textarea name="password"
+                        className="textarea-token"
+                        defaultValue={this.props.password}
+                        rows="3" columns="60"
+                        placeholder="Token"
+                        onBlur={this.props.callback} />
+                </div>
             </div>
         );
     }
