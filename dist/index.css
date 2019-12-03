@@ -409,6 +409,14 @@ table.roleTable {
 .clickable {
   cursor: pointer; }
 
+.textarea-token {
+  width: 620px;
+  height: 70px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  resize: none;
+  margin-bottom: 8px; }
+
 .hiddenTable td {
   border: 0px;
   min-width: 80px;
@@ -430,17 +438,27 @@ table.roleTable {
   visibility: hidden;
   white-space: nowrap;
   background-color: black;
-  opacity: 0.8;
+  opacity: 0.7;
   color: #fff;
   text-align: left;
   border-radius: 3px;
   padding: 5px 10px;
   position: absolute;
   z-index: 1;
-  margin-left: 5px;
+  margin-left: 10px;
   top: -.4em;
   left: 110%;
   font-weight: normal; }
+
+.textInfo .tooltipContent::after {
+  content: "";
+  position: absolute;
+  top: 1.3em;
+  right: 100%;
+  margin-top: -10px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent black transparent transparent; }
 
 .textInfo:hover .tooltipContent {
   visibility: visible; }

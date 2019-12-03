@@ -22237,91 +22237,6 @@ function (_React$Component) {
 
 /***/ }),
 
-/***/ "./src/components/common/password.jsx":
-/*!********************************************!*\
-  !*** ./src/components/common/password.jsx ***!
-  \********************************************/
-/*! exports provided: PasswordBox */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PasswordBox", function() { return PasswordBox; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../app.scss */ "./src/app.scss");
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-
-
-var PasswordBox =
-/*#__PURE__*/
-function (_React$Component) {
-  _inherits(PasswordBox, _React$Component);
-
-  /* PasswordBox is implemented as a separate component, so we can add show/reveal
-    functionality later
-  */
-  function PasswordBox(props) {
-    var _this;
-
-    _classCallCheck(this, PasswordBox);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(PasswordBox).call(this, props));
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateParent", function (event) {
-      console.debug("left the password box");
-
-      _this.props.callback(event);
-    });
-
-    _this.state = {
-      class: "display-inline-block arrow-right toggle-reset"
-    };
-    return _this;
-  }
-
-  _createClass(PasswordBox, [{
-    key: "render",
-    value: function render() {
-      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "input-label-horizontal display-inline-block"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, this.props.passwordPrompt)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
-        type: "password",
-        name: this.props.name,
-        defaultValue: this.props.value,
-        maxLength: "20",
-        className: "form-control input-lg input-text display-inline-block",
-        placeholder: "Password",
-        onBlur: this.updateParent
-      }));
-    }
-  }]);
-
-  return PasswordBox;
-}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
-
-/***/ }),
-
 /***/ "./src/components/common/radioset.jsx":
 /*!********************************************!*\
   !*** ./src/components/common/radioset.jsx ***!
@@ -22945,6 +22860,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -22988,9 +22911,33 @@ function (_React$Component) {
     // }
     value: function render() {
       var tooltipText = this.props.text.split('\n').map(function (text, key) {
+        var out;
+
+        if (text.includes('!Link:')) {
+          var _text$split = text.split('!Link:'),
+              _text$split2 = _slicedToArray(_text$split, 2),
+              prefix = _text$split2[0],
+              therest = _text$split2[1];
+
+          var _therest$split = therest.split(':'),
+              _therest$split2 = _slicedToArray(_therest$split, 4),
+              protocol = _therest$split2[0],
+              urlPath = _therest$split2[1],
+              linkName = _therest$split2[2],
+              remainingText = _therest$split2[3];
+
+          var url = protocol + ":" + urlPath;
+          out = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, prefix, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
+            href: url,
+            target: "_blank"
+          }, linkName), remainingText);
+        } else {
+          out = text;
+        }
+
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           key: key
-        }, text);
+        }, out);
       });
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "textInfo"
@@ -24354,10 +24301,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _services_utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../services/utils.js */ "./src/services/utils.js");
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../app.scss */ "./src/app.scss");
 /* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _common_password_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/password.jsx */ "./src/components/common/password.jsx");
-/* harmony import */ var _common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./common/tooltip.jsx */ "./src/components/common/tooltip.jsx");
-/* harmony import */ var _common_infobar_jsx__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./common/infobar.jsx */ "./src/components/common/infobar.jsx");
-/* harmony import */ var _common_switch_jsx__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./common/switch.jsx */ "./src/components/common/switch.jsx");
+/* harmony import */ var _common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/tooltip.jsx */ "./src/components/common/tooltip.jsx");
+/* harmony import */ var _common_infobar_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./common/infobar.jsx */ "./src/components/common/infobar.jsx");
+/* harmony import */ var _common_switch_jsx__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./common/switch.jsx */ "./src/components/common/switch.jsx");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24377,7 +24323,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 
 
 
@@ -24481,20 +24426,20 @@ function (_React$Component) {
       switch (credType) {
         case "username":
           _this.setState({
-            rhnUserName: event.target.value
+            rhLogin: event.target.value
           });
 
           break;
 
         case "password":
           _this.setState({
-            rhnPassword: event.target.value
+            rhToken: event.target.value
           });
 
           break;
       }
 
-      if (_this.state.msgText.startsWith("RHN username")) {
+      if (_this.state.msgText.startsWith("Registry Service Account")) {
         _this.setState({
           msgLevel: "info",
           msgText: ""
@@ -24513,10 +24458,10 @@ function (_React$Component) {
 
       if (requiresCredentials.includes(_this.state.sourceType)) {
         // ensure the credentials are not null
-        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["isEmpty"])(_this.state.rhnUserName) || Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["isEmpty"])(_this.state.rhnPassword)) {
+        if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["isEmpty"])(_this.state.rhLogin) || Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["isEmpty"])(_this.state.rhToken)) {
           _this.setState({
             msgLevel: 'error',
-            msgText: "RHN username/password must be provided for Red Hat or ISO based deployments"
+            msgText: "Registry Service Account credentials must be provided for Red Hat or ISO based deployments"
           });
 
           return;
@@ -24627,8 +24572,8 @@ function (_React$Component) {
       cephVersion: "",
       msgLevel: "info",
       msgText: "",
-      rhnUserName: "",
-      rhnPassword: "",
+      rhLogin: "",
+      rhToken: "",
       credentialsClass: "visible",
       infoTip: "The environment settings define the basic constraints that will apply to the target Ceph cluster."
     };
@@ -24754,13 +24699,13 @@ function (_React$Component) {
         })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Credentials, {
           visible: this.state.credentialsClass,
           callback: this.credentialsChange,
-          user: this.state.rhnUserName,
-          password: this.state.rhnPassword
+          user: this.state.rhLogin,
+          password: this.state.rhToken
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: "input-label-horizontal display-inline-block"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Configure Firewall"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__["Tooltip"], {
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Configure Firewall"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
           text: "Set to 'ON' to configure firewalld to protect cluster nodes"
-        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_switch_jsx__WEBPACK_IMPORTED_MODULE_10__["OnOffSwitch"], {
+        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_switch_jsx__WEBPACK_IMPORTED_MODULE_9__["OnOffSwitch"], {
           name: "firewall",
           checked: this.state.firewall,
           callback: this.updateOnOffSwitch
@@ -24790,7 +24735,7 @@ function (_React$Component) {
           primary: true,
           btnLabel: "Hosts \u203A",
           action: this.checkReady
-        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_infobar_jsx__WEBPACK_IMPORTED_MODULE_9__["InfoBar"], {
+        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_infobar_jsx__WEBPACK_IMPORTED_MODULE_8__["InfoBar"], {
           info: this.state.infoTip || ''
         })));
       } else {
@@ -24826,24 +24771,30 @@ function (_React$Component2) {
     value: function render() {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: this.props.visible
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
         className: "input-label-horizontal display-inline-block"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "RHN User Name"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_8__["Tooltip"], {
-        text: "RHN credentials are needed to authenticate against\nthe Red Hat container registry"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Service Account Login"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+        text: "Use your RH Registry !Link:https://access.redhat.com/terms-based-registry/:Service Account:"
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
         type: "text",
         name: "username",
         defaultValue: this.props.user,
         className: "form-control input-lg input-text display-inline-block",
-        maxLength: "20",
-        placeholder: "Username",
+        maxLength: "40",
+        size: "40",
+        placeholder: "Login Name",
         onBlur: this.props.callback
-      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_password_jsx__WEBPACK_IMPORTED_MODULE_7__["PasswordBox"], {
-        passwordPrompt: "RHN Password",
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "input-label-horizontal display-inline-block"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Service Account Token")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("textarea", {
         name: "password",
-        value: this.props.password,
-        callback: this.props.callback
-      }));
+        className: "textarea-token",
+        defaultValue: this.props.password,
+        rows: "3",
+        columns: "60",
+        placeholder: "Token",
+        onBlur: this.props.callback
+      })));
     }
   }]);
 
@@ -25642,6 +25593,8 @@ function (_React$Component) {
         return {
           hosts: tempHosts
         };
+      } else {
+        return null;
       }
     }
   }]);
@@ -26455,8 +26408,8 @@ function (_React$Component) {
       deployStarted: false,
       cockpitHost: props.defaults.cockpitHost,
       cephVersion: '',
-      rhnUserName: '',
-      rhnPassword: '',
+      rhLogin: '',
+      rhToken: '',
       rhcs_node_exporter_image: props.defaults.rhcs_node_exporter_image,
       rhcs_grafana_image: props.defaults.rhcs_grafana_image,
       rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
@@ -28680,8 +28633,8 @@ function allVars(vars) {
 
     forYML.ceph_docker_registry_auth = true;
     forYML.ceph_docker_image = "rhceph-beta/rhceph-4-rhel8";
-    forYML.ceph_docker_registry_username = vars.rhnUserName;
-    forYML.ceph_docker_registry_password = vars.rhnPassword;
+    forYML.ceph_docker_registry_username = vars.rhLogin;
+    forYML.ceph_docker_registry_password = vars.rhToken;
     forYML.node_exporter_container_image = vars.rhcs_node_exporter_image;
     forYML.grafana_container_image = vars.rhcs_grafana_image;
     forYML.prometheus_container_image = vars.rhcs_prometheus_image;
