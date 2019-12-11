@@ -409,6 +409,9 @@ table.roleTable {
 .clickable {
   cursor: pointer; }
 
+.textinput-padding {
+  padding: 4px 4px; }
+
 .textarea-token {
   width: 620px;
   height: 70px;

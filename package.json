@@ -13,9 +13,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
     "babel-eslint": "^9.0.0",
     "babel-loader": "^8.0.0",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
@@ -23,7 +23,7 @@
     "compression-webpack-plugin": "^1.1.11",
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^0.28.11",
-    "eslint": "^5.4.0",
+    "eslint": "^5.16.0",
     "eslint-config-standard": "^11.0.0",
     "eslint-config-standard-react": "^6.0.0",
     "eslint-loader": "^2.1.0",
@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
-    "node-sass": "^4.9.0",
+    "node-sass": "^4.13.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2"
   }

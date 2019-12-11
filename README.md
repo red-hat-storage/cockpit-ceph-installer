@@ -14,8 +14,10 @@ The plugin currently
 - following a Nautilus based deployment, the user may click a link to go straight to Ceph's web management console
 - allows environment defaults to be overridden from `/var/lib/cockpit/ceph-installer/defaults.json`
 - supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways, metrics
-- support All-in-One installs for POC (aka kick-the-tyres)
+- support for All-in-One installs for POC (aka kick-the-tyres)
 - creates log of all the settings detected and requested at `~/cockpit-ceph-installer.log`
+- supports deployment with and without firewall enabled
+- supports container access through Red Hat's authenticated registry (ISO, and Red Hat deployment options)
 
 ### Known Issues
 1. An ISO based deployment may not install the ceph-grafana-dashboards rpm
@@ -108,10 +110,18 @@ useradd cephansible -g cephansible
 echo -e "cephansible\tALL=(root)\tNOPASSWD:ALL" > /etc/sudoers.d/cephansible
 passwd cephansible
 ```
-2. Start the ansible-runner-service.sh script with sudo (if your using an authenticated registry, you'll also need to ```sudo podman login...``` first!)
-3. Login to the cockpit UI with you sudo account. On the login screen, **you must 'tick' the checkbox** for "Reuse my password for privileged tasks".  
+2. Update /etc/ansible-runner-service/config.yaml with 
+```
+target_user: cephansible
+``` 
+3. Start the ansible-runner-service.sh script with sudo (if your using an authenticated registry, you'll also need to ```sudo podman login...``` first!)
+4. Login to the cockpit UI with you sudo account. On the login screen, **you must 'tick' the checkbox** for "Reuse my password for privileged tasks".  
   
-When you start the ansible-runner-service.sh under sudo, the script uses this account to take ownership of cert files, and defines this account as the target user for the ansible-runner-service API interactions by defining an override in ```/etc/ansible-runner-service/config.yaml```.  
+When you start the ansible-runner-service.sh under sudo, the script uses this account to take ownership of cert files, and defines this account as the target user for the ansible-runner-service API interactions by defining an override in ```/etc/ansible-runner-service/config.yaml```.
+
+With sudo, you will also need to consider SELINUX. The group_vars and host_vars directories in usr/share/ceph-ansible need to be accessible from the 
+container, so ensure these directories have a SELINUX context of container_file_t.  
+
 &nbsp;  
 
 -----------------------------------------------------------------------------------------------------------------

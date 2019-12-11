@@ -24779,7 +24779,7 @@ function (_React$Component2) {
         type: "text",
         name: "username",
         defaultValue: this.props.user,
-        className: "form-control input-lg input-text display-inline-block",
+        className: "form-control input-text display-inline-block textinput-padding",
         maxLength: "40",
         size: "40",
         placeholder: "Login Name",
@@ -24788,10 +24788,8 @@ function (_React$Component2) {
         className: "input-label-horizontal display-inline-block"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Service Account Token")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("textarea", {
         name: "password",
-        className: "textarea-token",
+        className: "textarea-token textinput-padding",
         defaultValue: this.props.password,
-        rows: "3",
-        columns: "60",
         placeholder: "Token",
         onBlur: this.props.callback
       })));
