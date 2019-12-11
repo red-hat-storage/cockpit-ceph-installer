@@ -7,9 +7,10 @@ import { emptyRow } from './common/emptyrow.jsx';
 import { Notification } from './common/notifications.jsx';
 import { GenericModal, WindowTitle } from './common/modal.jsx';
 import { Tooltip } from './common/tooltip.jsx';
+import { InfoBar } from './common/infobar.jsx';
 import { decodeAddError } from '../services/errorHandlers.js';
 /* eslint-disable */
-import { addGroup, getGroups, addHost, deleteHost, changeHost, deleteGroup } from '../services/apicalls.js';
+import { addGroup, getGroups, addHost, deleteHost, deleteGroup } from '../services/apicalls.js';
 import { buildRoles, removeItem, versionSupportsMetrics, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard, hostsWithRole, activeRoleCount } from '../services/utils.js';
 /* eslint-enable */
 import '../app.scss';
@@ -25,7 +26,9 @@ export class HostsPage extends React.Component {
             ready: false,
             addHostsVisible: false,
             msgLevel: 'info',
-            msgText: ''
+            msgText: '',
+            infoTip:"Enter the hostnames using either the hostname or a hostname pattern to " +
+                    "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc)."
         };
         this.config = {};
         this.cache = {
@@ -81,13 +84,13 @@ export class HostsPage extends React.Component {
 
             switch (true) {
             case (monCount === 0):
-                errMsgs.push("You must have a mon role defined");
+                errMsgs.push("You must have a MON role defined");
                 break;
             case (monCount === 1 && this.props.clusterType.toLowerCase() === 'production'):
-                errMsgs.push("Too few mons for production. You must have 3 or 5 mons defined");
+                errMsgs.push("You must have 3 or 5 MONs defined for a Production deployment");
                 break;
             case (monCount % 2 == 0):
-                errMsgs.push("You can't have an even number of mons");
+                errMsgs.push("You can't have an even number of MONs");
                 break;
             }
 
@@ -96,7 +99,7 @@ export class HostsPage extends React.Component {
             }
 
             if (!iscsiTargetCounts.includes(iscsiCount)) {
-                errMsgs.push("iscsi requires either " + iscsiTargetCounts.slice(1).join(' or ') + " hosts to provide path redundancy");
+                errMsgs.push("iSCSI requires either " + iscsiTargetCounts.slice(1).join(' or ') + " hosts to provide path redundancy");
             }
 
             if (errMsgs.length > 0) {
@@ -105,7 +108,7 @@ export class HostsPage extends React.Component {
                     msgText: errMsgs.join('. ')
                 });
                 usable = false;
-                return;
+                // return;
             }
 
             if (usable) {
@@ -222,6 +225,7 @@ export class HostsPage extends React.Component {
 
                                                 currentHosts.unshift(newObject); // always add to the start
                                                 that.setState({hosts: currentHosts});
+                                                that.props.updater({hosts: currentHosts});
                                                 ctr++;
                                                 if (ctr == newHosts.length) {
                                                     that.setState({ready: true});
@@ -410,11 +414,11 @@ export class HostsPage extends React.Component {
     }
 
     deleteHostEntry = (idx) => {
-        console.log("deleting host entry");
+        console.log("deleting host entry id " + idx);
         var localState = JSON.parse(JSON.stringify(this.state.hosts));
         console.log("state looks like this " + JSON.stringify(localState));
         let hostname = localState[idx].hostname;
-
+        console.log("deleting hostname " + hostname);
         // drop the entry
         localState.splice(idx, 1);
         delete this.config[hostname];
@@ -424,6 +428,8 @@ export class HostsPage extends React.Component {
         }
 
         this.setState({hosts: localState});
+        this.props.updater({hosts: localState}); // update parents state
+        console.log("deleting host resulted in hosts: " + JSON.stringify(localState));
     }
 
     deleteGroups = (groupsToRemove) => {
@@ -487,20 +493,16 @@ export class HostsPage extends React.Component {
         }
     }
 
-    componentWillReceiveProps(props) {
-        // pick up the state change from the parent
-        // console.log("Debug: hostspage receiving props update NEW: " + JSON.stringify(props.hosts));
-        const { hosts } = this.state.hosts;
-        if (props.hosts != hosts) {
-            if (props.hosts.length == 0) {
-                console.log("Hosts from parent is empty, skipping update of local state");
-            } else {
-                console.log("Applying update from parent hosts state to local state");
-                // sort the hosts by name, then update our state
-                var tempHosts = JSON.parse(JSON.stringify(props.hosts));
-                tempHosts.sort(sortByKey('hostname'));
-                this.setState({hosts: tempHosts});
-            }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        console.debug("DEBUG: hostspage received props : " + JSON.stringify(nextProps));
+
+        if (JSON.stringify(nextProps.hosts) != JSON.stringify(prevState.hosts)) {
+            console.debug("DEBUG: hostspage updating hosts state from props");
+            let tempHosts = JSON.parse(JSON.stringify(nextProps.hosts));
+            tempHosts.sort(sortByKey('hostname'));
+            return { hosts: tempHosts };
+        } else {
+            return null;
         }
     }
 
@@ -557,13 +559,16 @@ export class HostsPage extends React.Component {
             metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "textCenter thMetricsWidth visible-cell" : "hidden";
 
             if (this.state.hosts.length > 0) {
+                console.log("DEBUG: hostspage is seeing " + JSON.stringify(this.state.hosts));
                 rows = this.state.hosts.map(host => {
+                    console.log("creating hostrow for " + host.hostname);
                     return <HostDataRow
                                 key={host.hostname}
                                 hostData={host}
                                 roleChange={this.updateHost}
                                 deleteRow={this.deleteHost}
                                 retryHost={this.retryHost}
+                                userName={this.props.userName}
                                 cephVersion={this.props.cephVersion}
                                 modal={this.showModal} />;
                 });
@@ -624,6 +629,8 @@ export class HostsPage extends React.Component {
                     <div className="nav-button-container">
                         <UIButton primary disabled={!this.state.ready} btnLabel="Validate &rsaquo;" action={this.nextAction} />
                         <UIButton btnLabel="&lsaquo; Back" action={this.prevPageHandler} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
                 </div>
             );
@@ -638,7 +645,8 @@ class HostDataRow extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            host: this.props.hostData
+            host: null,
+            actions: []
         };
         this.actions = [];
     }
@@ -657,16 +665,27 @@ class HostDataRow extends React.Component {
         }
     }
 
-    componentWillReceiveProps(props) {
-        // pick up the state change from the parent
-        const { hostData } = this.state.host;
-        if (props.hostData != hostData) {
-            this.setState({host: props.hostData});
-            this.actions = [{action: "Delete", callback: this.props.deleteRow}];
-            if (props.hostData.status === 'NOTOK') {
-                this.actions.push({action:"Retry", callback:this.props.retryHost});
-            }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        let newState = {
+            actions: [
+                {
+                    action: "Delete",
+                    callback: nextProps.deleteRow
+                }
+            ]
+        };
+
+        if (JSON.stringify(nextProps.hostData) != JSON.stringify(prevState.host)) {
+            newState['host'] = nextProps.hostData;
         }
+
+        if (nextProps.hostData.status === 'NOTOK') {
+            newState['actions'].push({
+                action: "Retry",
+                callback: nextProps.retryHost
+            });
+        }
+        return newState;
     }
 
     dummy = () => {
@@ -675,6 +694,7 @@ class HostDataRow extends React.Component {
 
     render() {
         let metricsClass = versionSupportsMetrics(this.props.cephVersion) ? "thMetricsWidth visible-cell" : "hidden";
+        console.log("render hostrow for " + this.state.host.hostname);
         return (
             <tr>
                 <td className="thHostname" >
@@ -702,10 +722,14 @@ class HostDataRow extends React.Component {
                     { this.colorify(this.state.host.status) }
                 </td>
                 <td className="tdHostInfo">
-                    <HostInfo hostname={this.state.host.hostname} info={this.state.host.info} modal={this.props.modal} />
+                    <HostInfo
+                        hostname={this.state.host.hostname}
+                        info={this.state.host.info}
+                        userName={this.props.userName}
+                        modal={this.props.modal} />
                 </td>
                 <td className="tdDeleteBtn">
-                    <Kebab value={this.state.host.hostname} actions={this.actions} />
+                    <Kebab value={this.state.host.hostname} actions={this.state.actions} />
                 </td>
             </tr>
         );
@@ -1082,11 +1106,20 @@ export class HostInfo extends React.Component {
 
     render () {
         var helper = (<div />);
-        if (this.props.info.startsWith('SSH')) {
-            let fixMe = "ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub root@" + this.props.hostname;
+
+        if (this.props.info.startsWith('SSH Auth')) {
+            let fixMe = "ssh-copy-id -f -i /usr/share/ansible-runner-service/env/ssh_key.pub " +
+                        this.props.userName + "@" + this.props.hostname;
+            if (this.props.userName != "root") {
+                // non-root users must use sudo to access the ssh_key files
+                fixMe = "sudo " + fixMe;
+            }
+
             let helperMsg = (
                 <div>
-                    You need to copy the ssh public key from this host to {this.props.hostname}<br /><br />
+                    You need to copy the ssh public key from this host to {this.props.hostname}, and
+                    ensure the user '{this.props.userName}' is configured for passwordless SUDO.<br />
+                    e.g.<br />
                     <pre className="display-inline-block">
                         { fixMe }
                     </pre>

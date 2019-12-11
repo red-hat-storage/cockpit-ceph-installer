@@ -8,7 +8,8 @@ import { storeGroupVars, storeHostVars, runPlaybook, getPlaybookState, getEvents
 import { ElapsedTime } from './common/timer.jsx';
 import { Selector } from './common/selector.jsx';
 import { GenericModal } from './common/modal.jsx';
-import { buildRoles, currentTime, convertRole, versionSupportsMetrics, getUser, writeFile } from '../services/utils.js';
+import { InfoBar } from './common/infobar.jsx';
+import { buildRoles, currentTime, convertRole, versionSupportsMetrics, writeFile } from '../services/utils.js';
 
 export class DeployPage extends React.Component {
     //
@@ -28,6 +29,9 @@ export class DeployPage extends React.Component {
             showTaskStatus: true,
             startTime: 'N/A',
             roleState: {},
+            infoTip: "When you click 'Save', the Ansible settings will be committed to disk using standard " +
+                     "Ansible formats. This allows you to refer to or modify these settings before " +
+                     "starting the deployment.",
             status: {
                 status: 'ready',
                 msg: "Waiting to start",
@@ -60,10 +64,12 @@ export class DeployPage extends React.Component {
         this.activeMockData = [];
         this.mockEvents = [];
         this.mockCephOutput = [];
+        this.defaultInfoTip = "";
     }
 
     componentDidMount() {
         console.log("checking for mock data for the deployment");
+        this.defaultInfoTip = this.state.infoTip;
 
         cockpit.file("/var/lib/cockpit/ceph-installer/mockdata/deploypage.json").read()
                 .done((content, tag) => {
@@ -362,7 +368,9 @@ export class DeployPage extends React.Component {
                 }
             }
         }
-        chain.then(() => this.setState({deployBtnText: "Deploy"}));
+        chain.then(() => this.setState(
+            { deployBtnText: "Deploy",
+              infoTip: "Variables have been stored within the host_vars and group_vars directories of /usr/share/ceph-ansible."}));
         chain.catch(err => {
             console.error("Problem creating group vars files: " + err);
             this.props.modalHandler("Unable to create Ansible Variables",
@@ -391,6 +399,7 @@ export class DeployPage extends React.Component {
             this.setState({
                 deployActive: true,
                 deployBtnText: 'Running',
+                infoTip: "",
                 deployEnabled: false,
                 backBtnEnabled: false
             });
@@ -408,21 +417,18 @@ export class DeployPage extends React.Component {
             delete localSettings[item];
         });
 
-        getUser()
-                .then((user) => {
-                    let fileName = user.home + "/cockpit-ceph-installer.log";
-                    let runtimeSettings = {
-                        playuuid: this.playbookUUID,
-                        startTime: now,
-                        settings: localSettings
-                    };
-                    writeFile(fileName, JSON.stringify(runtimeSettings, null, 2))
-                            .done(() => {
-                                console.log("DeployPage: Runtime setttings stored in " + fileName);
-                            })
-                            .fail(() => {
-                                console.error("DeployPage: Failed to store runtime settings in " + fileName);
-                            });
+        let fileName = this.state.settings.user.home + "/cockpit-ceph-installer.log";
+        let runtimeSettings = {
+            playuuid: this.playbookUUID,
+            startTime: now,
+            settings: localSettings
+        };
+        writeFile(fileName, JSON.stringify(runtimeSettings, null, 2))
+                .done(() => {
+                    console.log("DeployPage: Runtime setttings stored in " + fileName);
+                })
+                .fail(() => {
+                    console.error("DeployPage: Failed to store runtime settings in " + fileName);
                 });
     }
 
@@ -480,7 +486,10 @@ export class DeployPage extends React.Component {
                 let buttonText;
                 if (playStatus == "SUCCESSFUL") {
                     buttonText = "Complete";
-                    this.setState({backBtnEnabled: false}); // disables the back button!
+                    this.setState({
+                        backBtnEnabled: false,
+                        infoTip:"Ceph deployment is complete. Click 'Complete' to show current state and login URL"
+                    }); // disables the back button!
                 } else {
                     buttonText = "Retry";
                 }
@@ -502,18 +511,25 @@ export class DeployPage extends React.Component {
                         this.setRoleState(response);
                         let msg = response.msg.toUpperCase();
                         let buttonText;
+                        let infoTipText;
 
                         switch (msg) {
                         case "FAILED":
                         case "CANCELED":
                         case "SUCCESSFUL":
                             buttonText = (msg == "SUCCESSFUL") ? "Complete" : "Retry";
+                            if (buttonText == "Complete") {
+                                infoTipText = "Ceph deployment is complete. Click 'Complete' to show current state and login URL";
+                            } else {
+                                infoTipText = "Deployment failed. Click the 'Filter by' pulldown to show failed tasks to investigate";
+                            }
                             clearInterval(this.intervalHandler);
                             this.refs.timer.stopTimer();
                             this.endTime = currentTime();
                             this.setState({
                                 deployActive: false,
                                 deployBtnText: buttonText,
+                                infoTip: infoTipText,
                                 deployEnabled: true
                             });
                             break;
@@ -541,7 +557,9 @@ export class DeployPage extends React.Component {
     }
 
     previousPage = () => {
-        this.setState({deployBtnText: "Save"});
+        this.setState({
+            deployBtnText: "Save",
+            infoTip:this.defaultInfoTip});
         this.props.prevPage();
     }
 
@@ -620,6 +638,8 @@ export class DeployPage extends React.Component {
                     <div className="nav-button-container">
                         <UIButton btnClass={deployBtnClass} btnLabel={this.state.deployBtnText} disabled={!this.state.deployEnabled} action={this.deployBtnHandler} />
                         <UIButton btnLabel="&lsaquo; Back" disabled={!this.state.backBtnEnabled} action={this.previousPage} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
                 </div>
             );

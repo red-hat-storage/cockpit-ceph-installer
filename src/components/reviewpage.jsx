@@ -1,13 +1,17 @@
 import React from 'react';
 import { UIButton } from './common/nextbutton.jsx';
 import { buildRoles, hostsWithRoleCount, msgCount, osdCount, removeItem } from '../services/utils.js';
+import { InfoBar } from './common/infobar.jsx';
+
 import '../app.scss';
 
 export class ReviewPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            className: this.props.className
+            className: this.props.className,
+            infoTip: "Review the configuration information that you have provided, prior to moving to installation. Use " +
+                     "the back button to return to prior pages to change your selections."
         };
         this.environment = {
             flashUsage: "Flash Configuration",
@@ -134,6 +138,8 @@ export class ReviewPage extends React.Component {
                     <div className="nav-button-container">
                         <UIButton primary btnLabel="Deploy &rsaquo;" action={this.props.action} />
                         <UIButton btnLabel="&lsaquo; Back" action={this.props.prevPage} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
                 </div>
             );

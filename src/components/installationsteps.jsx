@@ -8,7 +8,7 @@ import NetworkPage from './networkpage.jsx';
 import ReviewPage from './reviewpage.jsx';
 import DeployPage from './deploypage.jsx';
 import ProgressTracker from './progresstracker.jsx';
-import InfoBar from './infobar.jsx';
+// import InfoBar from './common/infobar.jsx/index.js';
 
 export class InstallationSteps extends React.Component {
     //
@@ -29,6 +29,8 @@ export class InstallationSteps extends React.Component {
             osdType: props.defaults.osdType,
             osdMode: props.defaults.osdMode,
             flashUsage: props.defaults.flashUsage,
+            firewall: props.defaults.firewall,
+            user: props.defaults.user,
             publicNetwork: '',
             clusterNetwork: '',
             rgwNetwork:'',
@@ -36,8 +38,8 @@ export class InstallationSteps extends React.Component {
             deployStarted: false,
             cockpitHost: props.defaults.cockpitHost,
             cephVersion: '',
-            rhnUserName: '',
-            rhnPassword: '',
+            rhLogin: '',
+            rhToken: '',
             rhcs_node_exporter_image: props.defaults.rhcs_node_exporter_image,
             rhcs_grafana_image: props.defaults.rhcs_grafana_image,
             rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
@@ -179,8 +181,10 @@ export class InstallationSteps extends React.Component {
                         className={this.page['hosts']}
                         action={this.nextHandler}
                         metricsHostHandler={this.setMetricsHost}
+                        updater={this.updateState}
                         prevPage={this.prevPageHandler}
                         hosts={this.state.hosts}
+                        userName={this.state.user.name}
                         cephVersion={this.state.cephVersion}
                         installType={this.state.installType}
                         clusterType={this.state.clusterType}
@@ -213,8 +217,8 @@ export class InstallationSteps extends React.Component {
                         deployHandler={this.deployHandler}
                         modalHandler={this.props.modalHandler} />
                 </div>
-                <InfoBar
-                     info={this.infoText[this.state.pageNum] || ''} />
+                {/* <InfoBar
+                     info={this.infoText[this.state.pageNum] || ''} /> */}
             </div>
         );
     }

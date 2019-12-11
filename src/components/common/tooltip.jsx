@@ -16,7 +16,16 @@ export class Tooltip extends React.Component {
 
     render() {
         let tooltipText = this.props.text.split('\n').map((text, key) => {
-            return <div key={key}>{text}</div>;
+            let out;
+            if (text.includes('!Link:')) {
+                let [prefix, therest] = text.split('!Link:');
+                let [protocol, urlPath, linkName, remainingText] = therest.split(':');
+                let url = protocol + ":" + urlPath;
+                out = (<span>{prefix}<a href={url} target="_blank">{linkName}</a>{remainingText}</span>);
+            } else {
+                out = text;
+            }
+            return <div key={key}>{out}</div>;
         });
         return (
             <div className="textInfo">&nbsp;

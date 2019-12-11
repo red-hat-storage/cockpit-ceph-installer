@@ -22,7 +22,7 @@ import React from 'react';
 import './app.scss';
 // import ProgressTracker from './components/progresstracker.jsx';
 import InstallationSteps from './components/installationsteps.jsx';
-import { readFile } from './services/utils.js';
+import { readFile, getUser } from './services/utils.js';
 import { checkAPI } from './services/apicalls.js';
 import { GenericModal } from './components/common/modal.jsx';
 // import InfoBar from './components/infobar.jsx';
@@ -49,11 +49,13 @@ export class Application extends React.Component {
             targetVersion: "RHCS 4",
             clusterType: "Production",
             installType: "Container",
-            networkType: 'ipv4',
+            networkType: 'IPv4',
             osdType: "Bluestore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
+            firewall: true,
             cockpitHost: "localhost",
+            user: {},
             rhcs_node_exporter_image: "registry.redhat.io/openshift4/ose-prometheus-node-exporter:v4.1",
             rhcs_grafana_image: "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3",
             rhcs_prometheus_image: "registry.redhat.io/openshift4/ose-prometheus:4.1",
@@ -88,7 +90,7 @@ export class Application extends React.Component {
 
         // count of all the actions we'll do to check the environment is ready. Make sure this
         // matches the number of tests performed in this function.
-        var actions_limit = 5;
+        var actions_limit = 6;
 
         // array of error messages - ideally should be empty!
         var errorMsgs = [];
@@ -180,6 +182,16 @@ export class Application extends React.Component {
                 .catch((e) => {
                     errorMsgs.push("invalid format of configuration override file");
                     console.error("Error reading overrides file: " + JSON.stringify(e));
+                });
+
+        console.log("fetching user details");
+        getUser()
+                .then((user) => {
+                    this.defaults['user'] = user;
+                    actions++;
+                    if (actions == actions_limit) {
+                        this.checkReady(errorMsgs);
+                    }
                 });
     }
 

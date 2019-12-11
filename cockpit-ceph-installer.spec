@@ -1,8 +1,9 @@
 Name: cockpit-ceph-installer
 Version: 0.9
-Release: 6%{?dist}
+Release: 7%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
+URL: https://github.com/red-hat-storage/cockpit-ceph-installer
 
 Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
@@ -69,6 +70,17 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Mon Dev 10 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-7
+- added sudo support enabling a non-root user to drive the install process (with sudo privileges)
+- fix the host-row-kebab menu missing issue, when user flips between hosts > validate > hosts
+- info tip component shows more relevant information, particularly on the deploy page
+- added firewall on/off widget to control the configuration of firewalld
+- fix removal of last host in the hostspage
+- fix to show error for hosts with /32 networks
+- minor cosmetic changes to tooltip component
+- Credentials input changed to align with using RH Registry Service Accounts (vs username/password)
+- tooltip now supports hyperlinks (used to link out to RH service account information)
+- added projects git url to the spec
 * Mon Nov 04 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-6
 - improve error message when ISO is selected without iso images being present 
 - runtime settings are written to the cockpit users home directory to provide an installation audit record

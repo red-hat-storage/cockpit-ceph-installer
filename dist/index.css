@@ -2,6 +2,9 @@ body {
   font-family: "Open Sans",Helvetica,Arial,sans-serif;
   font-size: 1.2em; }
 
+h3 {
+  margin-top: 10px; }
+
 td {
   padding: 10px; }
 
@@ -135,12 +138,11 @@ ul.dropdown-menu-tbl-right::after {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 80px;
+  height: 60px;
   margin-top: 20px; }
 
 #info {
   position: relative;
-  top: 30px;
   width: 100%;
   padding-left: 5px;
   display: flex;
@@ -220,7 +222,7 @@ table.roleTable {
 
 .nav-button {
   margin-right: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   float: right; }
 
 .nav-button-container {
@@ -407,6 +409,17 @@ table.roleTable {
 .clickable {
   cursor: pointer; }
 
+.textinput-padding {
+  padding: 4px 4px; }
+
+.textarea-token {
+  width: 620px;
+  height: 70px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  resize: none;
+  margin-bottom: 8px; }
+
 .hiddenTable td {
   border: 0px;
   min-width: 80px;
@@ -428,17 +441,27 @@ table.roleTable {
   visibility: hidden;
   white-space: nowrap;
   background-color: black;
-  opacity: 0.8;
+  opacity: 0.7;
   color: #fff;
   text-align: left;
   border-radius: 3px;
   padding: 5px 10px;
   position: absolute;
   z-index: 1;
-  margin-left: 5px;
+  margin-left: 10px;
   top: -.4em;
   left: 110%;
   font-weight: normal; }
+
+.textInfo .tooltipContent::after {
+  content: "";
+  position: absolute;
+  top: 1.3em;
+  right: 100%;
+  margin-top: -10px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent black transparent transparent; }
 
 .textInfo:hover .tooltipContent {
   visibility: visible; }

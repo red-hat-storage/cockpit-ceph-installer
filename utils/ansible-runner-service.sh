@@ -8,8 +8,9 @@ VERBOSE=false
 CONTAINER_OPTS="podman docker"
 PREREQS="openssl curl"
 ETCDIR="/etc/ansible-runner-service"
-SERVERCERTS="$ETCDIR/certs/server"
-CLIENTCERTS="$ETCDIR/certs/client"
+CERTSDIR="$ETCDIR/certs"
+SERVERCERTS="$CERTSDIR/server"
+CLIENTCERTS="$CERTSDIR/client"
 RUNNERDIR="/usr/share/ansible-runner-service"
 IMAGE_ID=''
 CONTAINER_BIN=''
@@ -123,6 +124,30 @@ create_certs() {
     if [ ! -f "$CLIENTCERTS/client.crt" ]; then
         create_client_certs
     fi
+
+    # when running under sudo, we need to 
+    # a) change the ownership of the certs to allow the cockpit UI to read them. (UI fails to load otherwise!)
+    # b) set the config of the runner-service to use the sudo account not root
+    if [[ $SUDO_USER ]]; then
+        echo "Setting ownership of the certs to your user account($SUDO_USER)"
+        /usr/bin/chown -R $SUDO_USER $CERTSDIR
+
+        create_runner_config
+
+    fi
+
+}
+
+create_runner_config() {
+    # only executed during sudo invocation
+    local config_file="$ETCDIR/config.yaml"
+    if [ -f "$config_file" ]; then
+        echo "Warning: resetting existing config (old version saved with _bkup suffix)"
+        /usr/bin/cp $config_file ${config_file}_bkup
+    fi
+    echo "Setting target user for ansible connections to $SUDO_USER"
+    echo -e "---\nversion: 1\n\ntarget_user: $SUDO_USER" > $config_file
+    chown $SUDO_USER $config_file
 }
 
 set_image_id() {
@@ -262,9 +287,9 @@ environment_ok() {
     local out=''
     echo "Checking environment is ready"
 
-    # must run as root
-    if [ $(whoami) != 'root' ]; then
-        errors+="\tScript must run as the root user\n"
+    # must run as root, or sudo
+    if [ "$UID" != "0" ]; then
+        errors+="\tScript must run as root, or a sudo enabled user\n"
     fi
 
     if [ -z "$CONTAINER_BIN" ]; then
@@ -311,7 +336,7 @@ environment_ok() {
 }
 
 usage() {
-    echo -e "Usage: ansible-runner-service.sh [-hvsk]"
+    echo -e "Usage: ansible-runner-service.sh [-hvsqk]"
     echo -e "\t-h ... display usage information"
     echo -e "\t-v ... verbose mode"
     echo -e "\t-s ... start ansible runner service container (default)"

@@ -5,8 +5,9 @@ import { Selector } from './common/selector.jsx';
 import { Notification } from './common/notifications.jsx';
 import { listDir, getISOContents, getCephVersionNumber, isEmpty } from '../services/utils.js';
 import '../app.scss';
-import { PasswordBox } from './common/password.jsx';
 import { Tooltip } from './common/tooltip.jsx';
+import { InfoBar } from './common/infobar.jsx';
+import { OnOffSwitch } from './common/switch.jsx';
 
 export class EnvironmentPage extends React.Component {
     //
@@ -25,13 +26,15 @@ export class EnvironmentPage extends React.Component {
             osdMode: props.defaults.osdMode,
             installType: props.defaults.installType,
             flashUsage: props.defaults.flashUsage,
+            firewall: props.defaults.firewall,
             targetVersion: props.defaults.targetVersion,
             cephVersion: "",
             msgLevel: "info",
             msgText: "",
-            rhnUserName: "",
-            rhnPassword: "",
-            credentialsClass: "visible"
+            rhLogin: "",
+            rhToken: "",
+            credentialsClass: "visible",
+            infoTip:"The environment settings define the basic constraints that will apply to the target Ceph cluster."
         };
 
         this.installSource = {
@@ -56,7 +59,7 @@ export class EnvironmentPage extends React.Component {
         };
         this.network_type = {
             description: "Network connectivity",
-            options: ['ipv4'], // 'ipv6'],
+            options: ['IPv4'], // 'ipv6'],
             name: 'networkType',
             tooltip: "",
             horizontal: true
@@ -149,23 +152,28 @@ export class EnvironmentPage extends React.Component {
         this.setState({ [event.target.getAttribute('name')]: event.target.value });
     }
 
+    updateOnOffSwitch = (name, checked) => {
+        console.log("updating onOffSwitch with name " + name + " to " + checked);
+        this.setState({ [name]: checked });
+    }
+
     credentialsChange = (event) => {
         let credType = event.target.getAttribute("name");
 
         switch (credType) {
         case "username":
             this.setState({
-                rhnUserName: event.target.value
+                rhLogin: event.target.value
             });
             break;
         case "password":
             this.setState({
-                rhnPassword: event.target.value
+                rhToken: event.target.value
             });
             break;
         }
 
-        if (this.state.msgText.startsWith("RHN username")) {
+        if (this.state.msgText.startsWith("Registry Service Account")) {
             this.setState({
                 msgLevel: "info",
                 msgText: ""
@@ -183,10 +191,10 @@ export class EnvironmentPage extends React.Component {
 
         if (requiresCredentials.includes(this.state.sourceType)) {
             // ensure the credentials are not null
-            if (isEmpty(this.state.rhnUserName) || isEmpty(this.state.rhnPassword)) {
+            if (isEmpty(this.state.rhLogin) || isEmpty(this.state.rhToken)) {
                 this.setState({
                     msgLevel: 'error',
-                    msgText: "RHN username/password must be provided for Red Hat or ISO based deployments"
+                    msgText: "Registry Service Account credentials must be provided for Red Hat or ISO based deployments"
                 });
                 return;
             }
@@ -311,8 +319,15 @@ export class EnvironmentPage extends React.Component {
                     </div>
                     <Credentials visible={this.state.credentialsClass}
                                  callback={this.credentialsChange}
-                                 user={this.state.rhnUserName}
-                                 password={this.state.rhnPassword} />
+                                 user={this.state.rhLogin}
+                                 password={this.state.rhToken} />
+                    <div>
+                        <span className="input-label-horizontal display-inline-block">
+                            <b>Configure Firewall</b>
+                            <Tooltip text={"Set to 'ON' to configure firewalld to protect cluster nodes"} />
+                        </span>
+                        <OnOffSwitch name="firewall" checked={this.state.firewall} callback={this.updateOnOffSwitch} />
+                    </div>
                     <RadioSet config={this.network_type} default={this.state.networkType} callback={this.updateState} />
                     <RadioSet config={this.osd_type} default={this.state.osdType} callback={this.updateState} />
                     <RadioSet config={this.flash_usage} default={this.state.flashUsage} callback={this.updateState} />
@@ -320,7 +335,10 @@ export class EnvironmentPage extends React.Component {
                     <RadioSet config={this.install_type} default={this.state.installType} callback={this.updateState} />
                     <div className="nav-button-container">
                         <UIButton primary btnLabel="Hosts &rsaquo;" action={this.checkReady} />
+                        <InfoBar
+                            info={this.state.infoTip || ''} />
                     </div>
+
                 </div>
             );
         } else {
@@ -340,18 +358,30 @@ class Credentials extends React.Component {
     render() {
         return (
             <div className={this.props.visible}>
-                <span className="input-label-horizontal display-inline-block">
-                    <b>RHN User Name</b>
-                    <Tooltip text={"RHN credentials are needed to authenticate against\nthe Red Hat container registry"} />
-                </span>
-                <input type="text"
-                       name="username"
-                       defaultValue={this.props.user}
-                       className="form-control input-lg input-text display-inline-block"
-                       maxLength="20"
-                       placeholder="Username"
-                       onBlur={this.props.callback} />
-                <PasswordBox passwordPrompt="RHN Password" name="password" value={this.props.password} callback={this.props.callback} />
+                <div>
+                    <span className="input-label-horizontal display-inline-block">
+                        <b>Service Account Login</b>
+                        <Tooltip text={"Use your RH Registry !Link:https://access.redhat.com/terms-based-registry/:Service Account:"} />
+                    </span>
+                    <input type="text"
+                        name="username"
+                        defaultValue={this.props.user}
+                        className="form-control input-text display-inline-block textinput-padding"
+                        maxLength="40"
+                        size="40"
+                        placeholder="Login Name"
+                        onBlur={this.props.callback} />
+                </div>
+                <div>
+                    <span className="input-label-horizontal display-inline-block">
+                        <b>Service Account Token</b>
+                    </span>
+                    <textarea name="password"
+                        className="textarea-token textinput-padding"
+                        defaultValue={this.props.password}
+                        placeholder="Token"
+                        onBlur={this.props.callback} />
+                </div>
             </div>
         );
     }
