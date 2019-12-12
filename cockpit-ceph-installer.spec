@@ -70,7 +70,7 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
-* Mon Dev 10 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-7
+* Mon Dec 09 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-7
 - added sudo support enabling a non-root user to drive the install process (with sudo privileges)
 - fix the host-row-kebab menu missing issue, when user flips between hosts > validate > hosts
 - info tip component shows more relevant information, particularly on the deploy page
