@@ -28757,35 +28757,44 @@ function rgwsVars(vars) {
 function iscsiVars(vars) {
   var forYML = {};
   var iscsiTargets = [];
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
 
-  try {
-    for (var _iterator2 = vars.hosts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var host = _step2.value;
+  if (parseInt(vars.cephVersion) >= 14) {
+    // ceph-ansible deployment for Nautilus+ does NOT preconfigure
+    // anything ... all config is deferred to the dashboard UI
+    forYML.dummy = true;
+  } else {
+    // older deployment that pre-configures the targets
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
-      if (host.iscsi) {
-        iscsiTargets.push(host.subnet_details[vars.iscsiNetwork].addr);
-      }
-    }
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
     try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-        _iterator2.return();
+      for (var _iterator2 = vars.hosts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var host = _step2.value;
+
+        if (host.iscsi) {
+          iscsiTargets.push(host.subnet_details[vars.iscsiNetwork].addr);
+        }
       }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
     } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
       }
     }
+
+    forYML.gateway_iqn = vars.iscsiTargetName;
+    forYML.gateway_ip_list = iscsiTargets.join(',');
   }
 
-  forYML.gateway_iqn = vars.iscsiTargetName;
-  forYML.gateway_ip_list = iscsiTargets.join(',');
   return forYML;
 }
 function cephAnsibleSequence(roles) {

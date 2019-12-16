@@ -71,6 +71,7 @@ fi
 
 %changelog
 * Mon Dec 09 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-7
+- skip adding iSCSI network info for Nautilus and above deployments
 - added sudo support enabling a non-root user to drive the install process (with sudo privileges)
 - fix the host-row-kebab menu missing issue, when user flips between hosts > validate > hosts
 - info tip component shows more relevant information, particularly on the deploy page
