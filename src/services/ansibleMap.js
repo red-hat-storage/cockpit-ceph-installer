@@ -255,13 +255,21 @@ export function iscsiVars (vars) {
     let forYML = {};
     let iscsiTargets = [];
 
-    for (let host of vars.hosts) {
-        if (host.iscsi) {
-            iscsiTargets.push(host.subnet_details[vars.iscsiNetwork].addr);
+    if (parseInt(vars.cephVersion) >= 14) {
+        // ceph-ansible deployment for Nautilus+ does NOT preconfigure
+        // anything ... all config is deferred to the dashboard UI
+        forYML.dummy = true;
+    } else {
+        // older deployment that pre-configures the targets
+        for (let host of vars.hosts) {
+            if (host.iscsi) {
+                iscsiTargets.push(host.subnet_details[vars.iscsiNetwork].addr);
+            }
         }
+        forYML.gateway_iqn = vars.iscsiTargetName;
+        forYML.gateway_ip_list = iscsiTargets.join(',');
     }
-    forYML.gateway_iqn = vars.iscsiTargetName;
-    forYML.gateway_ip_list = iscsiTargets.join(',');
+
     return forYML;
 }
 
