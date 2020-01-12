@@ -58,7 +58,7 @@ export class EnvironmentPage extends React.Component {
             horizontal: true
         };
         this.network_type = {
-            description: "Network connectivity",
+            description: "Network Connectivity",
             options: ['IPv4'], // 'ipv6'],
             name: 'networkType',
             tooltip: "",
@@ -267,10 +267,12 @@ export class EnvironmentPage extends React.Component {
     componentDidMount () {
         listDir('/usr/share/ansible-runner-service/iso')
                 .then((content) => {
-                    console.log("list of ansible-runner-service directory complete");
+                    console.log("listing of ansible-runner-service/iso directory complete");
                     let iso = [];
-                    let filesFound = content.split(" ");
+                    let filesFound = content.split("\n");
+                    console.debug("ISO listing returned : " + JSON.stringify(content));
                     filesFound.forEach(filePath => {
+                        console.debug("Processing iso file: " + filePath);
                         filePath = filePath.trim();
                         if (filePath.toUpperCase().endsWith('.ISO')) {
                             iso.push(filePath.split('/').pop());
