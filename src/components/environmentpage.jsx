@@ -52,9 +52,9 @@ export class EnvironmentPage extends React.Component {
 
         this.osd_type = {
             description: "OSD type",
-            options: ["Bluestore", "Filestore"],
+            options: ["BlueStore", "FileStore"],
             name: "osdType",
-            tooltip: "Bluestore is the default OSD type, offering more features and improved\nperformance. Filestore is supported as a legacy option only",
+            tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is supported as a legacy option only",
             horizontal: true
         };
         this.network_type = {
@@ -75,7 +75,7 @@ export class EnvironmentPage extends React.Component {
             description: "Encryption",
             options: ["None", "Encrypted"],
             name: "osdMode",
-            info: "For added security, you may use at-rest encryption for your storage devices",
+            info: "For added security, you may use at rest encryption for your storage devices",
             tooltip: "Data encryption uses the Linux dmcrypt subsystem (LUKS1)",
             horizontal: true
         };

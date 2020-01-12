@@ -50,7 +50,7 @@ export class Application extends React.Component {
             clusterType: "Production",
             installType: "Container",
             networkType: 'IPv4',
-            osdType: "Bluestore",
+            osdType: "BlueStore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
             firewall: true,

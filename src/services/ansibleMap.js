@@ -48,7 +48,7 @@ export function osdsVars (vars) {
         forYML.dmcrypt = true;
     }
 
-    if (vars.osdType == 'Bluestore') {
+    if (vars.osdType == 'BlueStore') {
         forYML.osd_objectstore = 'bluestore';
     } else {
         forYML.osd_objectstore = 'filestore';
