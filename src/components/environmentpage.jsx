@@ -325,8 +325,8 @@ export class EnvironmentPage extends React.Component {
                                  password={this.state.rhToken} />
                     <div>
                         <span className="input-label-horizontal display-inline-block">
-                            <b>Configure Firewall</b>
-                            <Tooltip text={"Set to 'ON' to configure firewalld to protect cluster nodes"} />
+                            <b>Configure firewalld</b>
+                            <Tooltip text={"Set to 'ON' to apply rules to your firewalld configuration. Select 'OFF'\nif you're not using firewalld"} />
                         </span>
                         <OnOffSwitch name="firewall" checked={this.state.firewall} callback={this.updateOnOffSwitch} />
                     </div>
