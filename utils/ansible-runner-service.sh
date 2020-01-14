@@ -270,7 +270,7 @@ set_default_image () {
         vendor=$(rpm -q cockpit-ceph-installer --qf "%{VENDOR}")
         case $vendor in
             "Red Hat, Inc.")
-                CONTAINER_IMAGE_NAME="rhceph/ansible-runner-rhel8:latest"
+                CONTAINER_IMAGE_NAME="registry.redhat.io/rhceph/ansible-runner-rhel8:latest"
                 ;;
             *)
                 set_upstream_image
@@ -356,7 +356,7 @@ usage() {
     echo -e "Ansible Runner Service container image name can be customized (<ansible-runner-service> by default) using a environment variable:\n"
     echo -e "\t CONTAINER_IMAGE_NAME ... string used in the <pull> command to get the ARS container image\n"
     echo "e.g."
-    echo -e "> CONTAINER_IMAGE_NAME='rhceph/ansible-runner-rhel8:latest' ./ansible-runner-service.sh -v -s\n"
+    echo -e "> CONTAINER_IMAGE_NAME='registry.redhat.io/rhceph/ansible-runner-rhel8:latest' ./ansible-runner-service.sh -v -s\n"
 }
 
 is_running() {
