@@ -1,6 +1,6 @@
 Name: cockpit-ceph-installer
-Version: 0.9
-Release: 8%{?dist}
+Version: 1.0
+Release: 0%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 URL: https://github.com/red-hat-storage/cockpit-ceph-installer
@@ -70,7 +70,7 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
-* Sun Jan 16 2020 Paul Cuzner <pcuzner@redhat.com> 0.9-8
+* Sun Jan 16 2020 Paul Cuzner <pcuzner@redhat.com> 1.0
 - Minor UI fixes to correct capitalization of objectstore types
 - Minor UI fixes to the tooltips on add hosts modal
 - Fix to remove the beta tag from the container image names
