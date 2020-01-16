@@ -14,7 +14,7 @@ The plugin currently
 - following a Nautilus based deployment, the user may click a link to go straight to Ceph's web management console
 - allows environment defaults to be overridden from `/var/lib/cockpit/ceph-installer/defaults.json`
 - supported roles: mons (inc mgrs), mds, osds, rgws and iscsi gateways, metrics
-- support for All-in-One installs for POC (aka kick-the-tyres)
+- support for All-in-One installs for POC (aka "kick-the-tyre" tests)
 - creates log of all the settings detected and requested at `~/cockpit-ceph-installer.log`
 - supports deployment with and without firewall enabled
 - supports container access through Red Hat's authenticated registry (ISO, and Red Hat deployment options)
@@ -123,6 +123,42 @@ With sudo, you will also need to consider SELINUX. The group_vars and host_vars 
 container, so ensure these directories have a SELINUX context of container_file_t.  
 
 &nbsp;  
+## Overiding Defaults
+The cockpit installer uses containers for the runner-service and at least the monitoring stack (metrics role). If you need to use images from  
+non-default locations, follow these steps.
+1. To use a different container for the runner-service, prefix the script with the CONTAINER_IMAGE_NAME parameter. e.g.
+```
+CONTAINER_IMAGE_NAME='rhceph-beta/ansible-runner-rhel8:latest' ./ansible-runner-service.sh -s -v
+```
+<small>this will use the beta version of the ansible-runner-service container</small>
+
+2. Before launching the cockpit UI, you may override defaults applied to the UI and ceph-ansible yaml. This is useful for QE type testing. To define the overrides, create a file in `/var/lib/cockpit/ceph-installer/defaults.json`. In the example content below, the default Red Hat image for the ceph container is overridden.
+```json
+{
+  "rhcs_ceph_image": "rhceph-beta/rhceph-4-rhel8"
+}
+```
+Note that these overrides are not currently validated, so changing from the defaults voids your warranty :)
+
+The table below shows the variables that can be overridden using this mechanism.
+  
+| Setting | Used by | Options/Defaults |
+| --- | --- | --- |
+|sourceType| UI | **"Red Hat"**, "OS Distribution", "Community"|
+|targetVersion| UI | **"RHCS 4"**|
+|clusterType| UI | **"Production"**, "Development/POC"|
+|installType| UI | **"Container"**, "RPM"|
+|osdType| UI | **"BlueStore"**, "FileStore"|
+|osdMode| UI | **"None"**, "Encrypted" |
+|flashUsage| UI | **"Journals/Logs"**, "OSD Data"|
+|firewall| UI/ceph-ansible| **true**, false|
+|rhcs_node_exporter_image| ceph-ansible | "registry.redhat.io/openshift4/ose-prometheus-node-exporter:v4.1"|
+|rhcs_grafana_image| ceph-ansible | "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3"|
+|rhcs_prometheus_image | ceph-ansible | "registry.redhat.io/openshift4/ose-prometheus:4.1"|
+|rhcs_alertmanager_image | ceph-ansible | "registry.redhat.io/openshift4/ose-prometheus-alertmanager:4.1"|
+|rhcs_ceph_image| ceph-ansible | "rhceph/rhceph-4-rhel8"|
+
+&nbsp;
 
 -----------------------------------------------------------------------------------------------------------------
 

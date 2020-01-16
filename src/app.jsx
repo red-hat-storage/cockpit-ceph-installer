@@ -50,7 +50,7 @@ export class Application extends React.Component {
             clusterType: "Production",
             installType: "Container",
             networkType: 'IPv4',
-            osdType: "Bluestore",
+            osdType: "BlueStore",
             osdMode: "None",
             flashUsage: "Journals/Logs",
             firewall: true,
@@ -60,7 +60,7 @@ export class Application extends React.Component {
             rhcs_grafana_image: "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3",
             rhcs_prometheus_image: "registry.redhat.io/openshift4/ose-prometheus:4.1",
             rhcs_alertmanager_image: "registry.redhat.io/openshift4/ose-prometheus-alertmanager:4.1",
-            rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8",
+            rhcs_ceph_image: "rhceph/rhceph-4-rhel8",
             domainName: ""
         };
     }

@@ -1,6 +1,6 @@
 Name: cockpit-ceph-installer
-Version: 0.9
-Release: 7%{?dist}
+Version: 1.0
+Release: 0%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
 URL: https://github.com/red-hat-storage/cockpit-ceph-installer
@@ -70,6 +70,14 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Sun Jan 16 2020 Paul Cuzner <pcuzner@redhat.com> 1.0
+- Minor UI fixes to correct capitalization of objectstore types
+- Minor UI fixes to the tooltips on add hosts modal
+- Fix to remove the beta tag from the container image names
+- Fix to remove scroll bar from "add hosts" dialog
+- Fix to allow roles to be modified in the hostspage
+- fix to support ISO selection from multiple ISO image files
+- updated tooltip text for firewalld ON/OFF setting
 * Mon Dec 09 2019 Paul Cuzner <pcuzner@redhat.com> 0.9-7
 - skip adding iSCSI network info for Nautilus and above deployments
 - added sudo support enabling a non-root user to drive the install process (with sudo privileges)

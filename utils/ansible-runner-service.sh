@@ -270,7 +270,7 @@ set_default_image () {
         vendor=$(rpm -q cockpit-ceph-installer --qf "%{VENDOR}")
         case $vendor in
             "Red Hat, Inc.")
-                CONTAINER_IMAGE_NAME="rhceph-beta/ansible-runner-rhel8:latest"
+                CONTAINER_IMAGE_NAME="rhceph/ansible-runner-rhel8:latest"
                 ;;
             *)
                 set_upstream_image

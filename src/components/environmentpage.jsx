@@ -52,13 +52,13 @@ export class EnvironmentPage extends React.Component {
 
         this.osd_type = {
             description: "OSD type",
-            options: ["Bluestore", "Filestore"],
+            options: ["BlueStore", "FileStore"],
             name: "osdType",
-            tooltip: "Bluestore is the default OSD type, offering more features and improved\nperformance. Filestore is supported as a legacy option only",
+            tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is supported as a legacy option only",
             horizontal: true
         };
         this.network_type = {
-            description: "Network connectivity",
+            description: "Network Connectivity",
             options: ['IPv4'], // 'ipv6'],
             name: 'networkType',
             tooltip: "",
@@ -75,7 +75,7 @@ export class EnvironmentPage extends React.Component {
             description: "Encryption",
             options: ["None", "Encrypted"],
             name: "osdMode",
-            info: "For added security, you may use at-rest encryption for your storage devices",
+            info: "For added security, you may use at rest encryption for your storage devices",
             tooltip: "Data encryption uses the Linux dmcrypt subsystem (LUKS1)",
             horizontal: true
         };
@@ -267,10 +267,12 @@ export class EnvironmentPage extends React.Component {
     componentDidMount () {
         listDir('/usr/share/ansible-runner-service/iso')
                 .then((content) => {
-                    console.log("list of ansible-runner-service directory complete");
+                    console.log("listing of ansible-runner-service/iso directory complete");
                     let iso = [];
-                    let filesFound = content.split(" ");
+                    let filesFound = content.split("\n");
+                    console.debug("ISO listing returned : " + JSON.stringify(content));
                     filesFound.forEach(filePath => {
+                        console.debug("Processing iso file: " + filePath);
                         filePath = filePath.trim();
                         if (filePath.toUpperCase().endsWith('.ISO')) {
                             iso.push(filePath.split('/').pop());
@@ -323,8 +325,8 @@ export class EnvironmentPage extends React.Component {
                                  password={this.state.rhToken} />
                     <div>
                         <span className="input-label-horizontal display-inline-block">
-                            <b>Configure Firewall</b>
-                            <Tooltip text={"Set to 'ON' to configure firewalld to protect cluster nodes"} />
+                            <b>Configure firewalld</b>
+                            <Tooltip text={"Set to 'ON' to apply rules to your firewalld configuration. Select 'OFF'\nif you're not using firewalld"} />
                         </span>
                         <OnOffSwitch name="firewall" checked={this.state.firewall} callback={this.updateOnOffSwitch} />
                     </div>

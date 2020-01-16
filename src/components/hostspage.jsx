@@ -28,7 +28,8 @@ export class HostsPage extends React.Component {
             msgLevel: 'info',
             msgText: '',
             infoTip:"Enter the hostnames using either the hostname or a hostname pattern to " +
-                    "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc)."
+                    "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc).",
+            localChange: false
         };
         this.config = {};
         this.cache = {
@@ -55,7 +56,7 @@ export class HostsPage extends React.Component {
                 // Note this will drive a state change/re-render to all sibling components
                 this.props.metricsHostHandler(metricsHost);
             } else {
-                this.setState({
+                this.updateLocalState({
                     msgLevel: 'error',
                     msgText: "To continue you must provide a host for metrics (grafana/prometheus)"
                 });
@@ -74,13 +75,13 @@ export class HostsPage extends React.Component {
             });
             if (hostOKCount != this.state.hosts.length) {
                 errMsgs.push("All hosts must be in an 'OK' state to continue");
-                console.log("Debug: hosts are " + JSON.stringify(this.state.hosts));
+                console.debug("DEBUG: hosts are " + JSON.stringify(this.state.hosts));
             }
-            console.log("debug hosts " + JSON.stringify(this.state.hosts));
+            console.debug("DEBUG hosts " + JSON.stringify(this.state.hosts));
             let monCount = hostsWithRoleCount(this.state.hosts, 'mon');
             let osdHostCount = hostsWithRoleCount(this.state.hosts, 'osd');
             let iscsiCount = hostsWithRoleCount(this.state.hosts, 'iscsi');
-            console.log("debug : # iscsi hosts is " + iscsiCount);
+            console.debug("DEBUG : # iscsi hosts is " + iscsiCount);
 
             switch (true) {
             case (monCount === 0):
@@ -103,7 +104,7 @@ export class HostsPage extends React.Component {
             }
 
             if (errMsgs.length > 0) {
-                this.setState({
+                this.updateLocalState({
                     msgLevel: "error",
                     msgText: errMsgs.join('. ')
                 });
@@ -112,14 +113,14 @@ export class HostsPage extends React.Component {
             }
 
             if (usable) {
-                this.setState({
+                this.updateLocalState({
                     msgLevel: "",
                     msgText: ""
                 });
                 this.props.action(this.state);
             }
         } else {
-            this.setState({
+            this.updateLocalState({
                 msgLevel: "error",
                 msgText: "You need hosts in an OK state to continue"
             });
@@ -129,7 +130,9 @@ export class HostsPage extends React.Component {
 
     addHostsToTable = (stateObject) => {
         console.log("received mask information " + JSON.stringify(stateObject));
-        this.setState({addHostsVisible: false});
+        this.updateLocalState({
+            addHostsVisible: false
+        });
         // before we do anything, we need to look at the mask to ensure that it will
         // resolve to new hosts. If not, this is a no-op.
         if (this.expandHosts(stateObject.hostmask).length == 0) {
@@ -148,7 +151,9 @@ export class HostsPage extends React.Component {
         var rolesString = roleList.join(',');
 
         // turn off the next button while the table is being built
-        this.setState({ready: false});
+        this.updateLocalState({
+            ready: false
+        });
 
         console.log("required ansible groups: " + rolesString);
         var ansibleRoles;
@@ -235,7 +240,7 @@ export class HostsPage extends React.Component {
                             })
                             .catch(err => {
                                 console.error("create groups problem :" + err + ", " + err.message);
-                                this.setState({
+                                this.updateLocalState({
                                     msgLevel: 'error',
                                     msgText: "Unable to create ansible groups. Please check the ansible runner service log for more details"
                                 });
@@ -250,7 +255,7 @@ export class HostsPage extends React.Component {
                         errorMsg = "Unable to fetch ansible groups. Check that the ansible API service is running";
                     }
 
-                    this.setState({
+                    this.updateLocalState({
                         msgLevel: "error",
                         msgText: errorMsg
                     });
@@ -272,7 +277,7 @@ export class HostsPage extends React.Component {
         }
 
         // update the table to show the retry action, and turn of any old error messages
-        this.setState({
+        this.updateLocalState({
             hosts: currentHosts,
             msgLevel: 'info',
             msgText: ''
@@ -302,7 +307,9 @@ export class HostsPage extends React.Component {
                     console.log("tidy up");
                     currentHosts[ptr].info = hostInfo;
                     currentHosts[ptr].status = hostStatus;
-                    that.setState({hosts: currentHosts});
+                    that.updateLocalState({
+                        hosts: currentHosts
+                    });
                     that.config[hostName] = currentHosts[ptr];
                 });
     }
@@ -350,10 +357,19 @@ export class HostsPage extends React.Component {
         return hosts;
     }
 
-    updateState = (hosts) => {
+    updateLocalState = (settings) => {
+        settings.localChange = true;
+        this.setState(settings);
+    }
+
+    updateHostsState = (updatedHosts) => {
         // update the host state to drive render update
-        console.log("updating state with " + JSON.stringify(hosts));
-        this.setState({hosts: hosts});
+        console.log("DEBUG ME: updating hosts state with " + JSON.stringify(updatedHosts));
+        this.updateLocalState({
+            hosts: updatedHosts,
+            msgLevel: 'info',
+            msgText: ''
+        });
     }
 
     updateHost = (hostname, role, checked) => {
@@ -367,29 +383,26 @@ export class HostsPage extends React.Component {
             console.log("host is: " + JSON.stringify(hostObject));
             let currentRoles = buildRoles([hostObject]);
             if ((role == "metrics") && (hostsWithRoleCount(this.state.hosts, 'metrics') > 0)) {
-                this.setState({
+                this.updateLocalState({
                     msgLevel: 'error',
                     msgText: "Only one host can hold the metrics role"
                 });
-                this.updateState(localState);
                 return;
             }
             if (!collocationOK(currentRoles, role, this.props.installType, this.props.clusterType)) {
                 console.log("current hosts are: " + JSON.stringify(localState));
-                this.setState({
+                this.updateLocalState({
                     msgLevel: 'error',
                     msgText: "Adding " + role + " role to " + hostname + " would violate supported collocation rules"
                 });
-                this.updateState(localState);
                 return;
             } else {
                 // collocation is OK, but are there any other issues to look for?
                 if ((role == 'metrics') && (hostsWithRoleCount(this.state.hosts, 'metrics') == 1)) {
-                    this.setState({
+                    this.updateLocalState({
                         msgLevel: 'error',
                         msgText: "Only one host may have the metrics role"
                     });
-                    this.updateState(localState);
                     return;
                 }
             }
@@ -397,20 +410,15 @@ export class HostsPage extends React.Component {
             // host role has been unchecked
             console.log("unchecking a role");
             if (activeRoleCount(hostObject) == 1) {
-                this.setState({
+                this.updateLocalState({
                     msgLevel: 'error',
                     msgText: "Hosts must have at least one role. To remove the host, select 'Delete' from the action menu"
                 });
-                this.updateState(localState);
                 return;
             }
         }
 
-        this.setState({
-            msgLevel: 'info',
-            msgText: ''
-        });
-        toggleHostRole(localState, this.updateState, hostname, role, checked);
+        toggleHostRole(localState, this.updateHostsState, hostname, role, checked);
     }
 
     deleteHostEntry = (idx) => {
@@ -424,10 +432,14 @@ export class HostsPage extends React.Component {
         delete this.config[hostname];
 
         if (localState.length == 0) {
-            this.setState({ready: false});
+            this.updateLocalState({
+                ready: false
+            });
         }
 
-        this.setState({hosts: localState});
+        this.updateLocalState({
+            hosts: localState
+        });
         this.props.updater({hosts: localState}); // update parents state
         console.log("deleting host resulted in hosts: " + JSON.stringify(localState));
     }
@@ -446,7 +458,7 @@ export class HostsPage extends React.Component {
         console.log("You clicked to delete host - " + hostname);
 
         // turn off any old error messages
-        this.setState({
+        this.updateLocalState({
             msgLevel: 'info',
             msgText: ''
         });
@@ -493,25 +505,31 @@ export class HostsPage extends React.Component {
         }
     }
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        console.debug("DEBUG: hostspage received props : " + JSON.stringify(nextProps));
-
-        if (JSON.stringify(nextProps.hosts) != JSON.stringify(prevState.hosts)) {
-            console.debug("DEBUG: hostspage updating hosts state from props");
-            let tempHosts = JSON.parse(JSON.stringify(nextProps.hosts));
+    static getDerivedStateFromProps(props, state) {
+        console.debug("DEBUG: hostspage props set to : " + JSON.stringify(props));
+        if (state.localChange) {
+            console.debug("DEBUG: hostspage local state change detected - bypassing any props update");
+            return {
+                localChange: false
+            };
+        }
+        console.debug("DEBUG: hostspage update is NOT local - checking incoming props");
+        if (JSON.stringify(props.hosts) != JSON.stringify(state.hosts)) {
+            console.debug("DEBUG: old host state was " + JSON.stringify(state.hosts));
+            let tempHosts = JSON.parse(JSON.stringify(props.hosts));
             tempHosts.sort(sortByKey('hostname'));
             return { hosts: tempHosts };
         } else {
+            console.debug("DEBUG: hostspage prop -> state change but not local?");
             return null;
         }
     }
 
     hideModal = () => {
-        this.setState({
+        this.updateLocalState({
             modalVisible: false,
             modalContent: "",
             modalTitle: ""
-
         });
     }
 
@@ -519,7 +537,7 @@ export class HostsPage extends React.Component {
         // handle the show and hide of the app level modal
         console.log("content: ");
         console.log(modalContent);
-        this.setState({
+        this.updateLocalState({
             modalVisible: true,
             modalTitle: title,
             modalContent: modalContent
@@ -528,15 +546,18 @@ export class HostsPage extends React.Component {
 
     showAddHosts = () => {
         console.log("Show add hosts modal");
-        this.setState({
+        this.updateLocalState({
             msgLevel: 'info',
             msgText: '',
-            addHostsVisible: true});
+            addHostsVisible: true
+        });
         // this.hostMaskInput.current.focus();
     }
 
     hideAddHosts = () => {
-        this.setState({addHostsVisible: false});
+        this.updateLocalState({
+            addHostsVisible: false
+        });
     }
 
     prevPageHandler = () => {
@@ -562,6 +583,7 @@ export class HostsPage extends React.Component {
                 console.log("DEBUG: hostspage is seeing " + JSON.stringify(this.state.hosts));
                 rows = this.state.hosts.map(host => {
                     console.log("creating hostrow for " + host.hostname);
+                    console.log("host atributes are " + JSON.stringify(host));
                     return <HostDataRow
                                 key={host.hostname}
                                 hostData={host}
@@ -802,14 +824,6 @@ class HostInputMask extends React.Component {
         this.props.callback(text, isValid); /* update the hostmask property of the parent */
     }
 
-    // componentWillReceiveProps(props) {
-    //     console.log("hostmaskinput " + JSON.stringify(props));
-    //     if (props.visible) {
-    //         console.log("setting focus to input element");
-    //         this.hostInput.current.focus();
-    //     }
-    // }
-
     componentDidUpdate(prevProps, prevState) {
         console.log("hostmask input component update");
         if (!prevProps.visible) {
@@ -817,14 +831,6 @@ class HostInputMask extends React.Component {
             console.log("with props " + JSON.stringify(prevProps));
         }
     }
-
-    // setFocus() {
-    //     this.refs.hostInputField.focus();
-    // }
-
-    // shouldComponentUpdate = () => {
-    //     return false;
-    // }
 
     render () {
         return (
@@ -858,12 +864,12 @@ class HostMask extends React.Component {
 
         this.helpText = {
             "roles": "A Ceph cluster consists of multiple daemons, each performing\na specific role. Hover over the 'info' icon against each role\nto learn more.",
-            "mon": "MONs provide control functionality to the cluster including\nmonitoring, host membership, configurationand state.\n3 mons are recommended for production use cases",
+            "mon": "Monitor nodes provide control functionality to the cluster including\nmonitoring, host membership, configuration and state.3 mons are\nrequired for production use cases",
             "mds": "This is the metadata server that provides a scale-out, distributed\n filesystem",
-            "osd": "Each disk within the cluster is managed an Object Storage Daemon.\nTo install you must assign the OSD role to 1 or more hosts that have\nfree disks",
-            "metrics": "The metrics role uses grafana and prometheus to provide\nrealtime insights into cluster performance",
+            "osd": "Each disk within the cluster is managed by an Object Storage Daemon.\nTo install you must assign the OSD role to one or more hosts that have\nfree disks",
+            "metrics": "The 'metrics' role uses Grafana and Prometheus to provide near\nreal-time performance insights. Grafana dashboards are integrated\ninto the Ceph Dashboard UI to provide monitoring and alerting",
             "iscsi": "iSCSI connectivity is supported with gateway hosts. For high\nIOPS iSCSI environments, consider using dedicated hosts\nfor the iSCSI role",
-            "rgw": "This rados gateway deamon provides an AWS S3 compatible object\nstorage interface"
+            "rgw": "The RADOS gateway daemon provides an AWS S3 compatible object\nstorage interface"
         };
     }
 
