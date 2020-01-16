@@ -864,12 +864,12 @@ class HostMask extends React.Component {
 
         this.helpText = {
             "roles": "A Ceph cluster consists of multiple daemons, each performing\na specific role. Hover over the 'info' icon against each role\nto learn more.",
-            "mon": "MONs provide control functionality to the cluster including\nmonitoring, host membership, configurationand state.\n3 mons are recommended for production use cases",
+            "mon": "Monitor nodes provide control functionality to the cluster including\nmonitoring, host membership, configuration and state.3 mons are\nrequired for production use cases",
             "mds": "This is the metadata server that provides a scale-out, distributed\n filesystem",
-            "osd": "Each disk within the cluster is managed an Object Storage Daemon.\nTo install you must assign the OSD role to 1 or more hosts that have\nfree disks",
-            "metrics": "The metrics role uses grafana and prometheus to provide\nrealtime insights into cluster performance",
+            "osd": "Each disk within the cluster is managed by an Object Storage Daemon.\nTo install you must assign the OSD role to one or more hosts that have\nfree disks",
+            "metrics": "The 'metrics' role uses Grafana and Prometheus to provide near\nreal-time performance insights. Grafana dashboards are integrated\ninto the Ceph Dashboard UI to provide monitoring and alerting",
             "iscsi": "iSCSI connectivity is supported with gateway hosts. For high\nIOPS iSCSI environments, consider using dedicated hosts\nfor the iSCSI role",
-            "rgw": "This rados gateway deamon provides an AWS S3 compatible object\nstorage interface"
+            "rgw": "The RADOS gateway daemon provides an AWS S3 compatible object\nstorage interface"
         };
     }
 
