@@ -7800,7 +7800,7 @@ function setInitialDOMProperties(tag, domElement, rootContainerElement, nextProp
       // on server rendering (but we *do* want to emit it in SSR).
     } else if (registrationNameModules.hasOwnProperty(propKey)) {
       if (nextProp != null) {
-        if (true && typeof nextProp !== 'function') {
+        if ( true && typeof nextProp !== 'function') {
           warnForInvalidEventListener(propKey, nextProp);
         }
         ensureListeningTo(rootContainerElement, propKey);
@@ -8145,7 +8145,7 @@ function diffProperties(domElement, tag, lastRawProps, nextRawProps, rootContain
     } else if (registrationNameModules.hasOwnProperty(propKey)) {
       if (nextProp != null) {
         // We eagerly listen to this even though we haven't committed yet.
-        if (true && typeof nextProp !== 'function') {
+        if ( true && typeof nextProp !== 'function') {
           warnForInvalidEventListener(propKey, nextProp);
         }
         ensureListeningTo(rootContainerElement, propKey);
@@ -8327,14 +8327,14 @@ function diffHydratedProperties(domElement, tag, rawProps, parentNamespace, root
       // TODO: Should we use domElement.firstChild.nodeValue to compare?
       if (typeof nextProp === 'string') {
         if (domElement.textContent !== nextProp) {
-          if (true && !suppressHydrationWarning) {
+          if ( true && !suppressHydrationWarning) {
             warnForTextDifference(domElement.textContent, nextProp);
           }
           updatePayload = [CHILDREN, nextProp];
         }
       } else if (typeof nextProp === 'number') {
         if (domElement.textContent !== '' + nextProp) {
-          if (true && !suppressHydrationWarning) {
+          if ( true && !suppressHydrationWarning) {
             warnForTextDifference(domElement.textContent, nextProp);
           }
           updatePayload = [CHILDREN, '' + nextProp];
@@ -8342,12 +8342,12 @@ function diffHydratedProperties(domElement, tag, rawProps, parentNamespace, root
       }
     } else if (registrationNameModules.hasOwnProperty(propKey)) {
       if (nextProp != null) {
-        if (true && typeof nextProp !== 'function') {
+        if ( true && typeof nextProp !== 'function') {
           warnForInvalidEventListener(propKey, nextProp);
         }
         ensureListeningTo(rootContainerElement, propKey);
       }
-    } else if (true &&
+    } else if ( true &&
     // Convince Flow we've calculated it (it's DEV-only in this method.)
     typeof isCustomComponentTag === 'boolean') {
       // Validate that the properties correspond to their expected values.
@@ -9138,7 +9138,7 @@ function didNotMatchHydratedContainerTextInstance(parentContainer, textInstance,
 }
 
 function didNotMatchHydratedTextInstance(parentType, parentProps, parentInstance, textInstance, text) {
-  if (true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+  if ( true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     warnForUnmatchedText(textInstance, text);
   }
 }
@@ -9154,7 +9154,7 @@ function didNotHydrateContainerInstance(parentContainer, instance) {
 }
 
 function didNotHydrateInstance(parentType, parentProps, parentInstance, instance) {
-  if (true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+  if ( true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     if (instance.nodeType === ELEMENT_NODE) {
       warnForDeletedHydratableElement(parentInstance, instance);
     } else {
@@ -9176,13 +9176,13 @@ function didNotFindHydratableContainerTextInstance(parentContainer, text) {
 }
 
 function didNotFindHydratableInstance(parentType, parentProps, parentInstance, type, props) {
-  if (true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+  if ( true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     warnForInsertedHydratedElement(parentInstance, type, props);
   }
 }
 
 function didNotFindHydratableTextInstance(parentType, parentProps, parentInstance, text) {
-  if (true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+  if ( true && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
     warnForInsertedHydratedText(parentInstance, text);
   }
 }
@@ -9902,7 +9902,7 @@ function catchErrors(fn) {
     try {
       return fn(arg);
     } catch (err) {
-      if (true && !hasLoggedError) {
+      if ( true && !hasLoggedError) {
         hasLoggedError = true;
         warningWithoutStack$1(false, 'React DevTools encountered an error: %s', err);
       }
@@ -16013,7 +16013,7 @@ var replayUnitOfWork = void 0;
 var isReplayingFailedUnitOfWork = void 0;
 var originalReplayError = void 0;
 var rethrowOriginalError = void 0;
-if (true && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
+if ( true && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
   stashedWorkInProgressProperties = null;
   isReplayingFailedUnitOfWork = false;
   originalReplayError = null;
@@ -16417,7 +16417,7 @@ function commitRoot(root, finishedWork) {
   stopCommitLifeCyclesTimer();
   stopCommitTimer();
   onCommitRoot(finishedWork.stateNode);
-  if (true && ReactFiberInstrumentation_1.debugTool) {
+  if ( true && ReactFiberInstrumentation_1.debugTool) {
     ReactFiberInstrumentation_1.debugTool.onCommitWork(finishedWork);
   }
 
@@ -16579,7 +16579,7 @@ function completeUnitOfWork(workInProgress) {
 
       if (next !== null) {
         stopWorkTimer(workInProgress);
-        if (true && ReactFiberInstrumentation_1.debugTool) {
+        if ( true && ReactFiberInstrumentation_1.debugTool) {
           ReactFiberInstrumentation_1.debugTool.onCompleteWork(workInProgress);
         }
         // If completing this work spawned new work, do that next. We'll come
@@ -16622,7 +16622,7 @@ function completeUnitOfWork(workInProgress) {
         }
       }
 
-      if (true && ReactFiberInstrumentation_1.debugTool) {
+      if ( true && ReactFiberInstrumentation_1.debugTool) {
         ReactFiberInstrumentation_1.debugTool.onCompleteWork(workInProgress);
       }
 
@@ -16661,7 +16661,7 @@ function completeUnitOfWork(workInProgress) {
 
       if (_next !== null) {
         stopWorkTimer(workInProgress);
-        if (true && ReactFiberInstrumentation_1.debugTool) {
+        if ( true && ReactFiberInstrumentation_1.debugTool) {
           ReactFiberInstrumentation_1.debugTool.onCompleteWork(workInProgress);
         }
 
@@ -16692,7 +16692,7 @@ function completeUnitOfWork(workInProgress) {
         returnFiber.effectTag |= Incomplete;
       }
 
-      if (true && ReactFiberInstrumentation_1.debugTool) {
+      if ( true && ReactFiberInstrumentation_1.debugTool) {
         ReactFiberInstrumentation_1.debugTool.onCompleteWork(workInProgress);
       }
 
@@ -16728,7 +16728,7 @@ function performUnitOfWork(workInProgress) {
     setCurrentFiber(workInProgress);
   }
 
-  if (true && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
+  if ( true && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
     stashedWorkInProgressProperties = assignFiberPropertiesInDEV(stashedWorkInProgressProperties, workInProgress);
   }
 
@@ -16758,7 +16758,7 @@ function performUnitOfWork(workInProgress) {
       rethrowOriginalError();
     }
   }
-  if (true && ReactFiberInstrumentation_1.debugTool) {
+  if ( true && ReactFiberInstrumentation_1.debugTool) {
     ReactFiberInstrumentation_1.debugTool.onBeginWork(workInProgress);
   }
 
@@ -16869,7 +16869,7 @@ function renderRoot(root, isYieldy, isExpired) {
         }
 
         var failedUnitOfWork = nextUnitOfWork;
-        if (true && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
+        if ( true && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
           replayUnitOfWork(failedUnitOfWork, thrownValue, isYieldy);
         }
 
@@ -17248,7 +17248,7 @@ function scheduleWork(fiber, expirationTime) {
 
   var root = scheduleWorkToRoot(fiber, expirationTime);
   if (root === null) {
-    if (true && (fiber.tag === ClassComponent || fiber.tag === ClassComponentLazy)) {
+    if ( true && (fiber.tag === ClassComponent || fiber.tag === ClassComponentLazy)) {
       warnAboutUpdateOnUnmounted(fiber);
     }
     return;
@@ -21427,7 +21427,7 @@ function (_React$Component) {
       clusterType: "Production",
       installType: "Container",
       networkType: 'IPv4',
-      osdType: "Bluestore",
+      osdType: "BlueStore",
       osdMode: "None",
       flashUsage: "Journals/Logs",
       firewall: true,
@@ -21437,7 +21437,7 @@ function (_React$Component) {
       rhcs_grafana_image: "registry.redhat.io/rhceph/rhceph-3-dashboard-rhel7:3",
       rhcs_prometheus_image: "registry.redhat.io/openshift4/ose-prometheus:4.1",
       rhcs_alertmanager_image: "registry.redhat.io/openshift4/ose-prometheus-alertmanager:4.1",
-      rhcs_ceph_image: "rhceph-beta/rhceph-4-rhel8",
+      rhcs_ceph_image: "rhceph/rhceph-4-rhel8",
       domainName: ""
     };
     return _this;
@@ -24590,13 +24590,13 @@ function (_React$Component) {
     };
     _this.osd_type = {
       description: "OSD type",
-      options: ["Bluestore", "Filestore"],
+      options: ["BlueStore", "FileStore"],
       name: "osdType",
-      tooltip: "Bluestore is the default OSD type, offering more features and improved\nperformance. Filestore is supported as a legacy option only",
+      tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is supported as a legacy option only",
       horizontal: true
     };
     _this.network_type = {
-      description: "Network connectivity",
+      description: "Network Connectivity",
       options: ['IPv4'],
       // 'ipv6'],
       name: 'networkType',
@@ -24614,7 +24614,7 @@ function (_React$Component) {
       description: "Encryption",
       options: ["None", "Encrypted"],
       name: "osdMode",
-      info: "For added security, you may use at-rest encryption for your storage devices",
+      info: "For added security, you may use at rest encryption for your storage devices",
       tooltip: "Data encryption uses the Linux dmcrypt subsystem (LUKS1)",
       horizontal: true
     };
@@ -24643,10 +24643,12 @@ function (_React$Component) {
       var _this2 = this;
 
       Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_5__["listDir"])('/usr/share/ansible-runner-service/iso').then(function (content) {
-        console.log("list of ansible-runner-service directory complete");
+        console.log("listing of ansible-runner-service/iso directory complete");
         var iso = [];
-        var filesFound = content.split(" ");
+        var filesFound = content.split("\n");
+        console.debug("ISO listing returned : " + JSON.stringify(content));
         filesFound.forEach(function (filePath) {
+          console.debug("Processing iso file: " + filePath);
           filePath = filePath.trim();
 
           if (filePath.toUpperCase().endsWith('.ISO')) {
@@ -24703,8 +24705,8 @@ function (_React$Component) {
           password: this.state.rhToken
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: "input-label-horizontal display-inline-block"
-        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Configure Firewall"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
-          text: "Set to 'ON' to configure firewalld to protect cluster nodes"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Configure firewalld"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+          text: "Set to 'ON' to apply rules to your firewalld configuration. Select 'OFF'\nif you're not using firewalld"
         })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_switch_jsx__WEBPACK_IMPORTED_MODULE_9__["OnOffSwitch"], {
           name: "firewall",
           checked: this.state.firewall,
@@ -24898,7 +24900,7 @@ function (_React$Component) {
           // Note this will drive a state change/re-render to all sibling components
           _this.props.metricsHostHandler(metricsHost);
         } else {
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: 'error',
             msgText: "To continue you must provide a host for metrics (grafana/prometheus)"
           });
@@ -24920,14 +24922,14 @@ function (_React$Component) {
 
         if (hostOKCount != _this.state.hosts.length) {
           errMsgs.push("All hosts must be in an 'OK' state to continue");
-          console.log("Debug: hosts are " + JSON.stringify(_this.state.hosts));
+          console.debug("DEBUG: hosts are " + JSON.stringify(_this.state.hosts));
         }
 
-        console.log("debug hosts " + JSON.stringify(_this.state.hosts));
+        console.debug("DEBUG hosts " + JSON.stringify(_this.state.hosts));
         var monCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["hostsWithRoleCount"])(_this.state.hosts, 'mon');
         var osdHostCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["hostsWithRoleCount"])(_this.state.hosts, 'osd');
         var iscsiCount = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["hostsWithRoleCount"])(_this.state.hosts, 'iscsi');
-        console.log("debug : # iscsi hosts is " + iscsiCount);
+        console.debug("DEBUG : # iscsi hosts is " + iscsiCount);
 
         switch (true) {
           case monCount === 0:
@@ -24952,7 +24954,7 @@ function (_React$Component) {
         }
 
         if (errMsgs.length > 0) {
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: "error",
             msgText: errMsgs.join('. ')
           });
@@ -24961,7 +24963,7 @@ function (_React$Component) {
         }
 
         if (usable) {
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: "",
             msgText: ""
           });
@@ -24969,7 +24971,7 @@ function (_React$Component) {
           _this.props.action(_this.state);
         }
       } else {
-        _this.setState({
+        _this.updateLocalState({
           msgLevel: "error",
           msgText: "You need hosts in an OK state to continue"
         });
@@ -24981,7 +24983,7 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "addHostsToTable", function (stateObject) {
       console.log("received mask information " + JSON.stringify(stateObject));
 
-      _this.setState({
+      _this.updateLocalState({
         addHostsVisible: false
       }); // before we do anything, we need to look at the mask to ensure that it will
       // resolve to new hosts. If not, this is a no-op.
@@ -25001,7 +25003,7 @@ function (_React$Component) {
 
       var rolesString = roleList.join(','); // turn off the next button while the table is being built
 
-      _this.setState({
+      _this.updateLocalState({
         ready: false
       });
 
@@ -25094,7 +25096,7 @@ function (_React$Component) {
         }).catch(function (err) {
           console.error("create groups problem :" + err + ", " + err.message);
 
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: 'error',
             msgText: "Unable to create ansible groups. Please check the ansible runner service log for more details"
           });
@@ -25109,7 +25111,7 @@ function (_React$Component) {
           errorMsg = "Unable to fetch ansible groups. Check that the ansible API service is running";
         }
 
-        _this.setState({
+        _this.updateLocalState({
           msgLevel: "error",
           msgText: errorMsg
         });
@@ -25134,7 +25136,7 @@ function (_React$Component) {
       } // update the table to show the retry action, and turn of any old error messages
 
 
-      _this.setState({
+      _this.updateLocalState({
         hosts: currentHosts,
         msgLevel: 'info',
         msgText: ''
@@ -25163,19 +25165,27 @@ function (_React$Component) {
         console.log("tidy up");
         currentHosts[ptr].info = hostInfo;
         currentHosts[ptr].status = hostStatus;
-        that.setState({
+        that.updateLocalState({
           hosts: currentHosts
         });
         that.config[hostName] = currentHosts[ptr];
       });
     });
 
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateState", function (hosts) {
-      // update the host state to drive render update
-      console.log("updating state with " + JSON.stringify(hosts));
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateLocalState", function (settings) {
+      settings.localChange = true;
 
-      _this.setState({
-        hosts: hosts
+      _this.setState(settings);
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "updateHostsState", function (updatedHosts) {
+      // update the host state to drive render update
+      console.log("DEBUG ME: updating hosts state with " + JSON.stringify(updatedHosts));
+
+      _this.updateLocalState({
+        hosts: updatedHosts,
+        msgLevel: 'info',
+        msgText: ''
       });
     });
 
@@ -25193,12 +25203,10 @@ function (_React$Component) {
         var currentRoles = Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["buildRoles"])([hostObject]);
 
         if (role == "metrics" && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') > 0) {
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: 'error',
             msgText: "Only one host can hold the metrics role"
           });
-
-          _this.updateState(localState);
 
           return;
         }
@@ -25206,23 +25214,19 @@ function (_React$Component) {
         if (!Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["collocationOK"])(currentRoles, role, _this.props.installType, _this.props.clusterType)) {
           console.log("current hosts are: " + JSON.stringify(localState));
 
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: 'error',
             msgText: "Adding " + role + " role to " + hostname + " would violate supported collocation rules"
           });
-
-          _this.updateState(localState);
 
           return;
         } else {
           // collocation is OK, but are there any other issues to look for?
           if (role == 'metrics' && Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["hostsWithRoleCount"])(_this.state.hosts, 'metrics') == 1) {
-            _this.setState({
+            _this.updateLocalState({
               msgLevel: 'error',
               msgText: "Only one host may have the metrics role"
             });
-
-            _this.updateState(localState);
 
             return;
           }
@@ -25232,23 +25236,16 @@ function (_React$Component) {
         console.log("unchecking a role");
 
         if (Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["activeRoleCount"])(hostObject) == 1) {
-          _this.setState({
+          _this.updateLocalState({
             msgLevel: 'error',
             msgText: "Hosts must have at least one role. To remove the host, select 'Delete' from the action menu"
           });
-
-          _this.updateState(localState);
 
           return;
         }
       }
 
-      _this.setState({
-        msgLevel: 'info',
-        msgText: ''
-      });
-
-      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["toggleHostRole"])(localState, _this.updateState, hostname, role, checked);
+      Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["toggleHostRole"])(localState, _this.updateHostsState, hostname, role, checked);
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "deleteHostEntry", function (idx) {
@@ -25262,12 +25259,12 @@ function (_React$Component) {
       delete _this.config[hostname];
 
       if (localState.length == 0) {
-        _this.setState({
+        _this.updateLocalState({
           ready: false
         });
       }
 
-      _this.setState({
+      _this.updateLocalState({
         hosts: localState
       });
 
@@ -25296,7 +25293,7 @@ function (_React$Component) {
       // delete a host from the state
       console.log("You clicked to delete host - " + hostname); // turn off any old error messages
 
-      _this.setState({
+      _this.updateLocalState({
         msgLevel: 'info',
         msgText: ''
       });
@@ -25364,7 +25361,7 @@ function (_React$Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "hideModal", function () {
-      _this.setState({
+      _this.updateLocalState({
         modalVisible: false,
         modalContent: "",
         modalTitle: ""
@@ -25376,7 +25373,7 @@ function (_React$Component) {
       console.log("content: ");
       console.log(modalContent);
 
-      _this.setState({
+      _this.updateLocalState({
         modalVisible: true,
         modalTitle: title,
         modalContent: modalContent
@@ -25386,7 +25383,7 @@ function (_React$Component) {
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "showAddHosts", function () {
       console.log("Show add hosts modal");
 
-      _this.setState({
+      _this.updateLocalState({
         msgLevel: 'info',
         msgText: '',
         addHostsVisible: true
@@ -25395,7 +25392,7 @@ function (_React$Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "hideAddHosts", function () {
-      _this.setState({
+      _this.updateLocalState({
         addHostsVisible: false
       });
     });
@@ -25425,7 +25422,8 @@ function (_React$Component) {
       addHostsVisible: false,
       msgLevel: 'info',
       msgText: '',
-      infoTip: "Enter the hostnames using either the hostname or a hostname pattern to " + "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc)."
+      infoTip: "Enter the hostnames using either the hostname or a hostname pattern to " + "define a range (e.g. node-[1-5] defines node-1,node-2,node-3 etc).",
+      localChange: false
     };
     _this.config = {};
     _this.cache = {
@@ -25488,6 +25486,7 @@ function (_React$Component) {
           console.log("DEBUG: hostspage is seeing " + JSON.stringify(this.state.hosts));
           rows = this.state.hosts.map(function (host) {
             console.log("creating hostrow for " + host.hostname);
+            console.log("host atributes are " + JSON.stringify(host));
             return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(HostDataRow, {
               key: host.hostname,
               hostData: host,
@@ -25581,17 +25580,27 @@ function (_React$Component) {
     }
   }], [{
     key: "getDerivedStateFromProps",
-    value: function getDerivedStateFromProps(nextProps, prevState) {
-      console.debug("DEBUG: hostspage received props : " + JSON.stringify(nextProps));
+    value: function getDerivedStateFromProps(props, state) {
+      console.debug("DEBUG: hostspage props set to : " + JSON.stringify(props));
 
-      if (JSON.stringify(nextProps.hosts) != JSON.stringify(prevState.hosts)) {
-        console.debug("DEBUG: hostspage updating hosts state from props");
-        var tempHosts = JSON.parse(JSON.stringify(nextProps.hosts));
+      if (state.localChange) {
+        console.debug("DEBUG: hostspage local state change detected - bypassing any props update");
+        return {
+          localChange: false
+        };
+      }
+
+      console.debug("DEBUG: hostspage update is NOT local - checking incoming props");
+
+      if (JSON.stringify(props.hosts) != JSON.stringify(state.hosts)) {
+        console.debug("DEBUG: old host state was " + JSON.stringify(state.hosts));
+        var tempHosts = JSON.parse(JSON.stringify(props.hosts));
         tempHosts.sort(Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["sortByKey"])('hostname'));
         return {
           hosts: tempHosts
         };
       } else {
+        console.debug("DEBUG: hostspage prop -> state change but not local?");
         return null;
       }
     }
@@ -25809,13 +25818,6 @@ function (_React$Component3) {
 
   _createClass(HostInputMask, [{
     key: "componentDidUpdate",
-    // componentWillReceiveProps(props) {
-    //     console.log("hostmaskinput " + JSON.stringify(props));
-    //     if (props.visible) {
-    //         console.log("setting focus to input element");
-    //         this.hostInput.current.focus();
-    //     }
-    // }
     value: function componentDidUpdate(prevProps, prevState) {
       console.log("hostmask input component update");
 
@@ -25823,13 +25825,7 @@ function (_React$Component3) {
         this.refs.hostInputField.focus();
         console.log("with props " + JSON.stringify(prevProps));
       }
-    } // setFocus() {
-    //     this.refs.hostInputField.focus();
-    // }
-    // shouldComponentUpdate = () => {
-    //     return false;
-    // }
-
+    }
   }, {
     key: "render",
     value: function render() {
@@ -26031,12 +26027,12 @@ function (_React$Component4) {
     };
     _this5.helpText = {
       "roles": "A Ceph cluster consists of multiple daemons, each performing\na specific role. Hover over the 'info' icon against each role\nto learn more.",
-      "mon": "MONs provide control functionality to the cluster including\nmonitoring, host membership, configurationand state.\n3 mons are recommended for production use cases",
+      "mon": "Monitor nodes provide control functionality to the cluster including\nmonitoring, host membership, configuration and state.3 mons are\nrequired for production use cases",
       "mds": "This is the metadata server that provides a scale-out, distributed\n filesystem",
-      "osd": "Each disk within the cluster is managed an Object Storage Daemon.\nTo install you must assign the OSD role to 1 or more hosts that have\nfree disks",
-      "metrics": "The metrics role uses grafana and prometheus to provide\nrealtime insights into cluster performance",
+      "osd": "Each disk within the cluster is managed by an Object Storage Daemon.\nTo install you must assign the OSD role to one or more hosts that have\nfree disks",
+      "metrics": "The 'metrics' role uses Grafana and Prometheus to provide near\nreal-time performance insights. Grafana dashboards are integrated\ninto the Ceph Dashboard UI to provide monitoring and alerting",
       "iscsi": "iSCSI connectivity is supported with gateway hosts. For high\nIOPS iSCSI environments, consider using dedicated hosts\nfor the iSCSI role",
-      "rgw": "This rados gateway deamon provides an AWS S3 compatible object\nstorage interface"
+      "rgw": "The RADOS gateway daemon provides an AWS S3 compatible object\nstorage interface"
     };
     return _this5;
   }
@@ -28390,7 +28386,7 @@ function (_React$Component) {
         closeHandler: this.hideModal
       }), "The information below describes the installation steps;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
-      }, "Environment"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "The target environment defines the high level scope of the installation. Within this option you declare items such as;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "installation source"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "OSD type ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g 'legacy' filestore or bluestore)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "data security features ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g. encryption)"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
+      }, "Environment"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "The target environment defines the high level scope of the installation. Within this option you declare items such as;", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "installation source"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "OSD type ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g 'legacy' FileStore or BlueStore)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", null, "data security features ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "(e.g. encryption)"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
       }, "Hosts"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Declare the hosts that will be used within the cluster by Ceph role - mon, mgr, osd, rgw or mds")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
         className: "tdTitles"
@@ -28530,7 +28526,7 @@ function osdsVars(vars) {
     forYML.dmcrypt = true;
   }
 
-  if (vars.osdType == 'Bluestore') {
+  if (vars.osdType == 'BlueStore') {
     forYML.osd_objectstore = 'bluestore';
   } else {
     forYML.osd_objectstore = 'filestore';
@@ -28630,7 +28626,7 @@ function allVars(vars) {
     forYML.ceph_docker_registry = 'registry.redhat.io'; // authenticated registry
 
     forYML.ceph_docker_registry_auth = true;
-    forYML.ceph_docker_image = "rhceph-beta/rhceph-4-rhel8";
+    forYML.ceph_docker_image = vars.rhcs_ceph_image;
     forYML.ceph_docker_registry_username = vars.rhLogin;
     forYML.ceph_docker_registry_password = vars.rhToken;
     forYML.node_exporter_container_image = vars.rhcs_node_exporter_image;
