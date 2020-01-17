@@ -70,7 +70,7 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
-* Sun Jan 16 2020 Paul Cuzner <pcuzner@redhat.com> 1.0
+* Thu Jan 16 2020 Paul Cuzner <pcuzner@redhat.com> 1.0
 - Minor UI fixes to correct capitalization of objectstore types
 - Minor UI fixes to the tooltips on add hosts modal
 - Fix to remove the beta tag from the container image names
