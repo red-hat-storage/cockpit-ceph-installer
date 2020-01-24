@@ -79,7 +79,7 @@ In this example we'll assume that you have a test VM ready to act as an ansible 
 
 3.2. Add a symlink to the dist folder of your cockpit-ceph-installer directory
 ```
-# ln -snf dist /usr/share/cockpit/cockpit-ceph-installer
+# ln -snf ~/cockpit-ceph-installer/dist /usr/share/cockpit/cockpit-ceph-installer
 # systemctl restart cockpit.socket
 ```
 3.3 From the root of the cockpit-ceph-installer directory, copy the checkrole components over to ceph-ansible's working directory
