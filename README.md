@@ -73,7 +73,7 @@ In this example we'll assume that you have a test VM ready to act as an ansible 
 3.1 Get the cockpit plugin src  
 ```
 # cd ~
-# sudo git clone https://github.com/pcuzner/cockpit-ceph-installer.git
+# sudo git clone https://github.com/red-hat-storage/cockpit-ceph-installer.git
 # cd cockpit-ceph-installer
 ```
 
