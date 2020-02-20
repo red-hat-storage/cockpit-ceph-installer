@@ -627,10 +627,11 @@ class Checker(object):
                 required_cpu += (self.reqs[role]['cpu'])
 
         required_cpu += self.reqs['os']['cpu']
+        required_cpu = math.ceil(required_cpu)  # round requirement up!
 
         if required_cpu > available_cpu:
             msg_level = "warning" if self.mode == 'dev' else 'error'
-            self._add_problem(msg_level, "#CPU's too low (min {} needed)".format(int(required_cpu)))
+            self._add_problem(msg_level, "#CPU's too low (min {} needed)".format(required_cpu))
 
     def _check_rgw(self):
         self._add_check("_check_rgw")
