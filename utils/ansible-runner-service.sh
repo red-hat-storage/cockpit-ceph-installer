@@ -15,6 +15,11 @@ RUNNERDIR="/usr/share/ansible-runner-service"
 IMAGE_ID=''
 CONTAINER_BIN=''
 CONTAINER_RUN_OPTIONS=''
+HOMEDIR=${HOME}
+if [ $SUDO_USER ]; then
+    HOMEDIR=$(getent passwd $SUDO_USER | cut -d: -f6)
+fi
+
 
 set_container_bin() {
 
@@ -128,14 +133,35 @@ create_certs() {
     # when running under sudo, we need to 
     # a) change the ownership of the certs to allow the cockpit UI to read them. (UI fails to load otherwise!)
     # b) set the config of the runner-service to use the sudo account not root
+    # c) check to see if the users ssh configuration can be applied to the runner-service
     if [[ $SUDO_USER ]]; then
         echo "Setting ownership of the certs to your user account($SUDO_USER)"
         /usr/bin/chown -R $SUDO_USER $CERTSDIR
 
         create_runner_config
 
+        if [ -f "$HOMEDIR/.ssh/id_rsa" ] && [ -f "$HOMEDIR/.ssh/id_rsa.pub" ]; then
+            echo "Copying ${SUDO_USER} user's ssh config to the ansible-runner configuration" 
+            cp $HOMEDIR/.ssh/id_rsa /usr/share/ansible-runner-service/env/ssh_key
+            cp $HOMEDIR/.ssh/id_rsa.pub /usr/share/ansible-runner-service/env/ssh_key.pub
+        else
+            echo "'$SUDO_USER' does not have an ssh config(RSA), one will be generated and sync'd with the runner-service"
+        fi
     fi
 
+}
+
+transfer_ssh_keys() {
+    # only executed during sudo invocation
+    if [ ! -f "$HOMEDIR/.ssh/id_rsa" ] && [ ! -f "$HOMEDIR/.ssh/id_rsa.pub" ]; then
+        echo "Sync'ing ${SUDO_USER}'s ssh config with the runner-service ssh credentials"
+        mkdir -p $HOMEDIR/.ssh
+        chmod 700 $HOMEDIR/.ssh
+        cp /usr/share/ansible-runner-service/env/ssh_key $HOMEDIR/.ssh/id_rsa 
+        cp /usr/share/ansible-runner-service/env/ssh_key.pub $HOMEDIR/.ssh/id_rsa.pub
+        SUDO_GROUP=$(getent passwd $SUDO_USER | cut -d: -f1)
+        chown -R $SUDO_USER:$SUDO_GROUP $HOMEDIR/.ssh
+    fi
 }
 
 create_runner_config() {
@@ -427,6 +453,10 @@ start_runner_service() {
             echo "The Ansible API container (runner-service) responded with unexpected status code: $CURL_RC"
             ;;
     esac
+
+    if [[ $SUDO_USER ]]; then
+        transfer_ssh_keys
+    fi
 
 }
 
