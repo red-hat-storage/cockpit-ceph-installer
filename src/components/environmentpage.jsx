@@ -54,7 +54,7 @@ export class EnvironmentPage extends React.Component {
             description: "OSD type",
             options: ["BlueStore", "FileStore"],
             name: "osdType",
-            tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is supported as a legacy option only",
+            tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is deprecated for new Ceph Storage installs\nand using it requires a support exception",
             horizontal: true
         };
         this.network_type = {
