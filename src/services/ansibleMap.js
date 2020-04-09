@@ -238,10 +238,16 @@ export function rgwsVars(vars) {
 
     let forYML = {};
 
-    forYML.radosgw_address_block = vars.rgwNetwork;
-    forYML.radosgw_frontend_type = "civetweb";
+    if (parseInt(vars.cephVersion) >= 14) {
+        // Nautilus or above = beast
+        forYML.radosgw_frontend_type = "beast";
+    } else {
+        forYML.radosgw_address_block = vars.rgwNetwork;
+        forYML.radosgw_frontend_type = "civetweb";
+        forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
+    }
+
     forYML.radosgw_frontend_port = "8080";
-    forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
     forYML.rgw_override_bucket_index_max_shards = 1;
     forYML.rgw_create_pools = {
         "defaults.rgw.buckets.data": { "pgnum": 16 },
