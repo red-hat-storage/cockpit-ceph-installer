@@ -222,7 +222,7 @@ export function mgrsVars (vars) {
     let module_map = {
         "12" : ["prometheus", "status"],
         "13" : ["prometheus", "status", "dashboard"],
-        "14" : ["prometheus", "status", "dashboard", "pg_autoscaler", "rbd_support"],
+        "14" : ["prometheus", "status", "dashboard", "pg_autoscaler"],
     };
 
     forYML.ceph_mgr_modules = module_map[vars.cephVersion];
