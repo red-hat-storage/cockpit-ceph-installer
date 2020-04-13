@@ -19,7 +19,7 @@ HOMEDIR=${HOME}
 if [ $SUDO_USER ]; then
     HOMEDIR=$(getent passwd $SUDO_USER | cut -d: -f6)
 fi
-
+DEFAULT_ANSIBLE_HOSTS='/etc/ansible/hosts'
 
 set_container_bin() {
 
@@ -413,6 +413,38 @@ check_access() {
     return $HTTP_STATUS
 }
 
+manage_ansible_hosts_file() {
+    echo "Linking the default ansible hosts file to the runner-service inventory."
+    if [ -h "$DEFAULT_ANSIBLE_HOSTS" ]; then
+        # hosts file is a symlink
+        if $VERBOSE; then echo "- default ansible hosts is already a symlink, checking further"; fi
+        tgt=$(readlink -f "$DEFAULT_ANSIBLE_HOSTS")
+        if [ "$tgt" == "/usr/share/ansible-runner-service/inventory/hosts" ]; then
+            if $VERBOSE; then echo "- default ansible hosts already linked to runner-service inventory. No changes required"; fi
+        else
+            echo "WARNING: Unable to link $DEFAULT_ANSIBLE_HOSTS to runner-service, it's already a symlink to '$tgt'"
+            echo "Admin intervention needed to reconcile the inventory files, or use -i on all ansible-playbook invocations"
+        fi 
+    else
+        # hosts file is a regular file
+        hosts_dir=$(dirname "$DEFAULT_ANSIBLE_HOSTS")
+        save_file="${DEFAULT_ANSIBLE_HOSTS}.orig"
+        if [ -f "$save_file" ]; then
+            epoc=$(date +%s)
+            save_file="${save_file}-${epoc}"
+        fi
+        echo "- saving existing ansible hosts to $save_file"
+        mv $DEFAULT_ANSIBLE_HOSTS $save_file
+        ln -s /usr/share/ansible-runner-service/inventory/hosts $DEFAULT_ANSIBLE_HOSTS
+        if [ $? -eq 0 ]; then
+            echo "- ansible hosts linked to runner-service inventory"
+        else
+            echo "WARNING: failed to apply the symlink, please investigate"
+        fi
+
+    fi
+}
+
 start_runner_service() {
 
     if ! environment_ok; then
@@ -444,6 +476,7 @@ start_runner_service() {
     case $CURL_RC in
         0)
             echo "Unable to connect to the Ansible API container (runner-service)"
+            exit 1
             ;;
         200)
             echo "The Ansible API container (runner-service) is available and responding to requests"
@@ -451,6 +484,7 @@ start_runner_service() {
             ;;
         *)
             echo "The Ansible API container (runner-service) responded with unexpected status code: $CURL_RC"
+            exit 1
             ;;
     esac
 
@@ -458,6 +492,7 @@ start_runner_service() {
         transfer_ssh_keys
     fi
 
+    manage_ansible_hosts_file
 }
 
 show_state() {
