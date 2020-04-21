@@ -522,6 +522,10 @@ export class DeployPage extends React.Component {
                                 infoTipText = "Ceph deployment is complete. Click 'Complete' to show current state and login URL";
                             } else {
                                 infoTipText = "Deployment failed. Click the 'Filter by' pulldown to show failed tasks to investigate";
+                                // turn the back button back on to allow the user to make config changes
+                                this.setState({
+                                    backBtnEnabled: true,
+                                });
                             }
                             clearInterval(this.intervalHandler);
                             this.refs.timer.stopTimer();
