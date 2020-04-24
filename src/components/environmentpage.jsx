@@ -8,6 +8,7 @@ import '../app.scss';
 import { Tooltip } from './common/tooltip.jsx';
 import { InfoBar } from './common/infobar.jsx';
 import { OnOffSwitch } from './common/switch.jsx';
+import { PasswordBox } from './common/password.jsx';
 
 export class EnvironmentPage extends React.Component {
     //
@@ -34,7 +35,9 @@ export class EnvironmentPage extends React.Component {
             rhLogin: "",
             rhToken: "",
             credentialsClass: "visible",
-            infoTip:"The environment settings define the basic constraints that will apply to the target Ceph cluster."
+            infoTip:"The environment settings define the basic constraints that will apply to the target Ceph cluster.",
+            dashboardPassword: this.props.dashboardPassword,
+            grafanaPassword: this.props.grafanaPassword,
         };
 
         this.installSource = {
@@ -84,8 +87,8 @@ export class EnvironmentPage extends React.Component {
             description: "Installation type",
             options: ["Container", "RPM"],
             name: "installType",
-            info: "Ceph can be installed as lightweight container images, or as rpm packages. Container deployments offer service isolation enabling improved collocation and hardware utilization",
-            tooltip: "Ceph containers are managed by systemd, and use CPU and RAM limits to optimize collocation",
+            info: "Ceph can be installed as lightweight container images, or as rpm packages.",
+            tooltip: "Ceph containers are managed by systemd, and use CPU and RAM limits to improve\nhardware utilization by allowing Ceph daemons to safely colocate",
             horizontal: true
         };
         this.flash_usage = {
@@ -199,6 +202,13 @@ export class EnvironmentPage extends React.Component {
                 return;
             }
         }
+        if (this.state.grafanaPassword == '' || this.state.dashboardPassword == '') {
+            this.setState({
+                msgLevel: "error",
+                msgText: "You must supply valid admin passwords for Ceph dashboard and Grafana"
+            });
+            return;
+        }
 
         if (this.state.sourceType == 'ISO') {
             // if (this.state.installSource != 'RPM') {
@@ -289,6 +299,24 @@ export class EnvironmentPage extends React.Component {
                 });
     }
 
+    setPassword = (name, value) => {
+        console.log("received password " + value + " for " + name + "UI");
+        switch (name) {
+        case "Grafana":
+            this.setState({grafanaPassword: value});
+            if (this.state.dashboardPassword && this.state.msgText.toLowerCase().includes('ceph dashboard')) {
+                this.setState({msgLevel: 'info', msgText: ''});
+            }
+            break;
+        case "Ceph Dashboard":
+            this.setState({dashboardPassword: value});
+            if (this.state.grafanaPassword && this.state.msgText.toLowerCase().includes('ceph dashboard')) {
+                this.setState({msgLevel: 'info', msgText: ''});
+            }
+            break;
+        }
+    }
+
     render() {
         var versionList = this.installSource[this.state.sourceType];
         if (this.props.className == 'page') {
@@ -323,6 +351,16 @@ export class EnvironmentPage extends React.Component {
                                  callback={this.credentialsChange}
                                  user={this.state.rhLogin}
                                  password={this.state.rhToken} />
+                    <div>
+                        <span className="input-label-horizontal display-inline-block">
+                            <b>Admin Passwords</b>
+                            <Tooltip text={"Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services"} />
+                        </span>
+                        <div className="display-inline-block">
+                            <PasswordBox password={this.state.grafanaPassword} name="Grafana" callback={this.setPassword} />
+                            <PasswordBox password={this.state.dashboardPassword} name="Ceph Dashboard" callback={this.setPassword} />
+                        </div>
+                    </div>
                     <div>
                         <span className="input-label-horizontal display-inline-block">
                             <b>Configure firewalld</b>

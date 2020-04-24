@@ -116,6 +116,8 @@ export function allVars (vars) {
 
     if (parseInt(vars.cephVersion) >= 14) {
         forYML.dashboard_enabled = true;
+        forYML.dashboard_admin_password = vars.dashboardPassword;
+        forYML.grafana_admin_password = vars.grafanaPassword;
     }
 
     if (forYML.ceph_repository === "rhcs" && parseInt(vars.cephVersion) >= 14) {
@@ -181,25 +183,6 @@ export function allVars (vars) {
             }
         };
     }
-
-    // wishlist for a simplified rgw install
-    // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
-    // if (rgwHostIdx.length > 0) {
-    //     // Additional OSD tuning for Object workloads
-    //     forYML.ceph_conf_overrides = {
-    //         "objecter_inflight_op_bytes": 1048576000,
-    //         "objecter_inflight_ops": 102400
-    //     };
-
-    //     // Additional radosgw variables
-    //     for (let idx of rgwHostIdx) {
-    //         let hostName = vars.hosts[idx].hostname;
-    //         forYML.ceph_conf_overrides["client.rgw." + hostName] = {
-    //             "rgw_ops_log_rados": false,
-    //             "rgw_dynamic_resharding": false
-    //         };
-    //     }
-    // }
 
     return forYML;
 }

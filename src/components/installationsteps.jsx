@@ -45,7 +45,9 @@ export class InstallationSteps extends React.Component {
             rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
             rhcs_alertmanager_image: props.defaults.rhcs_alertmanager_image,
             rhcs_ceph_image: props.defaults.rhcs_ceph_image,
-            domainName: props.defaults.domainName
+            domainName: props.defaults.domainName,
+            dashboardPassword: '',
+            grafanaPassword: '',
         };
 
         // define the classes the pages will initially use on first render. If behind is defined,
@@ -176,7 +178,9 @@ export class InstallationSteps extends React.Component {
                     <EnvironmentPage
                         className={this.page['environment']}
                         defaults={this.props.defaults}
-                        action={this.nextHandler} />
+                        action={this.nextHandler}
+                        dashboardPassword={this.state.dashboardPassword}
+                        grafanaPassword={this.state.grafanaPassword} />
                     <HostsPage
                         className={this.page['hosts']}
                         action={this.nextHandler}
