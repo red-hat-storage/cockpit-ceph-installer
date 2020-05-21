@@ -1,5 +1,5 @@
 Name: cockpit-ceph-installer
-Version: 1.0
+Version: 1.1
 Release: 0%{?dist}
 Summary: Cockpit plugin for Ceph cluster installation
 License: LGPLv2+
@@ -8,7 +8,7 @@ URL: https://github.com/red-hat-storage/cockpit-ceph-installer
 Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
 
-Requires: ceph-ansible >= 4.0.3
+Requires: ceph-ansible >= 4.0.14
 Requires: cockpit
 Requires: libcdio
 Requires: cockpit-bridge
@@ -70,6 +70,16 @@ fi
 %exclude %{_datadir}/ceph-ansible/library/*.pyc
 
 %changelog
+* Wed May 20 2020 Paul Cuzner <pcuzner@redhat.com> 1.1
+- fix rounding issue of cpu requirement during host probe BZ 1794586
+- fix text relating to filestore usage BZ1800664
+- improve handling of existing ssh keys when using a sudo account BZ 1791143
+- improve handling of more complex network configurations during the probe process BZ 1816478
+- new: detect gpt disks during the probe
+- switch rgw to beast frontend for Nautilus deployments BZ 1806791
+- link the default ansible hosts to the runner-service inventory BZ 1814177
+- make the runner-service pull command use the specific registry name BZ 1809003
+- re-enable the back button after a deployment failure, so the config can be amended before rerun BZ 1809870
 * Thu Jan 16 2020 Paul Cuzner <pcuzner@redhat.com> 1.0
 - Minor UI fixes to correct capitalization of objectstore types
 - Minor UI fixes to the tooltips on add hosts modal
