@@ -22224,7 +22224,7 @@ function (_React$Component) {
         }), this.props.msgText);
       } else {
         notification = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-          className: "alert-space"
+          className: "alert"
         });
       }
 
@@ -22233,6 +22233,147 @@ function (_React$Component) {
   }]);
 
   return Notification;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+/***/ }),
+
+/***/ "./src/components/common/password.jsx":
+/*!********************************************!*\
+  !*** ./src/components/common/password.jsx ***!
+  \********************************************/
+/*! exports provided: PasswordBox */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PasswordBox", function() { return PasswordBox; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../app.scss */ "./src/app.scss");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_app_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+var PasswordBox =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(PasswordBox, _React$Component);
+
+  function PasswordBox(props) {
+    var _this;
+
+    _classCallCheck(this, PasswordBox);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(PasswordBox).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkPasswordValid", function (event) {
+      if (event.target.value.length > 16) {
+        event.target.value = event.target.value.substr(0, 16);
+      }
+
+      var pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,16}$/;
+
+      if (!event.target.value.match(pattern)) {
+        _this.setState({
+          msgText: "8-16 chars, alphanumeric with >=1 special character"
+        });
+      } else {
+        _this.setState({
+          msgText: 'OK'
+        });
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "passwordReady", function (event) {
+      console.log("check password is usable and if so, return to caller");
+
+      if (_this.state.msgText == 'OK') {
+        _this.props.callback(_this.props.name, event.target.value);
+      } else {
+        _this.props.callback(_this.props.name, '');
+      }
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "switchMode", function (event) {
+      var newType, newIcon;
+      newType = _this.state.type == 'text' ? 'password' : 'text';
+      newIcon = newType == 'text' ? 'fa-eye' : 'fa-eye-slash';
+
+      _this.setState({
+        type: newType,
+        icon: newIcon
+      });
+    });
+
+    _this.state = {
+      type: 'password',
+      msgText: '',
+      icon: 'fa-eye-slash',
+      password: props.password
+    };
+    return _this;
+  }
+
+  _createClass(PasswordBox, [{
+    key: "render",
+    value: function render() {
+      var msgClass;
+
+      switch (this.state.msgText) {
+        case '':
+        case 'OK':
+          msgClass = "success";
+          break;
+
+        default:
+          msgClass = "errorText";
+      }
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "float-right password-width"
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
+        className: "password-label",
+        htmlFor: this.props.name
+      }, this.props.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        type: this.state.type,
+        id: this.props.name,
+        name: this.props.name,
+        defaultValue: this.state.password,
+        className: "form-control input-text display-inline-block textinput-padding",
+        maxLength: "32",
+        size: "32",
+        placeholder: "password",
+        onChange: this.checkPasswordValid,
+        onBlur: this.passwordReady
+      }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: "fa " + this.state.icon + " password-eye",
+        onClick: this.switchMode
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: msgClass
+      }, this.state.msgText)));
+    }
+  }]);
+
+  return PasswordBox;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 /***/ }),
@@ -23624,7 +23765,11 @@ function (_React$Component) {
               if (buttonText == "Complete") {
                 infoTipText = "Ceph deployment is complete. Click 'Complete' to show current state and login URL";
               } else {
-                infoTipText = "Deployment failed. Click the 'Filter by' pulldown to show failed tasks to investigate";
+                infoTipText = "Deployment failed. Click the 'Filter by' pulldown to show failed tasks to investigate"; // turn the back button back on to allow the user to make config changes
+
+                _this.setState({
+                  backBtnEnabled: true
+                });
               }
 
               clearInterval(_this.intervalHandler);
@@ -24304,6 +24449,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./common/tooltip.jsx */ "./src/components/common/tooltip.jsx");
 /* harmony import */ var _common_infobar_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./common/infobar.jsx */ "./src/components/common/infobar.jsx");
 /* harmony import */ var _common_switch_jsx__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./common/switch.jsx */ "./src/components/common/switch.jsx");
+/* harmony import */ var _common_password_jsx__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./common/password.jsx */ "./src/components/common/password.jsx");
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24323,6 +24469,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -24468,6 +24615,15 @@ function (_React$Component) {
         }
       }
 
+      if (_this.state.grafanaPassword == '' || _this.state.dashboardPassword == '') {
+        _this.setState({
+          msgLevel: "error",
+          msgText: "You must supply valid admin passwords for Ceph dashboard and Grafana"
+        });
+
+        return;
+      }
+
       if (_this.state.sourceType == 'ISO') {
         // if (this.state.installSource != 'RPM') {
         //     this.setState({
@@ -24558,6 +24714,40 @@ function (_React$Component) {
       return currentState;
     });
 
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setPassword", function (name, value) {
+      console.log("received password " + value + " for " + name + "UI");
+
+      switch (name) {
+        case "Grafana":
+          _this.setState({
+            grafanaPassword: value
+          });
+
+          if (_this.state.dashboardPassword && _this.state.msgText.toLowerCase().includes('ceph dashboard')) {
+            _this.setState({
+              msgLevel: 'info',
+              msgText: ''
+            });
+          }
+
+          break;
+
+        case "Ceph Dashboard":
+          _this.setState({
+            dashboardPassword: value
+          });
+
+          if (_this.state.grafanaPassword && _this.state.msgText.toLowerCase().includes('ceph dashboard')) {
+            _this.setState({
+              msgLevel: 'info',
+              msgText: ''
+            });
+          }
+
+          break;
+      }
+    });
+
     _this.state = {
       className: _this.props.className,
       osdType: props.defaults.osdType,
@@ -24575,7 +24765,9 @@ function (_React$Component) {
       rhLogin: "",
       rhToken: "",
       credentialsClass: "visible",
-      infoTip: "The environment settings define the basic constraints that will apply to the target Ceph cluster."
+      infoTip: "The environment settings define the basic constraints that will apply to the target Ceph cluster.",
+      dashboardPassword: _this.props.dashboardPassword,
+      grafanaPassword: _this.props.grafanaPassword
     };
     _this.installSource = {
       "Red Hat": ["RHCS 4"],
@@ -24592,7 +24784,7 @@ function (_React$Component) {
       description: "OSD type",
       options: ["BlueStore", "FileStore"],
       name: "osdType",
-      tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is supported as a legacy option only",
+      tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is deprecated for new Red Hat Ceph Storage installs\nand requires a support exception to use it",
       horizontal: true
     };
     _this.network_type = {
@@ -24622,8 +24814,8 @@ function (_React$Component) {
       description: "Installation type",
       options: ["Container", "RPM"],
       name: "installType",
-      info: "Ceph can be installed as lightweight container images, or as rpm packages. Container deployments offer service isolation enabling improved collocation and hardware utilization",
-      tooltip: "Ceph containers are managed by systemd, and use CPU and RAM limits to optimize collocation",
+      info: "Ceph can be installed as lightweight container images, or as rpm packages.",
+      tooltip: "Ceph containers are managed by systemd, and use CPU and RAM limits to improve\nhardware utilization by allowing Ceph daemons to safely colocate",
       horizontal: true
     };
     _this.flash_usage = {
@@ -24704,6 +24896,20 @@ function (_React$Component) {
           user: this.state.rhLogin,
           password: this.state.rhToken
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+          className: "input-label-horizontal display-inline-block"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Admin Passwords"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
+          text: "Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services"
+        })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+          className: "display-inline-block"
+        }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_password_jsx__WEBPACK_IMPORTED_MODULE_10__["PasswordBox"], {
+          password: this.state.grafanaPassword,
+          name: "Grafana",
+          callback: this.setPassword
+        }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_password_jsx__WEBPACK_IMPORTED_MODULE_10__["PasswordBox"], {
+          password: this.state.dashboardPassword,
+          name: "Ceph Dashboard",
+          callback: this.setPassword
+        }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: "input-label-horizontal display-inline-block"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Configure firewalld"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
           text: "Set to 'ON' to apply rules to your firewalld configuration. Select 'OFF'\nif you're not using firewalld"
@@ -26409,7 +26615,9 @@ function (_React$Component) {
       rhcs_prometheus_image: props.defaults.rhcs_prometheus_image,
       rhcs_alertmanager_image: props.defaults.rhcs_alertmanager_image,
       rhcs_ceph_image: props.defaults.rhcs_ceph_image,
-      domainName: props.defaults.domainName
+      domainName: props.defaults.domainName,
+      dashboardPassword: '',
+      grafanaPassword: ''
     }; // define the classes the pages will initially use on first render. If behind is defined,
     // the page will be hidden.
 
@@ -26453,7 +26661,9 @@ function (_React$Component) {
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_environmentpage_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], {
         className: this.page['environment'],
         defaults: this.props.defaults,
-        action: this.nextHandler
+        action: this.nextHandler,
+        dashboardPassword: this.state.dashboardPassword,
+        grafanaPassword: this.state.grafanaPassword
       }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_hostspage_jsx__WEBPACK_IMPORTED_MODULE_4__["default"], {
         className: this.page['hosts'],
         action: this.nextHandler,
@@ -28620,6 +28830,8 @@ function allVars(vars) {
 
   if (parseInt(vars.cephVersion) >= 14) {
     forYML.dashboard_enabled = true;
+    forYML.dashboard_admin_password = vars.dashboardPassword;
+    forYML.grafana_admin_password = vars.grafanaPassword;
   }
 
   if (forYML.ceph_repository === "rhcs" && parseInt(vars.cephVersion) >= 14) {
@@ -28688,24 +28900,7 @@ function allVars(vars) {
         "osd_pool_default_size": 1
       }
     };
-  } // wishlist for a simplified rgw install
-  // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
-  // if (rgwHostIdx.length > 0) {
-  //     // Additional OSD tuning for Object workloads
-  //     forYML.ceph_conf_overrides = {
-  //         "objecter_inflight_op_bytes": 1048576000,
-  //         "objecter_inflight_ops": 102400
-  //     };
-  //     // Additional radosgw variables
-  //     for (let idx of rgwHostIdx) {
-  //         let hostName = vars.hosts[idx].hostname;
-  //         forYML.ceph_conf_overrides["client.rgw." + hostName] = {
-  //             "rgw_ops_log_rados": false,
-  //             "rgw_dynamic_resharding": false
-  //         };
-  //     }
-  // }
-
+  }
 
   return forYML;
 }
@@ -28735,10 +28930,17 @@ function rgwsVars(vars) {
   // target for Ceph
   // FIXME: this currently uses static pgnum assignments
   var forYML = {};
-  forYML.radosgw_address_block = vars.rgwNetwork;
-  forYML.radosgw_frontend_type = "civetweb";
+
+  if (parseInt(vars.cephVersion) >= 14) {
+    // Nautilus or above = beast
+    forYML.radosgw_frontend_type = "beast";
+  } else {
+    forYML.radosgw_address_block = vars.rgwNetwork;
+    forYML.radosgw_frontend_type = "civetweb";
+    forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
+  }
+
   forYML.radosgw_frontend_port = "8080";
-  forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
   forYML.rgw_override_bucket_index_max_shards = 1;
   forYML.rgw_create_pools = {
     "defaults.rgw.buckets.data": {

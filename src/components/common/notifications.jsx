@@ -53,7 +53,7 @@ export class Notification extends React.Component {
             );
         } else {
             notification = (
-                <div className="alert-space" />
+                <div className="alert" />
             );
         }
         return (

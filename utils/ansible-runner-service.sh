@@ -15,6 +15,11 @@ RUNNERDIR="/usr/share/ansible-runner-service"
 IMAGE_ID=''
 CONTAINER_BIN=''
 CONTAINER_RUN_OPTIONS=''
+HOMEDIR=${HOME}
+if [ $SUDO_USER ]; then
+    HOMEDIR=$(getent passwd $SUDO_USER | cut -d: -f6)
+fi
+DEFAULT_ANSIBLE_HOSTS='/etc/ansible/hosts'
 
 set_container_bin() {
 
@@ -128,14 +133,35 @@ create_certs() {
     # when running under sudo, we need to 
     # a) change the ownership of the certs to allow the cockpit UI to read them. (UI fails to load otherwise!)
     # b) set the config of the runner-service to use the sudo account not root
+    # c) check to see if the users ssh configuration can be applied to the runner-service
     if [[ $SUDO_USER ]]; then
         echo "Setting ownership of the certs to your user account($SUDO_USER)"
         /usr/bin/chown -R $SUDO_USER $CERTSDIR
 
         create_runner_config
 
+        if [ -f "$HOMEDIR/.ssh/id_rsa" ] && [ -f "$HOMEDIR/.ssh/id_rsa.pub" ]; then
+            echo "Copying ${SUDO_USER} user's ssh config to the ansible-runner configuration" 
+            cp $HOMEDIR/.ssh/id_rsa /usr/share/ansible-runner-service/env/ssh_key
+            cp $HOMEDIR/.ssh/id_rsa.pub /usr/share/ansible-runner-service/env/ssh_key.pub
+        else
+            echo "'$SUDO_USER' does not have an ssh config(RSA), one will be generated and sync'd with the runner-service"
+        fi
     fi
 
+}
+
+transfer_ssh_keys() {
+    # only executed during sudo invocation
+    if [ ! -f "$HOMEDIR/.ssh/id_rsa" ] && [ ! -f "$HOMEDIR/.ssh/id_rsa.pub" ]; then
+        echo "Sync'ing ${SUDO_USER}'s ssh config with the runner-service ssh credentials"
+        mkdir -p $HOMEDIR/.ssh
+        chmod 700 $HOMEDIR/.ssh
+        cp /usr/share/ansible-runner-service/env/ssh_key $HOMEDIR/.ssh/id_rsa 
+        cp /usr/share/ansible-runner-service/env/ssh_key.pub $HOMEDIR/.ssh/id_rsa.pub
+        SUDO_GROUP=$(getent passwd $SUDO_USER | cut -d: -f1)
+        chown -R $SUDO_USER:$SUDO_GROUP $HOMEDIR/.ssh
+    fi
 }
 
 create_runner_config() {
@@ -270,7 +296,7 @@ set_default_image () {
         vendor=$(rpm -q cockpit-ceph-installer --qf "%{VENDOR}")
         case $vendor in
             "Red Hat, Inc.")
-                CONTAINER_IMAGE_NAME="rhceph/ansible-runner-rhel8:latest"
+                CONTAINER_IMAGE_NAME="registry.redhat.io/rhceph/ansible-runner-rhel8:latest"
                 ;;
             *)
                 set_upstream_image
@@ -387,6 +413,38 @@ check_access() {
     return $HTTP_STATUS
 }
 
+manage_ansible_hosts_file() {
+    echo "Linking the default ansible hosts file to the runner-service inventory."
+    if [ -h "$DEFAULT_ANSIBLE_HOSTS" ]; then
+        # hosts file is a symlink
+        if $VERBOSE; then echo "- default ansible hosts is already a symlink, checking further"; fi
+        tgt=$(readlink -f "$DEFAULT_ANSIBLE_HOSTS")
+        if [ "$tgt" == "/usr/share/ansible-runner-service/inventory/hosts" ]; then
+            if $VERBOSE; then echo "- default ansible hosts already linked to runner-service inventory. No changes required"; fi
+        else
+            echo "WARNING: Unable to link $DEFAULT_ANSIBLE_HOSTS to runner-service, it's already a symlink to '$tgt'"
+            echo "Admin intervention needed to reconcile the inventory files, or use -i on all ansible-playbook invocations"
+        fi 
+    else
+        # hosts file is a regular file
+        hosts_dir=$(dirname "$DEFAULT_ANSIBLE_HOSTS")
+        save_file="${DEFAULT_ANSIBLE_HOSTS}.orig"
+        if [ -f "$save_file" ]; then
+            epoc=$(date +%s)
+            save_file="${save_file}-${epoc}"
+        fi
+        echo "- saving existing ansible hosts to $save_file"
+        mv $DEFAULT_ANSIBLE_HOSTS $save_file
+        ln -s /usr/share/ansible-runner-service/inventory/hosts $DEFAULT_ANSIBLE_HOSTS
+        if [ $? -eq 0 ]; then
+            echo "- ansible hosts linked to runner-service inventory"
+        else
+            echo "WARNING: failed to apply the symlink, please investigate"
+        fi
+
+    fi
+}
+
 start_runner_service() {
 
     if ! environment_ok; then
@@ -418,6 +476,7 @@ start_runner_service() {
     case $CURL_RC in
         0)
             echo "Unable to connect to the Ansible API container (runner-service)"
+            exit 1
             ;;
         200)
             echo "The Ansible API container (runner-service) is available and responding to requests"
@@ -425,9 +484,15 @@ start_runner_service() {
             ;;
         *)
             echo "The Ansible API container (runner-service) responded with unexpected status code: $CURL_RC"
+            exit 1
             ;;
     esac
 
+    if [[ $SUDO_USER ]]; then
+        transfer_ssh_keys
+    fi
+
+    manage_ansible_hosts_file
 }
 
 show_state() {

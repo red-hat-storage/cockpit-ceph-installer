@@ -414,7 +414,7 @@ table.roleTable {
   padding: 4px 4px; }
 
 .textarea-token {
-  width: 620px;
+  width: 694px;
   height: 70px;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -760,7 +760,7 @@ pre {
   position: relative; }
 
 .radio-info {
-  width: 600px;
+  width: 750px;
   margin-left: 20px;
   display: inline-flex; }
 
@@ -772,7 +772,7 @@ pre {
   content: ''; }
 
 .radio-container {
-  margin-top: 10px; }
+  margin-top: 5px; }
 
 table.review-table {
   height: auto; }
@@ -860,9 +860,11 @@ table#add-hosts td {
   cursor: pointer;
   color: black; }
 
-.alert-space {
+.alert {
   height: 44px;
-  margin-bottom: 20px;
+  margin-bottom: 10px; }
+
+.alert-space {
   width: 100%;
   display: block; }
 
@@ -956,5 +958,19 @@ table.runtime-table td {
 
 .add-hosts-container {
   width: 100%; }
+
+.password-width {
+  width: 360px; }
+
+.password-label {
+  margin-bottom: 0px; }
+
+.password-eye {
+  position: relative;
+  left: -20px;
+  z-index: 2; }
+
+.password-eye:hover {
+  cursor: pointer; }
 
 /*# sourceMappingURL=index.css.map*/

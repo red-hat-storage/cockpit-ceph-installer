@@ -210,6 +210,59 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.facts.namespace import PrefixFactNamespace
 from ansible.module_utils.facts import ansible_collector, default_collectors
 
+# vendors defined here https://pci-ids.ucw.cz/v2.2/pci.ids
+disk_vendor_xref = {
+    '0x1af4': 'Red Hat Virtio block device'
+}
+
+
+def get_disklabel_type(dev):
+    """
+    Look at given device to determine it's label type. ceph-volume does not support gpt
+    disks, so if we detect them during probe we can prevent the main playbook from 
+    running and failing
+
+    Args:
+        dev : device id e.g. sda
+
+    Return:
+        disk label type (gpt, dos, empty, '')
+
+    Exceptions:
+        None
+    """ # noqa
+
+    dev_path = '/dev/{}'.format(dev)
+
+    # Valid disk?
+    if not os.path.exists(dev_path):
+        return ''
+
+    # Determine sectorsize
+    with open('/sys/block/{}/queue/physical_block_size'.format(dev), 'r') as physblksize:
+        blksize = int(physblksize.read().strip())
+    if blksize != 512:
+        # Unsupported sector size
+        return ''
+
+    # read disk offset for gpt or dos format drives
+    offset = 510
+    with open(dev_path, "br") as d:
+        d.seek(offset)
+        header = d.read(10)
+
+    # assumes 512 byte sectors
+    if header[2:10] == b'EFI PART':
+        return 'gpt'
+    elif header[0:2].hex() == '55aa':
+        return 'mbr'
+    elif header[0:2].hex() == '0000':
+        return 'empty'
+    else:
+        return ''
+
+    return False
+
 
 def netmask_to_cidr(netmask):
     """ convert dotted quad netmask to CIDR (int) notation """
@@ -266,6 +319,7 @@ def get_free_disks(devices, rotational=1):
 
         if int(disk['rotational']) == rotational:
             if not disk['partitions']:
+                disk['vendor'] = disk_vendor_xref.get(disk['vendor'], disk['vendor'])
                 free[disk_id] = disk
 
     return OrderedDict(sorted(free.items()))
@@ -323,7 +377,7 @@ def get_network_info(ansible_facts):
     ]
 
     nic_blacklist = ('lo', 'virbr', 'tun')
-    nics = ['ansible_{}'.format(nic.replace('-','_')) for nic in ansible_facts.get('ansible_interfaces') if not nic.startswith(nic_blacklist)]
+    nics = ['ansible_{}'.format(nic.replace('-', '_')) for nic in ansible_facts.get('ansible_interfaces') if not nic.startswith(nic_blacklist)]
 
     # Now process the nic list again so we can lookup speeds against pnics
     for nic_id in nics:
@@ -344,15 +398,23 @@ def get_network_info(ansible_facts):
             net_str = '{}/{}'.format(network, cidr)
             subnets.add(net_str)
 
+            speed_list = list()
+
             if ansible_facts[nic_id].get('type') in ['ether', 'infiniband']:
                 devs = [nic_id]
                 speed = ansible_facts[nic_id].get('speed', 0)
+                if speed in [-1,0]:
+                    speed_list.append('Unknown')
+                else:
+                    speed_list.append(speed)
                 count = 1
 
             elif ansible_facts[nic_id].get("type") == "bridge":
                 count = speed = 0
-                devs = [d.replace('-', '_') for d in ansible_facts[nic_id]['interfaces']
+                devs = ['ansible_{}'.format(d.replace('-', '_')) for d in ansible_facts[nic_id]['interfaces']
                         if not d.startswith('vnet')]
+                # devs = [d.replace('-', '_') for d in ansible_facts[nic_id]['interfaces']
+                #         if not d.startswith('vnet')]
                 for n in devs:
                     if ansible_facts[n]['type'] == "bonding":
                         count += len(ansible_facts[n]['slaves'])
@@ -362,13 +424,27 @@ def get_network_info(ansible_facts):
                     elif ansible_facts[n]['type'] == "ether":
                         count += 1
 
+                    nic_speed = ansible_facts[n].get('speed', 0)
+                    if nic_speed in [-1, 0]:
+                        speed_list.append('Unknown')
+                    else:
+                        speed += nic_speed
+                        speed_list.append(nic_speed)
+
             elif ansible_facts[nic_id].get('type') == "bonding":
                 devs = [d.replace('-', '_') for d in ansible_facts[nic_id]['slaves']]
                 speed = ansible_facts[nic_id].get('speed', 0)
+                if speed in [-1,0]:
+                    speed_list.append('Unknown')
+                else:
+                    speed_list.append(speed)
                 count = len(devs)
 
             if speed and count:
-                desc = "{} ({}x{}g)".format(net_str, count, (speed / (count * 1000)))
+                txt = list()
+                for n in speed_list:
+                    txt.append("{}x{}".format(speed_list.count(n), n))
+                desc = "{} ({})".format(net_str, ', '.join(txt))
             else:
                 desc = net_str
 
@@ -627,10 +703,11 @@ class Checker(object):
                 required_cpu += (self.reqs[role]['cpu'])
 
         required_cpu += self.reqs['os']['cpu']
+        required_cpu = math.ceil(required_cpu)  # round requirement up!
 
         if required_cpu > available_cpu:
             msg_level = "warning" if self.mode == 'dev' else 'error'
-            self._add_problem(msg_level, "#CPU's too low (min {} needed)".format(int(required_cpu)))
+            self._add_problem(msg_level, "#CPU's too low (min {} needed)".format(required_cpu))
 
     def _check_rgw(self):
         self._add_check("_check_rgw")
@@ -738,6 +815,16 @@ class Checker(object):
                                       " {} OSDs(min {} needed)".format(self.host_details['hdd_count'],
                                                                        self.osd_type,
                                                                        human_bytes(total_journal_rqmt)))
+
+    def _check_gpt(self):
+        all_disks = list(self.host_details['hdd'].keys()) + list(self.host_details['ssd'].keys())
+        if all_disks:
+            # check candidate disks for gpt signature
+            for dev in all_disks:
+                lbl = get_disklabel_type(dev)
+                if lbl == 'gpt':
+                    self._add_problem("error",
+                                      "disk '{}' has a GPT signature. Use wipefs to reset".format(dev))
 
 
 def run_module():

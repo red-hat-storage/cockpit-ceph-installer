@@ -116,6 +116,8 @@ export function allVars (vars) {
 
     if (parseInt(vars.cephVersion) >= 14) {
         forYML.dashboard_enabled = true;
+        forYML.dashboard_admin_password = vars.dashboardPassword;
+        forYML.grafana_admin_password = vars.grafanaPassword;
     }
 
     if (forYML.ceph_repository === "rhcs" && parseInt(vars.cephVersion) >= 14) {
@@ -182,25 +184,6 @@ export function allVars (vars) {
         };
     }
 
-    // wishlist for a simplified rgw install
-    // let rgwHostIdx = hostsWithRole(vars.hosts, 'rgw');
-    // if (rgwHostIdx.length > 0) {
-    //     // Additional OSD tuning for Object workloads
-    //     forYML.ceph_conf_overrides = {
-    //         "objecter_inflight_op_bytes": 1048576000,
-    //         "objecter_inflight_ops": 102400
-    //     };
-
-    //     // Additional radosgw variables
-    //     for (let idx of rgwHostIdx) {
-    //         let hostName = vars.hosts[idx].hostname;
-    //         forYML.ceph_conf_overrides["client.rgw." + hostName] = {
-    //             "rgw_ops_log_rados": false,
-    //             "rgw_dynamic_resharding": false
-    //         };
-    //     }
-    // }
-
     return forYML;
 }
 export function dashboardVars (vars) {
@@ -238,10 +221,16 @@ export function rgwsVars(vars) {
 
     let forYML = {};
 
-    forYML.radosgw_address_block = vars.rgwNetwork;
-    forYML.radosgw_frontend_type = "civetweb";
+    if (parseInt(vars.cephVersion) >= 14) {
+        // Nautilus or above = beast
+        forYML.radosgw_frontend_type = "beast";
+    } else {
+        forYML.radosgw_address_block = vars.rgwNetwork;
+        forYML.radosgw_frontend_type = "civetweb";
+        forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
+    }
+
     forYML.radosgw_frontend_port = "8080";
-    forYML.radosgw_frontend_options = "num_threads=2048 request_timeout_ms=100000";
     forYML.rgw_override_bucket_index_max_shards = 1;
     forYML.rgw_create_pools = {
         "defaults.rgw.buckets.data": { "pgnum": 16 },
