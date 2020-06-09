@@ -24784,7 +24784,7 @@ function (_React$Component) {
       description: "OSD type",
       options: ["BlueStore", "FileStore"],
       name: "osdType",
-      tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is deprecated for new Ceph Storage installs\nand using it requires a support exception",
+      tooltip: "BlueStore is the default OSD type, offering more features and improved\nperformance. FileStore is deprecated for new Red Hat Ceph Storage installs\nand requires a support exception to use it",
       horizontal: true
     };
     _this.network_type = {
