@@ -247,21 +247,26 @@ def get_disklabel_type(dev):
 
     # read disk offset for gpt or dos format drives
     offset = 510
-    with open(dev_path, "br") as d:
+    with open(dev_path, "rb") as d:
         d.seek(offset)
         header = d.read(10)
+
+    try:
+        # py3
+        sig = header[0:2].hex()
+    except AttributeError:
+        # py2 fix
+        sig = header[0:2].encode('hex')
 
     # assumes 512 byte sectors
     if header[2:10] == b'EFI PART':
         return 'gpt'
-    elif header[0:2].hex() == '55aa':
+    elif sig == '55aa':
         return 'mbr'
-    elif header[0:2].hex() == '0000':
+    elif sig == '0000':
         return 'empty'
-    else:
-        return ''
 
-    return False
+    return ''
 
 
 def netmask_to_cidr(netmask):
