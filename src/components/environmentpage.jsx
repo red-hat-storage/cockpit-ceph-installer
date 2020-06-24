@@ -354,7 +354,7 @@ export class EnvironmentPage extends React.Component {
                     <div>
                         <span className="input-label-horizontal display-inline-block">
                             <b>Admin Passwords</b>
-                            <Tooltip text={"Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services"} />
+                            <Tooltip text={"Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services.\nEach password must be 8-16 characters long and include upper AND lowercase,\ndigits and at least 1 special character"} />
                         </span>
                         <div className="display-inline-block">
                             <PasswordBox password={this.state.grafanaPassword} name="Grafana" callback={this.setPassword} />

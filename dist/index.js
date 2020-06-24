@@ -22294,7 +22294,7 @@ function (_React$Component) {
 
       if (!event.target.value.match(pattern)) {
         _this.setState({
-          msgText: "8-16 chars, alphanumeric with >=1 special character"
+          msgText: "8-16 chars of uppper & lower case, digits and >=1 special char"
         });
       } else {
         _this.setState({
@@ -24898,7 +24898,7 @@ function (_React$Component) {
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: "input-label-horizontal display-inline-block"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Admin Passwords"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
-          text: "Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services"
+          text: "Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services.\nEach password must be 8-16 characters long and include upper AND lowercase,\ndigits and at least 1 special character"
         })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "display-inline-block"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_password_jsx__WEBPACK_IMPORTED_MODULE_10__["PasswordBox"], {

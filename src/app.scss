@@ -472,7 +472,7 @@ float:right;
     visibility: hidden;
     white-space: nowrap;
     background-color: black;
-    opacity: 0.7;
+    opacity: 0.8;
     color: #fff;
     text-align: left;
     border-radius: 3px;
@@ -480,6 +480,7 @@ float:right;
     position: absolute;
     z-index: 1;
     margin-left: 10px;
+    line-height: 1.5em;
     top: -.4em;
     left: 110%;
     font-weight:normal; }
@@ -1005,7 +1006,7 @@ table.runtime-table {
     width:100%;
 }
 .password-width {
-    width: 360px;
+    width: 380px;
 }
 .password-label {
     margin-bottom: 0px;
@@ -1013,7 +1014,6 @@ table.runtime-table {
 .password-eye {
     position:relative;
     left:-20px;
-    z-index: 2;
   }
 .password-eye:hover{
     cursor:pointer;
