@@ -80,7 +80,7 @@ table#probe-table thead {
   text-align: center; }
 
 .dropdown-menu-tbl-right {
-  margin-left: -28px;
+  margin-left: -38px;
   top: 16px;
   min-width: 60px; }
 
@@ -90,13 +90,11 @@ ul.dropdown-menu-tbl-right::before {
 ul.dropdown-menu-tbl-right::after {
   content: none !important; }
 
-ul.dropdown-menu {
-  font-size: .8em; }
-
 li.dropdown-menu-item {
   list-style-type: none;
   display: list-item;
-  font-size: .8em; }
+  font-size: .9em;
+  margin: 0 0 0 0; }
 
 .kebab-font {
   font-size: .8em; }
@@ -112,8 +110,7 @@ li.dropdown-menu-item {
   min-width: 140px; }
 
 .thMetricsWidth {
-  min-width: 62px;
-  padding-left: 15px; }
+  min-width: 66px; }
 
 .textinput {
   border: 1px solid white;
@@ -222,7 +219,8 @@ table.roleTable {
   width: 275px; }
 
 .tdDeleteBtn {
-  min-width: 27px; }
+  min-width: 37px;
+  text-align: center; }
 
 .tdSelector {
   min-width: 35px;
