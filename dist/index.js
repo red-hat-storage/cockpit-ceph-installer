@@ -21863,6 +21863,7 @@ function (_React$Component) {
       if (this.props.actions) {
         actions = this.props.actions.map(function (item, idx) {
           return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
+            className: "dropdown-menu-item",
             key: idx
           }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
             onMouseDown: function onMouseDown(e) {
@@ -21887,7 +21888,7 @@ function (_React$Component) {
         },
         onClick: this.toggle
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "fa fa-ellipsis-v"
+        className: "fa fa-ellipsis-v kebab-font"
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
         className: this.state.menu
       }, actions));

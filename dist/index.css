@@ -90,6 +90,17 @@ ul.dropdown-menu-tbl-right::before {
 ul.dropdown-menu-tbl-right::after {
   content: none !important; }
 
+ul.dropdown-menu {
+  font-size: .8em; }
+
+li.dropdown-menu-item {
+  list-style-type: none;
+  display: list-item;
+  font-size: .8em; }
+
+.kebab-font {
+  font-size: .8em; }
+
 .thRoleWidth {
   min-width: 45px; }
 
@@ -844,8 +855,8 @@ table caption, .host-review-title {
   cursor: pointer; }
 
 table#add-hosts {
-  height: 275px;
-  width: 520px; }
+  height: 285px;
+  width: 530px; }
 
 table#add-hosts td {
   padding-left: 0px; }
