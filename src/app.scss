@@ -1,6 +1,24 @@
+html {
+    font-size: 16px;
+}
 body {
     font-family: "Open Sans",Helvetica,Arial,sans-serif;
     // font-family:Verdana, Geneva, sans-serif;
+    font-size: .8em }
+li {
+    list-style-type: disc;
+    display: list-item;
+    margin-left:20px;
+}
+.switch-label {
+    font-size: 12px !important;
+}
+h2 {
+    font-size: 2em;
+    position: relative;
+    top: -10px;
+}
+h3 {
     font-size:1.2em; 
 }
 h3 {
@@ -68,7 +86,7 @@ width: 100%;
 
 }
 .dropdown-menu-tbl-right {
-    margin-left:-28px;
+    margin-left: -38px;
     top:16px;
     min-width:60px;
 }
@@ -77,6 +95,16 @@ ul.dropdown-menu-tbl-right::before {
 }
 ul.dropdown-menu-tbl-right::after {
     content:none !important;
+}
+
+li.dropdown-menu-item {
+    list-style-type: none;
+    display: list-item;
+    font-size: .9em;
+    margin: 0 0 0 0;
+}
+.kebab-font {
+    font-size: .8em;
 }
 
 .thRoleWidth {
@@ -90,8 +118,7 @@ ul.dropdown-menu-tbl-right::after {
     min-width: 140px
 }
 .thMetricsWidth {
-    min-width: 62px;
-    padding-left: 15px;
+    min-width: 66px;
 }
 .textinput {
     border: 1px solid white;
@@ -202,7 +229,8 @@ table.roleTable {
 }
 
 .tdDeleteBtn {
-    min-width: 27px;
+    min-width: 37px;
+    text-align: center; 
 }
 .tdSelector {
     min-width: 35px; 
@@ -212,7 +240,7 @@ table.roleTable {
 
 .page {
     width:100%;
-    height:750px;
+    height:800px;
     padding: 0 10px;
     // border: 1px solid gray;
     background-color:white;
@@ -238,7 +266,7 @@ table.roleTable {
 float:right;
 }
 .nav-button-container {
-    position: absolute;
+    position: relative;
     width:100%;
     bottom: -10px;
 }
@@ -472,7 +500,7 @@ float:right;
     visibility: hidden;
     white-space: nowrap;
     background-color: black;
-    opacity: 0.7;
+    opacity: 0.8;
     color: #fff;
     text-align: left;
     border-radius: 3px;
@@ -480,6 +508,7 @@ float:right;
     position: absolute;
     z-index: 1;
     margin-left: 10px;
+    line-height: 1.5em;
     top: -.4em;
     left: 110%;
     font-weight:normal; }
@@ -869,8 +898,8 @@ table caption, .host-review-title {
     cursor: pointer;
 }
 table#add-hosts {
-    height: 275px; 
-    width: 520px;}
+    height: 285px;
+    width: 530px; }
 table#add-hosts td {
     padding-left:0px;
   }
@@ -1005,7 +1034,7 @@ table.runtime-table {
     width:100%;
 }
 .password-width {
-    width: 360px;
+    width: 380px;
 }
 .password-label {
     margin-bottom: 0px;
@@ -1013,7 +1042,6 @@ table.runtime-table {
 .password-eye {
     position:relative;
     left:-20px;
-    z-index: 2;
   }
 .password-eye:hover{
     cursor:pointer;

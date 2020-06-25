@@ -20,7 +20,7 @@ export class PasswordBox extends React.Component {
 
         if (!event.target.value.match(pattern)) {
             this.setState({
-                msgText: "8-16 chars, alphanumeric with >=1 special character"
+                msgText: "8-16 chars of uppper & lower case, digits and >=1 special char"
             });
         } else {
             this.setState({

@@ -21863,6 +21863,7 @@ function (_React$Component) {
       if (this.props.actions) {
         actions = this.props.actions.map(function (item, idx) {
           return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
+            className: "dropdown-menu-item",
             key: idx
           }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
             onMouseDown: function onMouseDown(e) {
@@ -21887,7 +21888,7 @@ function (_React$Component) {
         },
         onClick: this.toggle
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "fa fa-ellipsis-v"
+        className: "fa fa-ellipsis-v kebab-font"
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
         className: this.state.menu
       }, actions));
@@ -22294,7 +22295,7 @@ function (_React$Component) {
 
       if (!event.target.value.match(pattern)) {
         _this.setState({
-          msgText: "8-16 chars, alphanumeric with >=1 special character"
+          msgText: "8-16 chars of uppper & lower case, digits and >=1 special char"
         });
       } else {
         _this.setState({
@@ -22824,10 +22825,10 @@ function (_React$Component) {
       console.log("onoffswitch render for onoffswitch with name " + this.props.name + " status=" + this.state.checked);
 
       if (this.state.checked) {
-        switchState = "bootstrap-switch-on";
+        switchState = "bootstrap-switch-on switch-label";
         switchMargin = "0px";
       } else {
-        switchState = "bootstrap-switch-off";
+        switchState = "bootstrap-switch-off switch-label";
         switchMargin = "-33px";
       }
 
@@ -22837,25 +22838,25 @@ function (_React$Component) {
           width: "68px"
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "bootstrap-switch-container",
+        className: "bootstrap-switch-container switch-label",
         style: {
           width: "99px",
           marginLeft: [switchMargin]
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "bootstrap-switch-handle-on bootstrap-switch-primary",
+        className: "bootstrap-switch-handle-on bootstrap-switch-primary switch-label",
         style: {
           width: "33px"
         },
         onClick: this.handleToggle
       }, "ON"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "bootstrap-switch-label",
+        className: "bootstrap-switch-label switch-label",
         style: {
-          width: "33px"
+          minWidth: "33px"
         },
         onClick: this.handleToggle
       }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "bootstrap-switch-handle-off bootstrap-switch-default",
+        className: "bootstrap-switch-handle-off bootstrap-switch-default switch-label",
         style: {
           width: "33px"
         },
@@ -24898,7 +24899,7 @@ function (_React$Component) {
         }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: "input-label-horizontal display-inline-block"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Admin Passwords"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_tooltip_jsx__WEBPACK_IMPORTED_MODULE_7__["Tooltip"], {
-          text: "Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services"
+          text: "Enter the Administrator passwords for the Ceph Dashboard UI and Grafana services.\nEach password must be 8-16 characters long and include upper AND lowercase,\ndigits and at least 1 special character"
         })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "display-inline-block"
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_common_password_jsx__WEBPACK_IMPORTED_MODULE_10__["PasswordBox"], {
