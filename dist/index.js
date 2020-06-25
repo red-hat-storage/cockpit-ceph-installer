@@ -22824,10 +22824,10 @@ function (_React$Component) {
       console.log("onoffswitch render for onoffswitch with name " + this.props.name + " status=" + this.state.checked);
 
       if (this.state.checked) {
-        switchState = "bootstrap-switch-on";
+        switchState = "bootstrap-switch-on switch-label";
         switchMargin = "0px";
       } else {
-        switchState = "bootstrap-switch-off";
+        switchState = "bootstrap-switch-off switch-label";
         switchMargin = "-33px";
       }
 
@@ -22837,25 +22837,25 @@ function (_React$Component) {
           width: "68px"
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "bootstrap-switch-container",
+        className: "bootstrap-switch-container switch-label",
         style: {
           width: "99px",
           marginLeft: [switchMargin]
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "bootstrap-switch-handle-on bootstrap-switch-primary",
+        className: "bootstrap-switch-handle-on bootstrap-switch-primary switch-label",
         style: {
           width: "33px"
         },
         onClick: this.handleToggle
       }, "ON"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "bootstrap-switch-label",
+        className: "bootstrap-switch-label switch-label",
         style: {
-          width: "33px"
+          minWidth: "33px"
         },
         onClick: this.handleToggle
       }, "\xA0"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
-        className: "bootstrap-switch-handle-off bootstrap-switch-default",
+        className: "bootstrap-switch-handle-off bootstrap-switch-default switch-label",
         style: {
           width: "33px"
         },

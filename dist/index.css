@@ -1,5 +1,24 @@
+html {
+  font-size: 16px; }
+
 body {
   font-family: "Open Sans",Helvetica,Arial,sans-serif;
+  font-size: .8em; }
+
+li {
+  list-style-type: disc;
+  display: list-item;
+  margin-left: 20px; }
+
+.switch-label {
+  font-size: 12px !important; }
+
+h2 {
+  font-size: 2em;
+  position: relative;
+  top: -10px; }
+
+h3 {
   font-size: 1.2em; }
 
 h3 {
@@ -201,7 +220,7 @@ table.roleTable {
 
 .page {
   width: 100%;
-  height: 750px;
+  height: 800px;
   padding: 0 10px;
   background-color: white;
   z-index: 1;
@@ -226,7 +245,7 @@ table.roleTable {
   float: right; }
 
 .nav-button-container {
-  position: absolute;
+  position: relative;
   width: 100%;
   bottom: -10px; }
 

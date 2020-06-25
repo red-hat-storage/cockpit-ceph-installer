@@ -26,19 +26,19 @@ export class OnOffSwitch extends React.Component {
         let switchState, switchMargin;
         console.log("onoffswitch render for onoffswitch with name " + this.props.name + " status=" + this.state.checked);
         if (this.state.checked) {
-            switchState = "bootstrap-switch-on";
+            switchState = "bootstrap-switch-on switch-label";
             switchMargin = "0px";
         } else {
-            switchState = "bootstrap-switch-off";
+            switchState = "bootstrap-switch-off switch-label";
             switchMargin = "-33px";
         }
 
         return (
             <div className={"bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-animate " + switchState} style={{width: "68px"}}>
-                <div className="bootstrap-switch-container" style={{width: "99px", marginLeft: [switchMargin]}}>
-                    <span className="bootstrap-switch-handle-on bootstrap-switch-primary" style={{width: "33px"}} onClick={this.handleToggle}>ON</span>
-                    <span className="bootstrap-switch-label" style={{width: "33px"}} onClick={this.handleToggle}>&nbsp;</span>
-                    <span className="bootstrap-switch-handle-off bootstrap-switch-default" style={{width: "33px"}} onClick={this.handleToggle}>OFF</span>
+                <div className="bootstrap-switch-container switch-label" style={{width: "99px", marginLeft: [switchMargin]}}>
+                    <span className="bootstrap-switch-handle-on bootstrap-switch-primary switch-label" style={{width: "33px"}} onClick={this.handleToggle}>ON</span>
+                    <span className="bootstrap-switch-label switch-label" style={{minWidth: "33px"}} onClick={this.handleToggle}>&nbsp;</span>
+                    <span className="bootstrap-switch-handle-off bootstrap-switch-default switch-label" style={{width: "33px"}} onClick={this.handleToggle}>OFF</span>
                 </div>
             </div >
         );
