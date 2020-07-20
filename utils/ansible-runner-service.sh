@@ -441,7 +441,13 @@ manage_ansible_hosts_file() {
         else
             echo "WARNING: failed to apply the symlink, please investigate"
         fi
-
+	# Keep a copy in the ceph-ansible directory for other day to day operations
+	ln -s /usr/share/ansible-runner-service/inventory/hosts /usr/share/ceph-ansible/hosts
+        if [ $? -eq 0 ]; then
+            echo "- ansible hosts linked to ceph-ansible for other day to day operations"
+        else
+            echo "WARNING: failed to apply the symlink, please investigate"
+        fi
     fi
 }
 
