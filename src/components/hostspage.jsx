@@ -970,7 +970,14 @@ class HostMask extends React.Component {
             });
             return;
         }
-
+        if (this.state.hostmask === 'localhost') {
+            console.log("The name 'localhost' cannot be used as a hostname");
+            this.setState({
+                msgLevel: "error",
+                msgText:"Invalid hostname/mask. The name 'localhost' cannot be used as a hostname"
+            });
+            return;
+        }
         let flags = ['mon', 'mds', 'osd', 'rgw', 'iscsi', 'metrics'];
 
         let rolesSelected = false;
