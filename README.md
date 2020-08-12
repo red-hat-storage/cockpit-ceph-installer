@@ -27,6 +27,8 @@ The plugin currently
 
 [![demo](screenshots/ceph-installer-2019-04.gif)](https://youtu.be/wIw7RjHPhzs)
 
+**Important note**: be sure to disable any AD blocker extension in your browser.
+
 ## Take it for a testdrive
 In this example we'll assume that you have a test VM ready to act as an ansible controller, and a set of VMs that you want to install Ceph to. Remember to ensure that the machines can each resolve here names (/etc/hosts will be fine!) All the commands need system privileges, so you'll need root or a sudo enabled account (I'm assuming root in these example steps).
 ### 1. Configure the pre-requisites
@@ -73,13 +75,13 @@ In this example we'll assume that you have a test VM ready to act as an ansible 
 3.1 Get the cockpit plugin src  
 ```
 # cd ~
-# sudo git clone https://github.com/pcuzner/cockpit-ceph-installer.git
+# sudo git clone https://github.com/red-hat-storage/cockpit-ceph-installer.git
 # cd cockpit-ceph-installer
 ```
 
 3.2. Add a symlink to the dist folder of your cockpit-ceph-installer directory
 ```
-# ln -snf dist /usr/share/cockpit/cockpit-ceph-installer
+# ln -snf ~/cockpit-ceph-installer/dist /usr/share/cockpit/cockpit-ceph-installer
 # systemctl restart cockpit.socket
 ```
 3.3 From the root of the cockpit-ceph-installer directory, copy the checkrole components over to ceph-ansible's working directory
