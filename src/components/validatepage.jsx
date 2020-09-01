@@ -69,6 +69,7 @@ export class ValidatePage extends React.Component {
             obj['capacity'] = facts.capacity;
             obj['cpu'] = facts.cpu_core_count;
             obj['ram'] = Math.round(facts.ram_mb / 1024);
+            obj['selected'] = false;
 
             console.log(JSON.stringify(eventData.res.data.status));
             obj['ready'] = eventData.res.data.status;
@@ -517,6 +518,12 @@ export class ValidatePage extends React.Component {
             var nextButtonClass;
             if (this.state.hosts.length > 0) {
                 rows = this.state.hosts.map(host => {
+                    // remove selection or status messages if the state is not ready
+                    if (!this.state.ready) {
+                        host.msgs = [];
+                        host.ready = '';
+                        host.selected = false;
+                    }
                     // only show ceph nodes, ignoring the metrics host
                     if (!host.metrics) {
                         return <HostDiscoveryRow
