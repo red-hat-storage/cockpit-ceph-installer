@@ -231,12 +231,6 @@ export function rgwsVars(vars) {
     }
 
     forYML.radosgw_frontend_port = "8080";
-    forYML.rgw_override_bucket_index_max_shards = 1;
-    forYML.rgw_create_pools = {
-        "defaults.rgw.buckets.data": { "pgnum": 16 },
-        "defaults.rgw.buckets.index": { "pgnum": 32 }
-    };
-
     return forYML;
 }
 
