@@ -36,6 +36,7 @@ export class HostsPage extends React.Component {
             roles: []
         };
         // this.hostMaskInput = React.createRef();
+        this.deleteGroups(["grafana-server", "mdss", "mgrs", "mons", "osds", "iscsigws"]);
     }
 
     nextAction = (event) => {
