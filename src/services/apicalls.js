@@ -69,6 +69,18 @@ export function deleteHost(hostName) {
     });
 }
 
+export function getHosts() {
+    console.log("fetching defined host list @ " + now());
+    let promise = http.get('/api/v1/hosts');
+    return promise;
+}
+
+export function getHostGroup(hostName) {
+    console.log("fetching defined host groups @ " + now());
+    let promise = http.get('/api/v1/hosts/' + hostName);
+    return promise;
+}
+
 export function changeHost(hostname, role, checked) {
     console.log("changeHost: changing host state for " + hostname + " role=" + role + " @ " + now());
     if (!checked) {

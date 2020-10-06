@@ -10,7 +10,7 @@ import { Tooltip } from './common/tooltip.jsx';
 import { InfoBar } from './common/infobar.jsx';
 import { decodeAddError } from '../services/errorHandlers.js';
 /* eslint-disable */
-import { addGroup, getGroups, addHost, deleteHost, deleteGroup } from '../services/apicalls.js';
+import { addGroup, getGroups, addHost, deleteHost, deleteGroup, getHosts, getHostGroup } from '../services/apicalls.js';
 import { buildRoles, removeItem, versionSupportsMetrics, convertRole, collocationOK, toggleHostRole, sortByKey, activeRoles, hostsWithRoleCount, getHost, copyToClipboard, hostsWithRole, activeRoleCount } from '../services/utils.js';
 /* eslint-enable */
 import '../app.scss';
@@ -36,7 +36,29 @@ export class HostsPage extends React.Component {
             roles: []
         };
         // this.hostMaskInput = React.createRef();
-        this.deleteGroups(["grafana-server", "mdss", "mgrs", "mons", "osds", "iscsigws"]);
+
+        var hostList;
+        var groupList;
+        var hostObject;
+
+        getHosts()
+                .done(resp => {
+                    hostList = JSON.parse(resp)['data']['hosts'];
+                })
+                .then(() => {
+                    hostList.forEach(host => {
+                        getHostGroup(host).done(resp => {
+                            groupList = JSON.parse(resp)['data']['groups'];
+                            hostObject = {'hostmask':host};
+                            groupList.forEach(role => {
+                                if (role !== 'mgrs') {
+                                    hostObject[convertRole(role)] = true;
+                                }
+                            });
+                            this.addHostsToTable(hostObject);
+                        });
+                    });
+                });
     }
 
     nextAction = (event) => {
