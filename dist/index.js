@@ -32963,6 +32963,30 @@ var HostsPage = /*#__PURE__*/function (_React$Component) {
       roles: []
     }; // this.hostMaskInput = React.createRef();
 
+    var hostList;
+    var groupList;
+
+    var _hostObject;
+
+    Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_10__["getHosts"])().done(function (resp) {
+      hostList = JSON.parse(resp)['data']['hosts'];
+    }).then(function () {
+      hostList.forEach(function (host) {
+        Object(_services_apicalls_js__WEBPACK_IMPORTED_MODULE_10__["getHostGroup"])(host).done(function (resp) {
+          groupList = JSON.parse(resp)['data']['groups'];
+          _hostObject = {
+            'hostmask': host
+          };
+          groupList.forEach(function (role) {
+            if (role !== 'mgrs') {
+              _hostObject[Object(_services_utils_js__WEBPACK_IMPORTED_MODULE_11__["convertRole"])(role)] = true;
+            }
+          });
+
+          _this.addHostsToTable(_hostObject);
+        });
+      });
+    });
     return _this;
   }
 
@@ -36406,7 +36430,7 @@ function cephAnsibleSequence(roles) {
 /*!**********************************!*\
   !*** ./src/services/apicalls.js ***!
   \**********************************/
-/*! exports provided: now, addGroup, deleteGroup, getGroups, addHost, deleteHost, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getEvents, getJobEvent, storeGroupVars, storeHostVars, checkAPI */
+/*! exports provided: now, addGroup, deleteGroup, getGroups, addHost, deleteHost, getHosts, getHostGroup, changeHost, addRole, removeRole, runPlaybook, getPlaybookState, getTaskEvents, getEvents, getJobEvent, storeGroupVars, storeHostVars, checkAPI */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36417,6 +36441,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getGroups", function() { return getGroups; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addHost", function() { return addHost; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deleteHost", function() { return deleteHost; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getHosts", function() { return getHosts; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getHostGroup", function() { return getHostGroup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "changeHost", function() { return changeHost; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addRole", function() { return addRole; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeRole", function() { return removeRole; });
@@ -36495,6 +36521,16 @@ function deleteHost(hostName) {
     body: {},
     method: "DELETE"
   });
+}
+function getHosts() {
+  console.log("fetching defined host list @ " + now());
+  var promise = http.get('/api/v1/hosts');
+  return promise;
+}
+function getHostGroup(hostName) {
+  console.log("fetching defined host groups @ " + now());
+  var promise = http.get('/api/v1/hosts/' + hostName);
+  return promise;
 }
 function changeHost(hostname, role, checked) {
   console.log("changeHost: changing host state for " + hostname + " role=" + role + " @ " + now());
@@ -36809,6 +36845,10 @@ function convertRole(role) {
 
     case "metrics":
       role = "grafana-server";
+      break;
+
+    case "grafana-server":
+      role = "metrics";
       break;
 
     case "grafana":

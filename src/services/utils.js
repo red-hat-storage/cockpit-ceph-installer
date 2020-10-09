@@ -106,6 +106,9 @@ export function convertRole(role) {
     case "metrics":
         role = "grafana-server";
         break;
+    case "grafana-server":
+        role = "metrics";
+        break;
     case "grafana":
         // used by deploypage
         role = "metrics";
