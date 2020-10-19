@@ -415,13 +415,8 @@ check_access() {
 
 manage_ansible_hosts_file() {
     echo "Linking the runner service inventory to ceph-ansible hosts"
-    # create hosts file if it doesn't exist
-    [ ! -f "$CEPH_ANSIBLE_HOSTS" ] && touch $CEPH_ANSIBLE_HOSTS
-
-    # Set up a new hosts file if the hosts file contains hosts details already or it is an INI file
-
-    if [ -s "$CEPH_ANSIBLE_HOSTS" ]; then
-        echo "Inventory file already present with host details. Set up a new one to use with the installer"
+    if [ -f "$CEPH_ANSIBLE_HOSTS" ]; then
+        echo "Inventory file already present. Rename the inventory file to use a new one"
         hosts_dir=$(dirname "$CEPH_ANSIBLE_HOSTS")
         save_file="${CEPH_ANSIBLE_HOSTS}.orig"
         if [ -f "$save_file" ]; then
@@ -430,11 +425,10 @@ manage_ansible_hosts_file() {
         fi
         echo "- saving existing ansible hosts to $save_file"
         mv $CEPH_ANSIBLE_HOSTS $save_file
-        # Set up a new hosts file for the installer
-        touch $CEPH_ANSIBLE_HOSTS
+        # New host file will be created during cockpit-ceph-installer ui execution
     fi
 
-    ln -s $CEPH_ANSIBLE_HOSTS /usr/share/ansible-runner-service/inventory/hosts
+    ln -fs $CEPH_ANSIBLE_HOSTS /usr/share/ansible-runner-service/inventory/hosts
     if [ $? -eq 0 ]; then
         echo "- ansible hosts linked to runner-service inventory"
     else
