@@ -19,7 +19,7 @@ HOMEDIR=${HOME}
 if [ $SUDO_USER ]; then
     HOMEDIR=$(getent passwd $SUDO_USER | cut -d: -f6)
 fi
-DEFAULT_ANSIBLE_HOSTS='/etc/ansible/hosts'
+CEPH_ANSIBLE_HOSTS='/usr/share/ceph-ansible/hosts'
 
 set_container_bin() {
 
@@ -414,34 +414,28 @@ check_access() {
 }
 
 manage_ansible_hosts_file() {
-    echo "Linking the default ansible hosts file to the runner-service inventory."
-    if [ -h "$DEFAULT_ANSIBLE_HOSTS" ]; then
-        # hosts file is a symlink
-        if $VERBOSE; then echo "- default ansible hosts is already a symlink, checking further"; fi
-        tgt=$(readlink -f "$DEFAULT_ANSIBLE_HOSTS")
-        if [ "$tgt" == "/usr/share/ansible-runner-service/inventory/hosts" ]; then
-            if $VERBOSE; then echo "- default ansible hosts already linked to runner-service inventory. No changes required"; fi
-        else
-            echo "WARNING: Unable to link $DEFAULT_ANSIBLE_HOSTS to runner-service, it's already a symlink to '$tgt'"
-            echo "Admin intervention needed to reconcile the inventory files, or use -i on all ansible-playbook invocations"
-        fi 
-    else
-        # hosts file is a regular file
-        hosts_dir=$(dirname "$DEFAULT_ANSIBLE_HOSTS")
-        save_file="${DEFAULT_ANSIBLE_HOSTS}.orig"
-        if [ -f "$save_file" ]; then
-            epoc=$(date +%s)
-            save_file="${save_file}-${epoc}"
-        fi
-        echo "- saving existing ansible hosts to $save_file"
-        mv $DEFAULT_ANSIBLE_HOSTS $save_file
-        ln -s /usr/share/ansible-runner-service/inventory/hosts $DEFAULT_ANSIBLE_HOSTS
+    echo "Linking the runner service inventory to ceph-ansible hosts"
+    if [ ! -L "/usr/share/ansible-runner-service/inventory/hosts" ]; then
+        if [ -f "$CEPH_ANSIBLE_HOSTS" ]; then
+            echo "Inventory file already present. Rename the inventory file to use a new one"
+            hosts_dir=$(dirname "$CEPH_ANSIBLE_HOSTS")
+            save_file="${CEPH_ANSIBLE_HOSTS}.orig"
+            if [ -f "$save_file" ]; then
+                epoc=$(date +%s)
+                save_file="${save_file}-${epoc}"
+            fi
+            echo "- saving existing ansible hosts to $save_file"
+            mv $CEPH_ANSIBLE_HOSTS $save_file
+            # New host file will be created during cockpit-ceph-installer ui execution
+	fi
+        ln -fs $CEPH_ANSIBLE_HOSTS /usr/share/ansible-runner-service/inventory/hosts
         if [ $? -eq 0 ]; then
             echo "- ansible hosts linked to runner-service inventory"
         else
             echo "WARNING: failed to apply the symlink, please investigate"
         fi
-
+    else
+	echo "- runner service link already present"
     fi
 }
 
