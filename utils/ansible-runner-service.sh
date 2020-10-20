@@ -434,6 +434,8 @@ manage_ansible_hosts_file() {
         else
             echo "WARNING: failed to apply the symlink, please investigate"
         fi
+    else
+	echo "- runner service link already present"
     fi
 }
 
