@@ -8,7 +8,7 @@ URL: https://github.com/red-hat-storage/cockpit-ceph-installer
 Source: ceph-installer-%{version}.tar.gz
 BuildArch: noarch
 
-Requires: ceph-ansible >= 4.0.14
+Requires: ceph-ansible >= 4.0.40
 Requires: cockpit
 Requires: libcdio
 Requires: cockpit-bridge
